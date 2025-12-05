@@ -40,15 +40,6 @@ public class AdvancedTooltipHandler {
     // 按键状态跟踪
     private static KeyState currentKeyState = new KeyState();
 
-    // 按键状态类
-    private static class KeyState {
-        boolean wasCtrlPressed = false;
-        boolean wasCPressed = false;
-        boolean wasZPressed = false;
-        long lastSwitchTime = 0; // 上次切换时间(毫秒)
-        static final long MIN_SWITCH_INTERVAL = 250; // 最小切换间隔(毫秒)
-    }
-
     // ========== 模组名称获取部分 ==========
     @Nullable
     private static String getModName(ItemStack itemStack) {
@@ -81,6 +72,9 @@ public class AdvancedTooltipHandler {
     // ========== 事件处理器 ==========
     @SubscribeEvent
     public void onRenderTooltipColor(RenderTooltipEvent.Color event) {
+        // 非物品tooltip不处理颜色
+        if (event.getStack().isEmpty()) return;
+
         if (!TooltipColorConfig.isEnabled() || event.getStack().isEmpty()) return;
 
         event.setBackground(TooltipColorConfig.getBackgroundColor());
@@ -101,13 +95,20 @@ public class AdvancedTooltipHandler {
 
     @SubscribeEvent
     public void onRenderTooltipPre(RenderTooltipEvent.Pre event) {
-        if (event.getStack().isEmpty()) return;
-
+        // 取消原版渲染，使用我们自定义的渲染
         event.setCanceled(true);
-        renderCustomTooltip(event);
+
+        // 检查是否有物品
+        boolean isItemTooltip = !event.getStack().isEmpty();
+
+        if (isItemTooltip) {
+            renderCustomItemTooltip(event);
+        } else {
+            renderSimpleTooltip(event);
+        }
     }
 
-    private void renderCustomTooltip(RenderTooltipEvent.Pre event) {
+    private void renderCustomItemTooltip(RenderTooltipEvent.Pre event) {
         ItemStack stack = event.getStack();
         String itemId = getItemUniqueId(stack);
 
@@ -136,7 +137,7 @@ public class AdvancedTooltipHandler {
         calculatePagination(content, event.getScreenHeight());
 
         TooltipLayout layout = calculateLayout(content, event);
-        TooltipColors colors = getTooltipColors(stack);
+        TooltipColors colors = TooltipColorHelper.getTooltipColors(stack);
 
         GlStateManager.pushMatrix();
         setupGLState();
@@ -144,6 +145,57 @@ public class AdvancedTooltipHandler {
         drawTooltipBackground(layout, colors, content);
         drawItemIcon(stack, layout.iconX, layout.iconY);
         drawTooltipText(content, layout, event.getFontRenderer());
+
+        restoreGLState();
+        GlStateManager.popMatrix();
+    }
+
+    private void renderSimpleTooltip(RenderTooltipEvent.Pre event) {
+        List<String> lines = event.getLines();
+        if (lines.isEmpty()) return;
+
+        FontRenderer font = event.getFontRenderer();
+        int screenWidth = event.getScreenWidth();
+        int screenHeight = event.getScreenHeight();
+
+        // 应用自动换行
+        List<String> wrappedLines = wrapSimpleTooltipText(lines, font);
+
+        // 计算tooltip尺寸
+        int maxWidth = 0;
+        for (String line : wrappedLines) {
+            int width = font.getStringWidth(line);
+            if (width > maxWidth) maxWidth = width;
+        }
+
+        int textPadding = 4;
+        int lineHeight = 10;
+        int totalWidth = maxWidth + textPadding * 2;
+        int totalHeight = wrappedLines.size() * lineHeight + textPadding * 2;
+
+        // 调整位置
+        int initialX = event.getX() + MOUSE_OFFSET_X;
+        int initialY = event.getY() + MOUSE_OFFSET_Y;
+        int borderPadding = 1;
+
+        int x = adjustPosition(initialX, totalWidth, screenWidth, borderPadding);
+        int y = adjustPosition(initialY, totalHeight, screenHeight, borderPadding);
+
+        // 获取默认颜色
+        TooltipColors colors = TooltipColorHelper.getTooltipColors();
+
+        GlStateManager.pushMatrix();
+        setupGLState();
+
+        // 绘制背景
+        drawSimpleTooltipBackground(x, y, totalWidth, totalHeight, colors);
+
+        // 绘制文本
+        int currentY = y + textPadding;
+        for (String line : wrappedLines) {
+            font.drawStringWithShadow(line, x + textPadding, currentY, 0xFFFFFF);
+            currentY += lineHeight;
+        }
 
         restoreGLState();
         GlStateManager.popMatrix();
@@ -174,6 +226,20 @@ public class AdvancedTooltipHandler {
         for (String line : lines) {
             // 保留格式代码的换行处理
             wrappedLines.addAll(font.listFormattedStringToWidth(line, TOOLTIP_MAX_WIDTH));
+        }
+        return wrappedLines;
+    }
+
+    /**
+     * 为非物品tooltip应用自动换行
+     */
+    private List<String> wrapSimpleTooltipText(List<String> lines, FontRenderer font) {
+        List<String> wrappedLines = new ArrayList<>();
+        int maxWidth = TOOLTIP_MAX_WIDTH - MOUSE_OFFSET_X; // 减去鼠标偏移
+
+        for (String line : lines) {
+            // 保留格式代码的换行处理
+            wrappedLines.addAll(font.listFormattedStringToWidth(line, maxWidth));
         }
         return wrappedLines;
     }
@@ -315,7 +381,7 @@ public class AdvancedTooltipHandler {
         int lineHeight = 10;
 
         // 总宽度 = 文本区域宽度 + 图标区域宽度 + 内边距
-        int totalWidth = Math.max(leftWidth, rightWidth)  + textPadding * 2;
+        int totalWidth = Math.max(leftWidth, rightWidth) + textPadding * 2;
 
         // 计算总高度 - 根据分页调整
         int lineCount = 1; // 物品名称
@@ -440,6 +506,38 @@ public class AdvancedTooltipHandler {
         Gui.drawRect(layout.x + layout.width, layout.y, layout.x + layout.width + 1, layout.y + layout.height, colors.borderEnd);
     }
 
+    private void drawSimpleTooltipBackground(int x, int y, int width, int height, TooltipColors colors) {
+        // 主背景
+        Gui.drawRect(x - 3, y - 4,
+                x + width + 3,
+                y + height + 4,
+                0x50000000); // 半透明背景边缘
+
+        Gui.drawRect(x - 2, y - 3,
+                x + width + 2,
+                y + height + 3,
+                0x50000000);
+
+        Gui.drawRect(x - 1, y - 2,
+                x + width + 1,
+                y + height + 2,
+                colors.background);
+
+        // 边框
+        drawSimpleBorder(x, y, width, height, colors);
+    }
+
+    private void drawSimpleBorder(int x, int y, int width, int height, TooltipColors colors) {
+        // 上边框
+        Gui.drawRect(x - 1, y - 1, x + width + 1, y, colors.borderStart);
+        // 下边框
+        Gui.drawRect(x - 1, y + height, x + width + 1, y + height + 1, colors.borderEnd);
+        // 左边框
+        Gui.drawRect(x - 1, y, x, y + height, colors.borderStart);
+        // 右边框
+        Gui.drawRect(x + width, y, x + width + 1, y + height, colors.borderEnd);
+    }
+
     private void drawItemIcon(ItemStack stack, int x, int y) {
         RenderHelper.enableGUIStandardItemLighting();
         Minecraft.getMinecraft().getRenderItem().renderItemAndEffectIntoGUI(stack, x, y);
@@ -456,7 +554,7 @@ public class AdvancedTooltipHandler {
         int currentY = layout.y + textPadding;
 
         // 物品名称
-        int itemNameColor = getItemNameColor(content.itemName);
+        int itemNameColor = TooltipColorHelper.getItemNameColor(content.itemName);
         font.drawStringWithShadow(" " + content.itemName, iconTextX, currentY, itemNameColor);
         currentY += lineHeight;
 
@@ -492,37 +590,5 @@ public class AdvancedTooltipHandler {
 
             font.drawStringWithShadow(nextPageHint, leftAlignedX, currentY, PAGINATION_HINT_COLOR);
         }
-    }
-
-    // ========== 辅助方法 ==========
-    private TooltipColors getTooltipColors(ItemStack stack) {
-        if (!TooltipColorConfig.isEnabled()) {
-            return new TooltipColors(
-                    0xF0100010,  // 背景
-                    0x505000FF,  // 边框开始
-                    0x5028007F   // 边框结束
-            );
-        }
-
-        int bg = TooltipColorConfig.getBackgroundColor();
-
-        int borderStart;
-        int borderEnd;
-        if (TooltipColorConfig.enableRarityColors()) {
-            int rarityColor = TooltipColorConfig.getRarityColor(stack.getRarity());
-            borderStart = rarityColor;
-            borderEnd = rarityColor;
-        } else {
-            int borderColor = TooltipColorConfig.getBorderColor();
-            borderStart = borderColor;
-            borderEnd = borderColor;
-        }
-
-        return new TooltipColors(bg, borderStart, borderEnd);
-    }
-
-    private int getItemNameColor(String itemName) {
-        // 保留原始逻辑，实际应使用物品稀有度
-        return 0xFFFFFF;
     }
 }
