@@ -1,21 +1,14 @@
-## TemplateDevEnv
-_For Kotlin see [TemplateDevEnvKt](https://github.com/CleanroomMC/TemplateDevEnvKt)_
+<img width="2048" height="2048" alt="logo" src="https://github.com/user-attachments/assets/db10f5b0-0a0a-4a72-9bd2-09a40914aa36" />
 
-Template workspace for modding Minecraft 1.12.2. Licensed under MIT, it is made for public use.
+## 量子色域 — 视界
+专注于 Minecraft UI 美化与渲染优化的核心模组，旨在通过量子级视觉处理技术，提供沉浸式、高自定义的界面体验。
 
-This template runs on Java 21! Currently utilizies **Gradle 8.12** + **[RetroFuturaGradle](https://github.com/GTNewHorizons/RetroFuturaGradle) 1.4.1** + **Forge 14.23.5.2847**.
+### 功能:
 
-With **coremod and mixin support** that is easy to configure.
+1. 动态模糊渲染
+2. 自定义 Tooltips
+3. 多风格 Top 栏
 
-### Instructions:
+### 画廊:
 
-1. Click `use this template` at the top.
-2. Clone the repository that you have created with this template to your local machine.
-3. Make sure IDEA is using Java 21 for Gradle before you sync the project. Verify this by going to IDEA's `Settings > Build, Execution, Deployment > Build Tools > Gradle > Gradle JVM`.
-4. Open the project folder in IDEA. When prompted, click "Load Gradle Project" as it detects the `build.gradle`, if you weren't prompted, right-click the project's `build.gradle` in IDEA, select `Link Gradle Project`, after completion, hit `Refresh All` in the gradle tab on the right.
-5. Run gradle tasks such as `runClient` and `runServer` in the IDEA gradle tab, or use the auto-imported run configurations like `1. Run Client`.
-
-### Notes:
-- Dependencies script in [gradle/scripts/dependencies.gradle](gradle/scripts/dependencies.gradle), explanations are commented in the file.
-- Publishing script in [gradle/scripts/publishing.gradle](gradle/scripts/publishing.gradle).
-- When writing Mixins on IntelliJ, it is advisable to use latest [MinecraftDev Fork for RetroFuturaGradle](https://github.com/eigenraven/MinecraftDev/releases).
+<img width="1718" height="1158" alt="ab875f6d80b2f1ebf3f8c90ca313e833" src="https://github.com/user-attachments/assets/82351f56-325f-4aab-b0ef-ae43f1b96a1f" />
