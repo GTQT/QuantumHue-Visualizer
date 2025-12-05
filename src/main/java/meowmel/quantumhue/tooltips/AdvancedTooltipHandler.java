@@ -447,19 +447,14 @@ public class AdvancedTooltipHandler {
 
     private void drawTooltipBackground(TooltipLayout layout, TooltipColors colors, TooltipContent content) {
         // 主背景
-        Gui.drawRect(layout.x - 3, layout.y - 4,
-                layout.x + layout.width + 3,
-                layout.y + layout.height + 4,
-                0x50000000); // 半透明背景边缘
-
-        Gui.drawRect(layout.x - 2, layout.y - 3,
+        Gui.drawRect(layout.x - 2, layout.y - 2,
                 layout.x + layout.width + 2,
-                layout.y + layout.height + 3,
+                layout.y + layout.height + 2,
                 0x50000000);
 
-        Gui.drawRect(layout.x - 1, layout.y - 2,
+        Gui.drawRect(layout.x - 1, layout.y - 1,
                 layout.x + layout.width + 1,
-                layout.y + layout.height + 2,
+                layout.y + layout.height + 1,
                 colors.background);
 
         // 边框
@@ -508,19 +503,14 @@ public class AdvancedTooltipHandler {
 
     private void drawSimpleTooltipBackground(int x, int y, int width, int height, TooltipColors colors) {
         // 主背景
-        Gui.drawRect(x - 3, y - 4,
-                x + width + 3,
-                y + height + 4,
-                0x50000000); // 半透明背景边缘
-
-        Gui.drawRect(x - 2, y - 3,
+        Gui.drawRect(x - 2, y - 2,
                 x + width + 2,
-                y + height + 3,
+                y + height + 2,
                 0x50000000);
 
-        Gui.drawRect(x - 1, y - 2,
+        Gui.drawRect(x - 1, y - 1,
                 x + width + 1,
-                y + height + 2,
+                y + height + 1,
                 colors.background);
 
         // 边框
