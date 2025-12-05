@@ -355,6 +355,8 @@ public class AdvancedTooltipHandler {
         FontRenderer font = event.getFontRenderer();
         int screenWidth = event.getScreenWidth();
         int screenHeight = event.getScreenHeight();
+        int mouseX = event.getX();
+        int mouseY = event.getY();
 
         // 计算文本宽度 (换行后)
         int leftWidth = 0;
@@ -401,12 +403,51 @@ public class AdvancedTooltipHandler {
 
         int totalHeight = baseHeight + textPadding * 2 + heightAdjustment;
 
-        // 调整位置 - 添加鼠标偏移
-        int initialX = event.getX() + MOUSE_OFFSET_X;
-        int initialY = event.getY() + MOUSE_OFFSET_Y;
+        // ===== 智能定位逻辑：根据可用空间决定tooltip位置 =====
+        // 计算右侧空间 (鼠标右侧到屏幕边缘)
+        int spaceRight = screenWidth - mouseX;
+        // 计算左侧空间 (鼠标左侧到屏幕边缘)
+        int spaceLeft = mouseX;
 
-        int x = adjustPosition(initialX, totalWidth, screenWidth, borderPadding);
-        int y = adjustPosition(initialY, totalHeight, screenHeight, borderPadding);
+        boolean preferRight = true;
+
+        // 检查右侧空间是否足够 (包括偏移量)
+        if (spaceRight < totalWidth + MOUSE_OFFSET_X + borderPadding * 2) {
+            // 检查左侧空间是否足够
+            if (spaceLeft >= totalWidth + MOUSE_OFFSET_X + borderPadding * 2) {
+                preferRight = false;
+            }
+            // 如果两侧都不足，优先保证可见性（右侧优先，但会调整到边缘）
+        }
+
+        // 计算X坐标
+        int x;
+        if (preferRight) {
+            x = mouseX + MOUSE_OFFSET_X;
+            // 边界检查：确保tooltip不会超出右边界
+            if (x + totalWidth + borderPadding > screenWidth) {
+                x = screenWidth - totalWidth - borderPadding;
+            }
+        } else {
+            // 显示在鼠标左侧
+            x = mouseX - MOUSE_OFFSET_X - totalWidth;
+            // 边界检查：确保tooltip不会超出左边界
+            if (x < borderPadding) {
+                x = borderPadding;
+            }
+        }
+
+        // 计算Y坐标 - 处理上下边界
+        int y = mouseY + MOUSE_OFFSET_Y;
+        // 检查是否超出下边界
+        if (y + totalHeight + borderPadding > screenHeight) {
+            // 尝试显示在鼠标上方
+            y = mouseY - totalHeight - MOUSE_OFFSET_Y;
+            // 确保不低于顶部边界
+            if (y < borderPadding) {
+                y = borderPadding;
+            }
+        }
 
         // 计算分割线位置
         int separatorY = y + textPadding + (content.modName != null ? 2 : 1) * lineHeight;

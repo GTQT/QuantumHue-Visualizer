@@ -15,6 +15,42 @@ public class QuantumHueConfig {
     @Config.Name("Blur Config")
     public static Blur blur = new Blur();
 
+    @Config.Name("Biome Info")
+    public static biomeInfo biome_info = new biomeInfo();
+
+    public static class biomeInfo {
+        @Config.Name("Enabled")
+        @Config.Comment("Enable/disable biome info display")
+        public boolean ENABLED = true;
+
+        @Config.Name("Fade Out")
+        @Config.Comment("Fade out text after biome change")
+        public boolean FADE_OUT = true;
+
+        @Config.Name("Display Time")
+        @Config.Comment("Duration (in ticks) to show text after biome change when fadeOut=true")
+        @Config.RangeInt(min = 0)
+        public int DISPLAY_TIME = 40;
+
+        @Config.Name("Fade Speed")
+        @Config.Comment("Transparency change speed per tick during fade out")
+        @Config.RangeInt(min = 1, max = 255)
+        public int FADE_SPEED = 8;
+
+        @Config.Name("Scale")
+        @Config.Comment("Text scale multiplier (1.0 = default size)")
+        @Config.RangeDouble(min = 0.5, max = 5.0)
+        public double SCALE = 3;
+
+        @Config.Name("Text Color")
+        @Config.Comment("Text color in RGB hex (e.g. FFFFFF = white)")
+        public String TEXT_COLOR = "FFFFFF";
+
+        @Config.Name("Text Shadow")
+        @Config.Comment("Enable text shadow")
+        public boolean TEXT_SHADOW = true;
+    }
+
     public static class Blur {
         @Config.Comment({
                 "是否启用模糊效果",
