@@ -144,6 +144,10 @@ dependencies {
         testImplementation 'org.junit.jupiter:junit-jupiter:5.7.1'
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     }
+
+    implementation rfg.deobf("curse.maven:mixin-booter-419286:6344449")
+    implementation rfg.deobf('curse.maven:jei-238222:5846804')
+    implementation rfg.deobf('curse.maven:the-one-probe-community-edition-885670:7129885')
 }
 
 apply from: 'gradle/scripts/dependencies.gradle'
