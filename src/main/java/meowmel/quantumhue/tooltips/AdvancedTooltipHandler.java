@@ -307,13 +307,15 @@ public class AdvancedTooltipHandler {
             if (modWidth > rightWidth) rightWidth = modWidth;
         }
 
+        rightWidth += ICON_AREA_WIDTH;
+
         // 计算尺寸
         int textPadding = 4;
         int borderPadding = 1;
         int lineHeight = 10;
 
         // 总宽度 = 文本区域宽度 + 图标区域宽度 + 内边距
-        int totalWidth = Math.max(leftWidth, rightWidth) + ICON_AREA_WIDTH + textPadding * 2;
+        int totalWidth = Math.max(leftWidth, rightWidth)  + textPadding * 2;
 
         // 计算总高度 - 根据分页调整
         int lineCount = 1; // 物品名称
