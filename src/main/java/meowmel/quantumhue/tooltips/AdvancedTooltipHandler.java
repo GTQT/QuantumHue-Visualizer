@@ -133,6 +133,18 @@ public class AdvancedTooltipHandler {
                 wrappedLines
         );
 
+        // 获取Thaumcraft要素 - 使用已提供的类
+        if (ThaumcraftIntegration.isThaumcraftAvailable()) {
+            content.aspects = ThaumcraftIntegration.getAspects(stack);
+
+            // 确定是否显示要素 (遵循Thaumcraft的配置和按键逻辑)
+            boolean isShiftKeyDown = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
+            boolean defaultShowAspects = ThaumcraftIntegration.shouldShowAspectsByDefault();
+
+            // Thaumcraft逻辑: 当按下Shift与配置值不同时显示
+            content.showAspects = (isShiftKeyDown != defaultShowAspects);
+        }
+
         // 计算分页信息
         calculatePagination(content, event.getScreenHeight());
 
@@ -143,6 +155,16 @@ public class AdvancedTooltipHandler {
         setupGLState();
 
         drawTooltipBackground(layout, colors, content);
+
+        // 修复GL状态，确保物品图标正常渲染
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(
+                GlStateManager.SourceFactor.SRC_ALPHA,
+                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                GlStateManager.SourceFactor.ONE,
+                GlStateManager.DestFactor.ZERO
+        );
+
         drawItemIcon(stack, layout.iconX, layout.iconY);
         drawTooltipText(content, layout, event.getFontRenderer());
 
@@ -600,9 +622,20 @@ public class AdvancedTooltipHandler {
 
         // 剩余内容 (左对齐，从图标区域左侧开始)
         int leftAlignedX = layout.x + textPadding;
+        int renderHeight = -1;
         for (String line : content.currentPageLines) {
+            if(line.contains("    ")&&renderHeight==-1)renderHeight = currentY;
             font.drawStringWithShadow(line, leftAlignedX, currentY, 0xFFFFFF);
             currentY += lineHeight;
+        }
+
+        if (ThaumcraftIntegration.isThaumcraftAvailable()&&renderHeight!=-1 && content.shouldShowAspects()){
+            ThaumcraftRenderer.renderAspectIcons(
+                    content.aspects,
+                    layout.x + 4,
+                    renderHeight,
+                    layout.width - 8
+            );
         }
 
         // 如果需要分页，在底部添加换页提示

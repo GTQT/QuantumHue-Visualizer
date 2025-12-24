@@ -1,5 +1,7 @@
 package meowmel.quantumhue.tooltips;
 
+import thaumcraft.api.aspects.AspectList;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +16,10 @@ public class TooltipContent {
     int currentPage = 0; // 当前页码 (0-indexed)
     int maxLinesPerPage = 0; // 每页最大行数
 
+    // Thaumcraft要素支持
+    AspectList aspects = null;
+    boolean showAspects = false;
+
     TooltipContent(String itemName, String modName, List<String> remainingLines) {
         this.itemName = itemName;
         this.modName = modName;
@@ -22,5 +28,9 @@ public class TooltipContent {
 
     boolean hasModName() {
         return modName != null && !modName.isEmpty();
+    }
+
+    boolean shouldShowAspects() {
+        return aspects != null && showAspects;
     }
 }
