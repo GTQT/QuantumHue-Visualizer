@@ -1,4 +1,4 @@
-package meowmel.quantumhue.tooltips;
+package meowmel.quantumhue.tooltips.thaumcraft;
 
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.Loader;
@@ -7,7 +7,7 @@ import thaumcraft.common.config.ModConfig;
 import thaumcraft.common.lib.crafting.ThaumcraftCraftingManager;
 
 public class ThaumcraftIntegration {
-    private static boolean isThaumcraftLoaded = false;
+    private static final boolean isThaumcraftLoaded;
 
     static {
         // 检查Thaumcraft是否加载
@@ -33,8 +33,6 @@ public class ThaumcraftIntegration {
             // 直接调用Thaumcraft API
             return ThaumcraftCraftingManager.getObjectTags(stack);
         } catch (NoClassDefFoundError | Exception e) {
-            // 如果API不匹配或出现其他问题
-            isThaumcraftLoaded = false;
             System.out.println("[QuantumHue] Thaumcraft integration disabled: " + e.getMessage());
             return null;
         }
@@ -51,8 +49,6 @@ public class ThaumcraftIntegration {
         try {
             return ModConfig.CONFIG_GRAPHICS.showTags;
         } catch (NoClassDefFoundError | Exception e) {
-            // 如果配置类不匹配
-            isThaumcraftLoaded = false;
             System.out.println("[QuantumHue] Thaumcraft config access failed: " + e.getMessage());
             return false;
         }

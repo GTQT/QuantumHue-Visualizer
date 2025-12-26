@@ -1,5 +1,6 @@
 package meowmel.quantumhue.tooltips;
 
+import meowmel.quantumhue.tooltips.applecore.AppleSkinIntegration;
 import thaumcraft.api.aspects.AspectList;
 
 import java.util.ArrayList;
@@ -20,6 +21,10 @@ public class TooltipContent {
     AspectList aspects = null;
     boolean showAspects = false;
 
+    // AppleCore要素支持
+    AppleSkinIntegration.FoodInfo foodInfo = null;
+    boolean showFoodInfo = false;
+
     TooltipContent(String itemName, String modName, List<String> remainingLines) {
         this.itemName = itemName;
         this.modName = modName;
@@ -32,5 +37,9 @@ public class TooltipContent {
 
     boolean shouldShowAspects() {
         return aspects != null && showAspects;
+    }
+
+    boolean shouldShowFoodInfo() {
+        return foodInfo != null && showFoodInfo;
     }
 }

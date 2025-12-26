@@ -1,10 +1,15 @@
 package meowmel.quantumhue.tooltips;
 
+import meowmel.quantumhue.tooltips.applecore.AppleSkinIntegration;
+import meowmel.quantumhue.tooltips.applecore.AppleSkinRenderer;
+import meowmel.quantumhue.tooltips.thaumcraft.ThaumcraftIntegration;
+import meowmel.quantumhue.tooltips.thaumcraft.ThaumcraftRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.text.TextFormatting;
@@ -145,6 +150,13 @@ public class AdvancedTooltipHandler {
             content.showAspects = (isShiftKeyDown != defaultShowAspects);
         }
 
+        // 获取AppleSkin食物信息
+        if (AppleSkinIntegration.isAppleSkinAvailable()) {
+            EntityPlayer player = Minecraft.getMinecraft().player;
+            content.foodInfo = AppleSkinIntegration.getFoodInfo(stack, player);
+            content.showFoodInfo = content.foodInfo != null && AppleSkinIntegration.shouldShowFoodInfo();
+        }
+
         // 计算分页信息
         calculatePagination(content, event.getScreenHeight());
 
@@ -273,9 +285,12 @@ public class AdvancedTooltipHandler {
         if (content.modName != null) fixedLineCount++; // 模组名称
         int fixedHeight = fixedLineCount * 10 + 8; // 每行10像素 + 内边距
 
+        // 预留空间给分页提示
+        fixedHeight += 15;
+
         // 计算最大可用高度（屏幕高度的75%）
         int maxHeight = (int) (screenHeight * 0.75);
-        int availableHeight = maxHeight - fixedHeight - 15; // 预留空间给分页提示
+        int availableHeight = maxHeight - fixedHeight;
 
         if (availableHeight < 10 || content.remainingLines.isEmpty()) {
             // 屏幕太小，无法显示任何内容
@@ -313,7 +328,6 @@ public class AdvancedTooltipHandler {
         boolean zDown = Keyboard.isKeyDown(Keyboard.KEY_Z);
 
         // 检测按键按下事件（从释放到按下）
-        boolean ctrlPressedThisFrame = ctrlDown && !currentKeyState.wasCtrlPressed;
         boolean cPressedThisFrame = cDown && !currentKeyState.wasCPressed;
         boolean zPressedThisFrame = zDown && !currentKeyState.wasZPressed;
 
@@ -417,6 +431,12 @@ public class AdvancedTooltipHandler {
         if (content.needsPagination) {
             lineCount++; // 为换页提示预留一行
         }
+
+        // AppleSkin食物信息固定高度为20像素
+        if (content.showFoodInfo) {
+            lineCount += 2; // 为换页提示预留两行
+        }
+
 
         int baseHeight = lineCount * lineHeight;
         int iconHeight = 18;
@@ -624,17 +644,16 @@ public class AdvancedTooltipHandler {
         int leftAlignedX = layout.x + textPadding;
         int renderHeight = -1;
         for (String line : content.currentPageLines) {
-            if(line.contains("    ")&&renderHeight==-1)renderHeight = currentY;
+            if (line.contains("    ") && renderHeight == -1) renderHeight = currentY;
             font.drawStringWithShadow(line, leftAlignedX, currentY, 0xFFFFFF);
             currentY += lineHeight;
         }
 
-        if (ThaumcraftIntegration.isThaumcraftAvailable()&&renderHeight!=-1 && content.shouldShowAspects()){
+        if (ThaumcraftIntegration.isThaumcraftAvailable() && renderHeight != -1 && content.shouldShowAspects()) {
             ThaumcraftRenderer.renderAspectIcons(
                     content.aspects,
                     layout.x + 4,
-                    renderHeight,
-                    layout.width - 8
+                    renderHeight
             );
         }
 
@@ -653,6 +672,16 @@ public class AdvancedTooltipHandler {
             }
 
             font.drawStringWithShadow(nextPageHint, leftAlignedX, currentY, PAGINATION_HINT_COLOR);
+            currentY += lineHeight;
+        }
+
+        if (content.shouldShowFoodInfo()) {
+            AppleSkinRenderer.renderFoodInfo(
+                    content.foodInfo,
+                    layout.x + 4,
+                    currentY,
+                    layout.width - 8
+            );
         }
     }
 }

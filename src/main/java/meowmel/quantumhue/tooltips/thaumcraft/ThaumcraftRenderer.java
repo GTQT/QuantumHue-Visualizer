@@ -1,4 +1,4 @@
-package meowmel.quantumhue.tooltips;
+package meowmel.quantumhue.tooltips.thaumcraft;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -11,7 +11,7 @@ public class ThaumcraftRenderer {
     /**
      * 渲染Thaumcraft要素图标（单行显示，不换行，超过宽度直接溢出）
      */
-    public static void renderAspectIcons(AspectList aspects, int x, int y, int maxWidth) {
+    public static void renderAspectIcons(AspectList aspects, int x, int y) {
         if (aspects == null || aspects.size() == 0) {
             return;
         }
