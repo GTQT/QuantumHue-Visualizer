@@ -23,7 +23,6 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +45,6 @@ public class AdvancedTooltipHandler {
     private static KeyState currentKeyState = new KeyState();
 
     // ========== 模组名称获取部分 ==========
-    @Nullable
     private static String getModName(ItemStack itemStack) {
         if (itemStack.isEmpty()) return null;
 
@@ -642,19 +640,40 @@ public class AdvancedTooltipHandler {
 
         // 剩余内容 (左对齐，从图标区域左侧开始)
         int leftAlignedX = layout.x + textPadding;
-        int renderHeight = -1;
+
+        // 绘制所有行
         for (String line : content.currentPageLines) {
-            if (line.contains("    ") && renderHeight == -1) renderHeight = currentY;
             font.drawStringWithShadow(line, leftAlignedX, currentY, 0xFFFFFF);
             currentY += lineHeight;
         }
 
-        if (ThaumcraftIntegration.isThaumcraftAvailable() && renderHeight != -1 && content.shouldShowAspects()) {
-            ThaumcraftRenderer.renderAspectIcons(
-                    content.aspects,
-                    layout.x + 4,
-                    renderHeight
-            );
+
+        // 如果找到相邻两行都包含"    "，并且满足其他条件，则渲染神秘图标
+        if (ThaumcraftIntegration.isThaumcraftAvailable() &&  content.shouldShowAspects()) {
+            int renderHeight = -1;
+            // 获取所有行
+            List<String> lines = content.currentPageLines;
+
+            // 遍历所有行，寻找相邻两行都包含"    "的情况
+            for (int i = 0; i < lines.size() - 1; i++) {
+                String currentLine = lines.get(i);
+                String nextLine = lines.get(i + 1);
+
+                // 检查当前行和下一行是否都包含"    "
+                if (currentLine.contains("    ") && nextLine.contains("    ")) {
+                    // 计算第一行的Y坐标
+                    renderHeight = layout.y + textPadding + (lines.indexOf(currentLine) + 3) * lineHeight;
+                    break;
+                }
+            }
+
+            if(renderHeight != -1) {
+                ThaumcraftRenderer.renderAspectIcons(
+                        content.aspects,
+                        layout.x + 4,
+                        renderHeight
+                );
+            }
         }
 
         // 如果需要分页，在底部添加换页提示

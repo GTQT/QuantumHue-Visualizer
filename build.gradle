@@ -146,8 +146,12 @@ dependencies {
     }
 
     implementation rfg.deobf("curse.maven:mixin-booter-419286:6344449")
-    implementation rfg.deobf('curse.maven:jei-238222:5846804')
     implementation rfg.deobf('curse.maven:the-one-probe-community-edition-885670:7129885')
+
+    //test
+    compileOnly rfg.deobf('curse.maven:jei-238222:5846804')
+
+    compileOnly rfg.deobf('curse.maven:mekanism-ce-unofficial-840735:7481450')
 
     compileOnly rfg.deobf("curse.maven:baubles-227083:2518667")
     compileOnly rfg.deobf("curse.maven:thaumcraft-223628:2629023")

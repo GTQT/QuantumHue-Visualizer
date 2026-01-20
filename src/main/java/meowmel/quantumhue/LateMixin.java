@@ -13,7 +13,8 @@ public class LateMixin implements ILateMixinLoader {
     @Override
     public List<String> getMixinConfigs() {
         List<String> configs = new ArrayList<>();
-        if(isModLoaded("theoneprobe"))  configs.add("mixins.quantumhue_late.json");
+        if(isModLoaded("theoneprobe"))  configs.add("mixins.quantumhue_theoneprobe.json");
+        if(isModLoaded("thaumcraft"))  configs.add("mixins.quantumhue_thaumcraft.json");
         return configs;
     }
 }
