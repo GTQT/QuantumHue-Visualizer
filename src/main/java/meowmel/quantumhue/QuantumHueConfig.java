@@ -236,6 +236,16 @@ public class QuantumHueConfig {
         })
         @Config.Name("稀有度着色")
         public boolean enableRarityColors = true;
+
+        @Config.Comment("Skip custom tooltip rendering in modded GUIs to avoid conflicts")
+        @Config.Name("Enable GUI Compatibility Mode")
+        public static boolean enableGuiCompatibility = true;
+
+        @Config.Comment("List of GUI class names to skip (wildcard support: *Drawer*)")
+        @Config.Name("Skipped GUI Patterns")
+        public static String[] skippedGuiPatterns = new String[] {
+                "*GuiDrawer*"
+        };
     }
 
     public static class TOPCustomColor {

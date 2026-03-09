@@ -1,5 +1,6 @@
 package meowmel.quantumhue.tooltips;
 
+import meowmel.quantumhue.QuantumHueConfig;
 import meowmel.quantumhue.tooltips.applecore.AppleSkinIntegration;
 import meowmel.quantumhue.tooltips.applecore.AppleSkinRenderer;
 import meowmel.quantumhue.tooltips.thaumcraft.ThaumcraftIntegration;
@@ -98,6 +99,10 @@ public class AdvancedTooltipHandler {
 
     @SubscribeEvent
     public void onRenderTooltipPre(RenderTooltipEvent.Pre event) {
+
+        if (shouldSkipCustomRender(event)) {
+            return;
+        }
         // 取消原版渲染，使用我们自定义的渲染
         event.setCanceled(true);
 
@@ -109,6 +114,20 @@ public class AdvancedTooltipHandler {
         } else {
             renderSimpleTooltip(event);
         }
+    }
+
+    private boolean shouldSkipCustomRender(RenderTooltipEvent.Pre event) {
+        if (!QuantumHueConfig.TooltipColor.enableGuiCompatibility) {
+            return false;
+        }
+
+        String screenName = Minecraft.getMinecraft().currentScreen.getClass().getName();
+        for (String pattern : QuantumHueConfig.TooltipColor.skippedGuiPatterns) {
+            if (screenName.contains(pattern.replace("*", ""))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void renderCustomItemTooltip(RenderTooltipEvent.Pre event) {
@@ -687,7 +706,8 @@ public class AdvancedTooltipHandler {
 
             // 如果不是第一页且不是最后一页，显示双向提示
             if (content.currentPage > 0 && content.currentPage < content.totalPages - 1) {
-                nextPageHint = TextFormatting.AQUA + "[Ctrl+Z 上一页] " + TextFormatting.AQUA + "[Ctrl+C 下一页]";
+                //这里可能以为页面过短导致下面一行溢出边框的问题
+                nextPageHint = TextFormatting.AQUA + "[-]";
             }
 
             font.drawStringWithShadow(nextPageHint, leftAlignedX, currentY, PAGINATION_HINT_COLOR);

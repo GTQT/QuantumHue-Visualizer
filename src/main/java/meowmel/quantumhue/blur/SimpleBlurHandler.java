@@ -21,14 +21,12 @@ public class SimpleBlurHandler {
 
     private final Minecraft mc = Minecraft.getMinecraft();
     private boolean isBlurActive = false;
-    private long lastGuiOpenTime = 0;
 
     // 缓存配置值以提高性能
     private final Set<String> blacklistCache = new HashSet<>();
     private final Set<String> whitelistCache = new HashSet<>();
     private boolean configEnabled = true;
     private boolean blurChat = true;
-    private boolean dynamicBlur = true;
     private String customShader = "shaders/post/blur.json";
     private boolean debugMode = false;
     private boolean disableOnWorldLoad = true;
@@ -45,7 +43,6 @@ public class SimpleBlurHandler {
     private void refreshConfigCache() {
         configEnabled = QuantumHueConfig.blur.enabled;
         blurChat = QuantumHueConfig.blur.blurChat;
-        dynamicBlur = QuantumHueConfig.blur.dynamicBlur;
         customShader = QuantumHueConfig.blur.customShader;
         debugMode = QuantumHueConfig.blur.debugMode;
         disableOnWorldLoad = QuantumHueConfig.blur.disableOnWorldLoad;
@@ -150,7 +147,6 @@ public class SimpleBlurHandler {
                 stopBlur();
             }
             startBlur();
-            lastGuiOpenTime = System.currentTimeMillis();
         } else if (!shouldBlur && isBlurActive) {
             stopBlur();
         }
