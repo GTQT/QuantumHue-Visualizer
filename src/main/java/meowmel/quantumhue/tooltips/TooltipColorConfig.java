@@ -1,8 +1,5 @@
 package meowmel.quantumhue.tooltips;
 
-
-// ========== 颜色配置 ==========
-
 import meowmel.quantumhue.QuantumHueConfig;
 
 public class TooltipColorConfig {
@@ -23,11 +20,11 @@ public class TooltipColorConfig {
     }
 
     public static int getRarityColor(net.minecraft.item.EnumRarity rarity) {
-        switch (rarity) {
-            case UNCOMMON: return 0xFFFFFF55; // 黄绿色
-            case RARE: return 0xFF5555FF;     // 蓝色
-            case EPIC: return 0xFFAA00AA;     // 紫色
-            default: return getBorderColor();
-        }
+        return switch (rarity) {
+            case UNCOMMON -> 0xFFFFFF55; // 黄绿色
+            case RARE -> 0xFF5555FF;     // 蓝色
+            case EPIC -> 0xFFAA00AA;     // 紫色
+            default -> getBorderColor();
+        };
     }
 }

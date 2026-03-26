@@ -50,7 +50,6 @@ public class TooltipColorHelper {
 
 
     public static int getItemNameColor(String itemName) {
-        // 保留原始逻辑，实际应使用物品稀有度
         return 0xFFFFFF;
     }
 }

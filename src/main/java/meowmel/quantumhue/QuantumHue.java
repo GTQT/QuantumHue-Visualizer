@@ -8,8 +8,10 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.logging.log4j.LogManager;
@@ -21,6 +23,13 @@ import static com.meowmel.quantumhue.Tags.MOD_ID;
 public class QuantumHue {
 
     public static final Logger LOGGER = LogManager.getLogger(Tags.MOD_NAME);
+
+    public static boolean GAME_LOADING_DONE = false;
+
+    @Mod.EventHandler
+    public void postInit(FMLPostInitializationEvent event) {
+        GAME_LOADING_DONE = true;
+    }
 
     /**
      * <a href="https://cleanroommc.com/wiki/forge-mod-development/event#overview">

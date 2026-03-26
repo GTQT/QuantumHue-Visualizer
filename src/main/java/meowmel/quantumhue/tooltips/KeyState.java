@@ -1,10 +1,22 @@
 package meowmel.quantumhue.tooltips;
 
-
 public class KeyState {
-    static final long MIN_SWITCH_INTERVAL = 200; // 200毫秒
-    boolean wasCtrlPressed = false;
-    boolean wasCPressed = false;
-    boolean wasZPressed = false;
-    long lastSwitchTime = 0;
+
+    public static final long MIN_SWITCH_INTERVAL = 150;
+
+    public boolean wasCtrlPressed;
+    public boolean wasCPressed;
+    public boolean wasZPressed;
+    public long lastSwitchTime;
+
+    public KeyState() {
+        reset();
+    }
+
+    public void reset() {
+        wasCtrlPressed = false;
+        wasCPressed = false;
+        wasZPressed = false;
+        lastSwitchTime = 0;
+    }
 }

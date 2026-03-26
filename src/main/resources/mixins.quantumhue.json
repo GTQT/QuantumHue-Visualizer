@@ -8,6 +8,14 @@
   "mixins": [],
   "server": [],
   "client": [
-    "ItemMixin"
+    "ItemMixin",
+    "GuiClickableScrolledSelectionListProxyMixin",
+    "GuiMainMenuAccessor",
+    "GuiMixin",
+    "GuiMainMenuMixin",
+    "GuiScreenMixin",
+    "GuiScrollingListMixin",
+    "GuiSlotMixin",
+    "GuiWorldSelectionMixin"
   ]
 }

@@ -7,10 +7,10 @@ import thaumcraft.common.config.ModConfig;
 import thaumcraft.common.lib.crafting.ThaumcraftCraftingManager;
 
 public class ThaumcraftIntegration {
+
     private static final boolean isThaumcraftLoaded;
 
     static {
-        // 检查Thaumcraft是否加载
         isThaumcraftLoaded = Loader.isModLoaded("thaumcraft");
     }
 
@@ -30,7 +30,6 @@ public class ThaumcraftIntegration {
         }
 
         try {
-            // 直接调用Thaumcraft API
             return ThaumcraftCraftingManager.getObjectTags(stack);
         } catch (NoClassDefFoundError | Exception e) {
             System.out.println("[QuantumHue] Thaumcraft integration disabled: " + e.getMessage());
