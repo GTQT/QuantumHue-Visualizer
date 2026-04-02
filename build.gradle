@@ -147,7 +147,9 @@ dependencies {
 
     implementation rfg.deobf("curse.maven:mixin-booter-419286:6344449")
     implementation rfg.deobf('curse.maven:the-one-probe-community-edition-885670:7129885')
-
+    implementation rfg.deobf("curse.maven:gregtech-ce-unofficial-557242:5050979")
+    implementation rfg.deobf("curse.maven:code-chicken-lib-1-8-242818:2779848")
+    api rfg.deobf("curse.maven:ctm-267602:2915363") // CTM 1.0.2.31
     //test
     implementation rfg.deobf('curse.maven:jei-238222:5846804')
 

@@ -1,6 +1,9 @@
 package meowmel.quantumhue.tooltips;
 
+import meowmel.quantumhue.tooltips.gregtech.GregtechIntegration;
 import net.minecraft.item.ItemStack;
+
+import static net.minecraftforge.fml.common.Loader.isModLoaded;
 
 public class TooltipColorHelper {
     private static final int DEFAULT_BACKGROUND_COLOR = 0xF0100010;
@@ -27,6 +30,12 @@ public class TooltipColorHelper {
         int borderStart;
         int borderEnd;
 
+        if(isModLoaded("gregtech")){
+            int color = GregtechIntegration.getColor(stack);
+            if(color != -1){
+                return new TooltipColors(bg, color, color);
+            }
+        }
         if (TooltipColorConfig.enableRarityColors() && stack != null) {
             int rarityColor = TooltipColorConfig.getRarityColor(stack.getRarity());
             borderStart = rarityColor;
