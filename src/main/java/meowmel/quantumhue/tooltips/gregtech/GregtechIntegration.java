@@ -1,6 +1,7 @@
 package meowmel.quantumhue.tooltips.gregtech;
 
 import gregtech.api.items.materialitem.MetaPrefixItem;
+import gregtech.api.items.toolitem.IGTTool;
 import gregtech.api.metatileentity.ITieredMetaTileEntity;
 import gregtech.api.metatileentity.MetaTileEntity;
 import gregtech.api.pipenet.block.material.BlockMaterialPipe;
@@ -22,6 +23,9 @@ public class GregtechIntegration {
     };
 
     public static int getColor(ItemStack stack) {
+        if (stack.getItem() instanceof IGTTool tool){
+            return 0xFF000000 | (tool.getToolMaterial(stack).getMaterialRGB() & 0x00FFFFFF);
+        }
         Material material = extractMaterial(stack);
         if (material != null) {
             return 0xFF000000 | (material.getMaterialRGB() & 0x00FFFFFF);

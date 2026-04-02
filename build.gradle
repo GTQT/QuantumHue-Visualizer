@@ -150,6 +150,7 @@ dependencies {
     implementation rfg.deobf("curse.maven:gregtech-ce-unofficial-557242:5050979")
     implementation rfg.deobf("curse.maven:code-chicken-lib-1-8-242818:2779848")
     api rfg.deobf("curse.maven:ctm-267602:2915363") // CTM 1.0.2.31
+    implementation rfg.deobf("curse.maven:ae2-extended-life-570458:6302098") // AE2FC 2.6.6
     //test
     implementation rfg.deobf('curse.maven:jei-238222:5846804')
 
