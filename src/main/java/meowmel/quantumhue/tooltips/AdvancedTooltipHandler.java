@@ -20,6 +20,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
+import thaumcraft.api.aspects.AspectList;
 
 import java.util.List;
 
@@ -29,6 +30,9 @@ public class AdvancedTooltipHandler {
     private static String currentItemId = null;
     private static int currentPage = 0;
     private static KeyState currentKeyState = new KeyState();
+    private static TooltipColors cachedColors = null;
+    private static AspectList cachedAspects = null;
+    private static AppleSkinIntegration.FoodInfo cachedFoodInfo = null;
 
     private final TooltipContentExtractor contentExtractor = new TooltipContentExtractor();
     private final TooltipLayoutManager layoutManager = new TooltipLayoutManager();
@@ -40,7 +44,7 @@ public class AdvancedTooltipHandler {
         return currentPage;
     }
 
-    public static void setCurrentPage(int page){
+    public static void setCurrentPage(int page) {
         currentPage = page;
     }
 
@@ -51,27 +55,6 @@ public class AdvancedTooltipHandler {
 
         if (modName != null && !modInfoHelper.isModNameAlreadyPresent(event.getToolTip(), modName)) {
             event.getToolTip().add(TextFormatting.YELLOW + modName);
-        }
-    }
-
-    @SubscribeEvent
-    public void onRenderTooltipColor(RenderTooltipEvent.Color event) {
-        if (event.getStack().isEmpty()) return;
-        if (!TooltipColorConfig.isEnabled()) return;
-
-        event.setBackground(TooltipColorConfig.getBackgroundColor());
-        applyBorderColor(event, event.getStack());
-    }
-
-    private void applyBorderColor(RenderTooltipEvent.Color event, ItemStack stack) {
-        if (TooltipColorConfig.enableRarityColors()) {
-            int rarityColor = TooltipColorConfig.getRarityColor(stack.getRarity());
-            event.setBorderStart(rarityColor);
-            event.setBorderEnd(rarityColor);
-        } else {
-            int borderColor = TooltipColorConfig.getBorderColor();
-            event.setBorderStart(borderColor);
-            event.setBorderEnd(borderColor);
         }
     }
 
@@ -106,6 +89,24 @@ public class AdvancedTooltipHandler {
             currentItemId = itemId;
             currentPage = 0;
             currentKeyState = new KeyState();
+
+            cachedColors = TooltipColorHelper.getTooltipColors(stack);
+            if (ThaumcraftIntegration.isThaumcraftAvailable()) {
+                cachedAspects = ThaumcraftIntegration.getAspects(stack);
+            } else {
+                cachedAspects = null;
+            }
+            if (AppleSkinIntegration.isAppleSkinAvailable()) {
+                EntityPlayer player = Minecraft.getMinecraft().player;
+                cachedFoodInfo = AppleSkinIntegration.getFoodInfo(stack, player);
+            } else {
+                cachedFoodInfo = null;
+            }
+        }
+
+        TooltipColors colors = cachedColors;
+        if (colors == null) {
+            colors = TooltipColorHelper.getTooltipColors(stack);
         }
 
         TooltipContent rawContent = contentExtractor.extractTooltipContent(event.getLines(), stack);
@@ -114,23 +115,21 @@ public class AdvancedTooltipHandler {
 
         TooltipContent content = new TooltipContent(rawContent.itemName, rawContent.modName, wrappedLines);
 
-        if (ThaumcraftIntegration.isThaumcraftAvailable()) {
-            content.aspects = ThaumcraftIntegration.getAspects(stack);
+        if (ThaumcraftIntegration.isThaumcraftAvailable() && cachedAspects != null) {
+            content.aspects = cachedAspects;
             boolean isShiftKeyDown = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
             boolean defaultShowAspects = ThaumcraftIntegration.shouldShowAspectsByDefault();
             content.showAspects = (isShiftKeyDown != defaultShowAspects);
         }
 
-        if (AppleSkinIntegration.isAppleSkinAvailable()) {
-            EntityPlayer player = Minecraft.getMinecraft().player;
-            content.foodInfo = AppleSkinIntegration.getFoodInfo(stack, player);
-            content.showFoodInfo = content.foodInfo != null && AppleSkinIntegration.shouldShowFoodInfo();
+        if (AppleSkinIntegration.isAppleSkinAvailable() && cachedFoodInfo != null) {
+            content.foodInfo = cachedFoodInfo;
+            content.showFoodInfo = AppleSkinIntegration.shouldShowFoodInfo();
         }
 
         paginationHandler.calculatePagination(content, event.getScreenHeight(), currentKeyState);
 
         TooltipLayout layout = layoutManager.calculateLayout(content, event);
-        TooltipColors colors = TooltipColorHelper.getTooltipColors(stack);
 
         GlStateManager.pushMatrix();
         GLStateHelper.setupGLState();
