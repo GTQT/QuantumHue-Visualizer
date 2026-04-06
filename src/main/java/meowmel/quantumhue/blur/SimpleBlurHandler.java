@@ -1,173 +1,72 @@
 package meowmel.quantumhue.blur;
 
-import meowmel.quantumhue.QuantumHue;
 import meowmel.quantumhue.QuantumHueConfig;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiChat;
+import net.minecraft.client.gui.*;
+import net.minecraft.client.gui.achievement.GuiStats;
+import net.minecraft.client.gui.advancements.GuiScreenAdvancements;
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.gui.inventory.GuiContainerCreative;
+import net.minecraft.client.gui.inventory.GuiFurnace;
+import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.GuiOpenEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.event.world.WorldEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * 配置驱动的模糊效果处理器 - 仅在游戏内场景启用
- *
- * 启用场景：背包、聊天栏、容器界面、成就/统计等游戏内GUI
- * 禁用场景：主菜单、世界选择、模组列表、选项等菜单级GUI
- */
 @SideOnly(Side.CLIENT)
 public class SimpleBlurHandler {
 
+    private static final Logger LOGGER = LogManager.getLogger(SimpleBlurHandler.class);
     private final Minecraft mc = Minecraft.getMinecraft();
     private boolean isBlurActive = false;
 
-    private final Set<String> blacklistCache = new HashSet<>();
-    private final Set<String> whitelistCache = new HashSet<>();
-
     private boolean configEnabled = true;
-    private boolean blurChat = true;
     private String customShader = "shaders/post/blur.json";
-    private boolean debugMode = false;
-    private boolean resetOnGuiSwitch = true;
-    private boolean gameOnlyMode = true;
+
+    // 允许触发模糊的 GUI 白名单
+    private final Set<Class<? extends GuiScreen>> allowedGuis = new HashSet<>();
 
     public SimpleBlurHandler() {
         refreshConfigCache();
+        // 注册允许的 GUI
+        allowedGuis.add(GuiIngameMenu.class);
+        allowedGuis.add(GuiOptions.class);
+        allowedGuis.add(GuiVideoSettings.class);
+        allowedGuis.add(GuiLanguage.class);
+        allowedGuis.add(GuiControls.class);
+        allowedGuis.add(GuiCustomizeSkin.class);
+        allowedGuis.add(ScreenChatOptions.class);
+        allowedGuis.add(GuiSnooper.class);
+        allowedGuis.add(GuiScreenResourcePacks.class);
+        allowedGuis.add(GuiScreenOptionsSounds.class);
+        allowedGuis.add(GuiScreenRealmsProxy.class);
+        allowedGuis.add(GuiChat.class);
+        allowedGuis.add(GuiInventory.class);
+        allowedGuis.add(GuiContainerCreative.class);
+        allowedGuis.add(GuiContainer.class); // 已覆盖所有基础容器（含GuiFurnace等）
+        allowedGuis.add(GuiScreenAdvancements.class);
+        allowedGuis.add(GuiShareToLan.class);
+        allowedGuis.add(GuiStats.class);
     }
 
     /**
      * 刷新配置缓存
      */
     private void refreshConfigCache() {
-        configEnabled = QuantumHueConfig.blur.enabled;
-        blurChat = QuantumHueConfig.blur.blurChat;
-        customShader = QuantumHueConfig.blur.customShader;
-        debugMode = QuantumHueConfig.blur.debugMode;
-        resetOnGuiSwitch = QuantumHueConfig.blur.resetOnGuiSwitch;
-
-        blacklistCache.clear();
-        blacklistCache.addAll(Arrays.asList(QuantumHueConfig.blur.blacklist));
-
-        whitelistCache.clear();
-        whitelistCache.addAll(Arrays.asList(QuantumHueConfig.blur.whitelist));
-    }
-
-    /**
-     * 判断是否是游戏内相关的GUI
-     */
-    private boolean isInGameScreen(Object gui) {
-        if (gui == null || mc.world == null) {
-            return false;
+        try {
+            configEnabled = QuantumHueConfig.blur.enabled;
+            customShader = QuantumHueConfig.blur.customShader;
+        } catch (Exception ignored) {
+            // 防止模组初始化阶段配置未就绪
         }
-
-        String className = gui.getClass().getName();
-
-        if (gui instanceof GuiContainer) {
-            return true;
-        }
-        if (gui instanceof GuiChat) {
-            return blurChat;
-        }
-
-        if (className.contains("GuiAchievements") ||
-                className.contains("GuiStats") ||
-                className.contains("GuiScreenRecipeBook") ||
-                className.contains("GuiScreenBook") ||
-                className.contains("GuiBeacon") ||
-                className.contains("GuiAnvil") ||
-                className.contains("GuiEnchantment") ||
-                className.contains("GuiMerchant") ||
-                className.contains("GuiHorse") ||
-                className.contains("GuiScreenDemo")) {
-            return true;
-        }
-
-        if (className.contains("ConfigGui") && !className.contains("net.minecraftforge")) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * 判断是否是应该排除的菜单级GUI
-     */
-    private boolean isMenuScreen(Object gui) {
-        if (gui == null) {
-            return true;
-        }
-
-        String className = gui.getClass().getName();
-
-        if (className.equals("net.minecraft.client.gui.GuiMainMenu") ||
-                className.equals("net.minecraft.client.gui.GuiWorldSelection") ||
-                className.equals("net.minecraft.client.gui.GuiMultiplayer") ||
-                className.equals("net.minecraft.client.gui.GuiSelectWorld") ||
-                className.equals("net.minecraftforge.fml.client.GuiModList") ||
-                className.equals("net.minecraft.client.gui.GuiOptions") ||
-                className.equals("net.minecraft.client.gui.GuiControls") ||
-                className.equals("net.minecraft.client.gui.GuiVideoSettings") ||
-                className.equals("net.minecraft.client.gui.GuiScreenOptionsSounds") ||
-                className.equals("net.minecraft.client.gui.GuiLanguage") ||
-                className.equals("net.minecraft.client.gui.GuiSnooper") ||
-                className.equals("net.minecraft.client.gui.GuiShareToLan") ||
-                className.equals("net.minecraft.client.gui.GuiDisconnected") ||
-                className.equals("net.minecraft.client.gui.GuiScreenRealmsProxy")) {
-            return true;
-        }
-
-        if (className.contains("MainMenu") ||
-                className.contains("WorldSelection") ||
-                className.contains("ModList")) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * 检查GUI是否应该启用模糊（最终决策）
-     */
-    private boolean shouldBlur(Object gui) {
-        if (!configEnabled || gui == null) {
-            return false;
-        }
-
-        String guiClassName = gui.getClass().getName();
-
-        if (blacklistCache.contains(guiClassName)) {
-            return false;
-        }
-
-        if (!whitelistCache.isEmpty()) {
-            return whitelistCache.contains(guiClassName);
-        }
-
-        if (gameOnlyMode) {
-            if (isMenuScreen(gui)) {
-                return false;
-            }
-            return isInGameScreen(gui);
-        }
-
-        if (!blurChat && guiClassName.contains("Chat")) {
-            return false;
-        }
-        if (guiClassName.contains("GuiDownloadTerrain")) {
-            return false;
-        }
-        if (guiClassName.contains("GuiDebug")) {
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -178,195 +77,91 @@ public class SimpleBlurHandler {
     }
 
     /**
-     * 开始模糊效果
-     */
-    private void startBlur() {
-        if (!configEnabled) return;
-
-        try {
-            if (!isBlurActive) {
-                mc.entityRenderer.loadShader(getShaderPath());
-                isBlurActive = true;
-
-                if (debugMode) {
-                    QuantumHue.LOGGER.info("[Blur] Effect started for: " +
-                            (mc.currentScreen != null ? mc.currentScreen.getClass().getSimpleName() : "null"));
-                }
-            }
-        } catch (Exception e) {
-            if (debugMode) {
-                QuantumHue.LOGGER.error("[Blur] Failed to load shader: " + e.getMessage(), e);
-            }
-        }
-    }
-
-    /**
-     * 停止模糊效果
-     */
-    private void stopBlur() {
-        if (isBlurActive) {
-            mc.entityRenderer.stopUseShader();
-            isBlurActive = false;
-
-            if (debugMode) {
-                QuantumHue.LOGGER.info("[Blur] Effect stopped");
-            }
-        }
-    }
-
-    /**
-     * 监听世界加载事件，确保状态同步
-     */
-    @SubscribeEvent
-    public void onWorldLoad(net.minecraftforge.event.world.WorldEvent.Load event) {
-        if (debugMode) {
-            QuantumHue.LOGGER.info("[Blur] World loaded, refreshing state");
-        }
-        refreshConfigCache();
-        if (gameOnlyMode && mc.currentScreen != null && isInGameScreen(mc.currentScreen)) {
-            startBlur();
-        }
-    }
-
-    /**
-     * 监听世界卸载事件，强制关闭模糊
-     */
-    @SubscribeEvent
-    public void onWorldUnload(net.minecraftforge.event.world.WorldEvent.Unload event) {
-        if (debugMode) {
-            QuantumHue.LOGGER.info("[Blur] World unloaded, disabling blur");
-        }
-        if (gameOnlyMode) {
-            stopBlur();
-        }
-    }
-
-    /**
-     * 监听GUI打开事件，控制模糊启用/禁用
+     * 监听GUI打开/关闭事件，精准控制模糊开关
      */
     @SubscribeEvent
     public void onGuiOpen(GuiOpenEvent event) {
+        refreshConfigCache();
+
+        // 配置关闭时强制清理模糊
         if (!configEnabled) {
-            if (isBlurActive) stopBlur();
+            if (isBlurActive) disableBlur();
             return;
         }
 
-        refreshConfigCache();
+        GuiScreen openedGui = event.getGui();
+        boolean shouldBlur = false;
 
-        Object gui = event.getGui();
-        boolean shouldEnable = shouldBlur(gui);
-
-        if (debugMode && gui != null) {
-            QuantumHue.LOGGER.info("[Blur] GUI: " + gui.getClass().getSimpleName() +
-                    " | InGame: " + isInGameScreen(gui) +
-                    " | Menu: " + isMenuScreen(gui) +
-                    " | ShouldBlur: " + shouldEnable);
+        if (openedGui != null) {
+            LOGGER.debug("[QuantumHue] GUI opened: {}", openedGui.getClass().getName());
+            for (Class<? extends GuiScreen> allowedClass : allowedGuis) {
+                if (allowedClass.isInstance(openedGui)) {
+                    shouldBlur = true;
+                    break;
+                }
+            }
         }
 
-        if (shouldEnable && !isBlurActive) {
-            if (resetOnGuiSwitch) {
-                stopBlur();
-            }
-            startBlur();
-        } else if (!shouldEnable && isBlurActive) {
-            stopBlur();
+        // 状态切换：符合条件开启，否则关闭
+        if (shouldBlur) {
+            enableBlur();
+        } else {
+            disableBlur();
         }
     }
 
     /**
-     * 监听游戏内渲染事件，处理动态切换
+     * 监听世界卸载事件（切换维度/退出存档），防止服务端线程调用 GL 崩溃
      */
     @SubscribeEvent
-    public void onRenderGameOverlay(RenderGameOverlayEvent.Pre event) {
-        if (!gameOnlyMode || !configEnabled) return;
-
-        if (mc.currentScreen == null && isBlurActive) {
-            stopBlur();
-        }
+    public void onWorldUnload(WorldEvent.Unload event) {
+        // 仅处理客户端世界
+        if (!event.getWorld().isRemote) return;
+        disableBlur();
     }
 
     /**
-     * 手动启用模糊效果
+     * 启用模糊
      */
     public void enableBlur() {
-        if (!isBlurActive && configEnabled) {
-            startBlur();
-        }
+        runOnClientThread(() -> {
+            if (configEnabled && !isBlurActive) {
+                try {
+                    mc.entityRenderer.loadShader(getShaderPath());
+                    isBlurActive = true;
+                    LOGGER.debug("[QuantumHue] 模糊效果已启用");
+                } catch (Exception e) {
+                    LOGGER.error("[QuantumHue] 模糊着色器加载失败: {}", e.getMessage());
+                }
+            }
+        });
     }
 
     /**
-     * 手动禁用模糊效果
+     * 禁用模糊
      */
     public void disableBlur() {
-        if (isBlurActive) {
-            stopBlur();
-        }
-    }
-
-    /**
-     * 切换模糊效果状态
-     */
-    public void toggleBlur() {
-        if (isBlurActive) {
-            disableBlur();
-        } else {
-            enableBlur();
-        }
-    }
-
-    /**
-     * 设置游戏内模式
-     */
-    public void setGameOnlyMode(boolean enabled) {
-        this.gameOnlyMode = enabled;
-        if (debugMode) {
-            QuantumHue.LOGGER.info("[Blur] GameOnlyMode set to: " + enabled);
-        }
-        if (mc.currentScreen != null) {
-            if (shouldBlur(mc.currentScreen) && !isBlurActive) {
-                startBlur();
-            } else if (!shouldBlur(mc.currentScreen) && isBlurActive) {
-                stopBlur();
+        runOnClientThread(() -> {
+            if (isBlurActive) {
+                try {
+                    mc.entityRenderer.stopUseShader();
+                    isBlurActive = false;
+                    LOGGER.debug("[QuantumHue] 模糊效果已禁用");
+                } catch (Exception e) {
+                    LOGGER.error("[QuantumHue] 模糊着色器停止失败: {}", e.getMessage());
+                }
             }
+        });
+    }
+
+    /**
+     * 确保所有 OpenGL 操作仅在 Minecraft 客户端主线程执行
+     */
+    private void runOnClientThread(Runnable task) {
+        if (mc.isCallingFromMinecraftThread()) {
+            task.run();
+        } else {
+            mc.addScheduledTask(task);
         }
-    }
-
-    /**
-     * 添加临时黑名单项
-     */
-    public void addToBlacklist(String guiClassName) {
-        blacklistCache.add(guiClassName);
-        if (debugMode) {
-            QuantumHue.LOGGER.info("[Blur] Added to blacklist: " + guiClassName);
-        }
-    }
-
-    /**
-     * 从黑名单中移除
-     */
-    public void removeFromBlacklist(String guiClassName) {
-        blacklistCache.remove(guiClassName);
-    }
-
-    /**
-     * 清空运行时黑名单
-     */
-    public void clearRuntimeBlacklist() {
-        blacklistCache.clear();
-        blacklistCache.addAll(Arrays.asList(QuantumHueConfig.blur.blacklist));
-    }
-
-    /**
-     * 获取当前模糊状态
-     */
-    public boolean isBlurActive() {
-        return isBlurActive;
-    }
-
-    /**
-     * 获取当前模式
-     */
-    public boolean isGameOnlyMode() {
-        return gameOnlyMode;
     }
 }
