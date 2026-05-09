@@ -1,0 +1,14 @@
+{
+    "id": "steam_basics",
+    "title": "Getting Started with Steam",
+    "icon": "machine:steam_macerator_bronze",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Getting Started with Steam" },
+        { "type": "TEXT", "text": "Before electric machines, you progress through the Steam Age. Steam machines are bronze or steel variants powered by steam piped from boilers. The Steam Macerator, Steam Compressor, Steam Alloy Smelter, Steam Forge Hammer, Steam Furnace, and Steam Extractor cover basic processing needs." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Regular Steam Machines (bronze) are twice as slow as indicated by JEI. High Pressure Steam Machines (steel) run at normal speed with no duration penalty. You unlock High Pressure variants once you obtain Steel." }
+    ]
+}

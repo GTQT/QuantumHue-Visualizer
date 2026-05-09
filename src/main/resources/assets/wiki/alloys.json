@@ -1,0 +1,12 @@
+{
+    "id": "alloys",
+    "title": "Alloys and Mixing",
+    "icon": "ore:ingot:bronze",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Alloys and Mixing" },
+        { "type": "TEXT", "text": "Many materials are alloys: Bronze (Copper + Tin), Steel (Iron + carbon source), Red Alloy (Copper + Redstone), Invar (Iron + Nickel). The Alloy Smelter handles most, while the Electric Blast Furnace handles high-temperature alloys like Stainless Steel and Tungstensteel." }
+    ]
+}

@@ -1,7 +1,5 @@
 package meowmel.quantumhue;
 
-
-import mcjty.theoneprobe.TheOneProbe;
 import mcjty.theoneprobe.config.Config;
 import zone.rong.mixinbooter.ILateMixinLoader;
 

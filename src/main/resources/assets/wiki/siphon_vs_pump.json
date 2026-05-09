@@ -1,0 +1,16 @@
+{
+    "id": "siphon_vs_pump",
+    "title": "Siphon vs Pump",
+    "icon": "machine_array:pipe_pump:0",
+    "tier": 1,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Siphon vs Pump" },
+        { "type": "TEXT", "text": "Both siphons and pumps move fluid upward, but they work differently:" },
+        { "type": "GAP" },
+        { "type": "TABLE", "text": "Feature\tSiphon\tPump\nPower\tPassive (no energy)\tActive (costs EU/t)\nPressure\tWeak (fill-level based)\tStrong (can reach 32,000 mBar)\nHeight Limit\t~16 blocks\tUp to 320 blocks (IV)\nBest for\tSmall early setups\tMain production lines\nCost\tJust pipes\tRequires machine+energy\nReliability\tFluctuates with fill\tStable + adjustable" },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "For reliable, high-throughput fluid systems, always use pumps. Siphons are an elegant solution for simple gravity-fed designs or when you do not yet have access to pump technology." }
+    ]
+}

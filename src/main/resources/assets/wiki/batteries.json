@@ -1,0 +1,14 @@
+{
+    "id": "batteries",
+    "title": "Batteries",
+    "icon": "metaitem:battery_lv_lithium",
+    "tier": 2,
+    "discoveryHint": "You need to discover electronics first.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Batteries" },
+        { "type": "TEXT", "text": "Batteries store EU for portable use and for power buffering. They come in cadmium, lithium, and sodium chemistries at various tiers. Charge them in a Battery Buffer or Charger." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Battery Buffers accept batteries and output stored energy to the network. A Battery Buffer with multiple batteries provides multiple amps, which is essential for powering multiblocks that need more than 1A." }
+    ]
+}

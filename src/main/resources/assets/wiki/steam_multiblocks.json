@@ -1,0 +1,14 @@
+{
+    "id": "steam_multiblocks",
+    "title": "Steam Multiblocks",
+    "icon": "machine:steam_grinder",
+    "tier": 1,
+    "discoveryHint": "Build a steam machine to discover this page.",
+    "discoveryTag": "steam",
+    "sections": [
+        { "type": "HEADING", "text": "Steam Multiblocks" },
+        { "type": "TEXT", "text": "The Steam Grinder and Steam Oven are your first multiblock machines. The Steam Grinder is the main reason to start ore processing, as it can macerate large batches of ore at once." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "The Steam Oven effortlessly smelts large quantities of items using steam. Both require a specific block structure built around the controller." }
+    ]
+}

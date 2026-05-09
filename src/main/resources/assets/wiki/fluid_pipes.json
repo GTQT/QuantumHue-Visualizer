@@ -1,0 +1,16 @@
+{
+    "id": "fluid_pipes",
+    "title": "Fluid Pipes",
+    "icon": "ore:pipeNormalFluid:steel",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Fluid Pipes" },
+        { "type": "TEXT", "text": "Fluid pipes transport liquids and gases between machines and tanks. Each material has a throughput limit, temperature rating, and channel count. Larger pipe sizes carry more fluid per tick. Some materials support multiple channels, allowing different fluids through the same pipe." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Potin fluid pipes have very high throughput for their cost and material tier. Wooden pipes burn if they carry steam." },
+        { "type": "GAP" },
+        { "type": "TABLE", "text": "Size\tThroughput Multiplier\nTiny\t1x\nSmall\t2x\nNormal\t6x\nLarge\t12x\nHuge\t24x" }
+    ]
+}

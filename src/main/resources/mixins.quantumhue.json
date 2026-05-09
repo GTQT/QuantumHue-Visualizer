@@ -16,6 +16,9 @@
     "GuiScreenMixin",
     "GuiScrollingListMixin",
     "GuiSlotMixin",
-    "GuiWorldSelectionMixin"
+    "GuiWorldSelectionMixin",
+    "MixinGuiScrollingList",
+    "MixinMinecraft",
+    "MixinGuiSlot"
   ]
 }

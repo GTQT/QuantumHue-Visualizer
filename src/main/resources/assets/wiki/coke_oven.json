@@ -1,0 +1,12 @@
+{
+    "id": "coke_oven",
+    "title": "Coke Oven",
+    "icon": "machine:coke_oven",
+    "tier": 1,
+    "discoveryHint": "Reach the steam age to see this page.",
+    "discoveryTag": "steam",
+    "sections": [
+        { "type": "HEADING", "text": "Coke Oven" },
+        { "type": "TEXT", "text": "The Coke Oven turns Coal into Coke (which burns longer) and produces Creosote Oil as a byproduct. It can also convert Charcoal from Wood. Creosote is useful as a fuel and for producing Treated Wood." }
+    ]
+}

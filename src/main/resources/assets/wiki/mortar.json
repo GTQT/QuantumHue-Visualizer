@@ -1,0 +1,12 @@
+{
+    "id": "mortar",
+    "title": "Mortar",
+    "icon": "tool:mortar:iron",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Mortar" },
+        { "type": "TEXT", "text": "The Mortar is a crafting tool that grinds materials into dust form by hand. It is the earliest way to process ores into dust before you have a Macerator. Essential for early game material processing." }
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "id": "recipe_maps",
+    "title": "Recipe Types",
+    "icon": "machine_array:chemical_reactor:1",
+    "tier": 1,
+    "discoveryHint": "Use electric machines to see this page.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Recipe Types" },
+        { "type": "TEXT", "text": "Each machine type has a recipe map containing all recipes it can perform. Recipe maps define inputs, outputs, energy cost, and duration. JEI shows all available recipes for any machine. Some recipe maps are shared between single-block and multiblock versions." }
+    ]
+}

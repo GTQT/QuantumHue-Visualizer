@@ -1,0 +1,12 @@
+{
+    "id": "hammer",
+    "title": "Hammer",
+    "icon": "tool:hard_hammer:iron",
+    "tier": 0,
+    "discoveryHint": "Craft a Hammer to discover this page.",
+    "discoveryTag": "hammer",
+    "sections": [
+        { "type": "HEADING", "text": "Hammer" },
+        { "type": "TEXT", "text": "The Hammer is a crafting tool used for many early game recipes. It also works as a mining tool for ores, crushing them directly into crushed forms in the world. Tools can be made from many different materials, not just Iron. Wrought Iron gives 50% more durability." }
+    ]
+}

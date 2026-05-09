@@ -1,0 +1,14 @@
+{
+    "id": "machine_basics",
+    "title": "Machine Basics",
+    "icon": "machine_array:electric_furnace:1",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Machine Basics" },
+        { "type": "TEXT", "text": "Single-block machines are the workhorses of GregTech. Each performs a specific recipe type and is available across multiple voltage tiers. Higher tiers process recipes faster through overclocking." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Machines have input and output slots for items and fluids. They draw energy continuously while processing. If power is interrupted, the recipe pauses but does not reset." }
+    ]
+}

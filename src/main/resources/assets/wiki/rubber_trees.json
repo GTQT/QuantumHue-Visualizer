@@ -1,0 +1,12 @@
+{
+    "id": "rubber_trees",
+    "title": "Rubber Trees",
+    "icon": "ore:dust:rubber",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Rubber Trees" },
+        { "type": "TEXT", "text": "Rubber trees generate naturally and produce Sticky Resin when cut. You do not need a Treetap; just cutting down the tree gives resin. Smelt or centrifuge the resin into Rubber. Rubber is used for cable insulation and many LV-tier components." }
+    ]
+}

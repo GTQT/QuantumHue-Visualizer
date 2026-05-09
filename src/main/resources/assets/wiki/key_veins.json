@@ -1,0 +1,14 @@
+{
+    "id": "key_veins",
+    "title": "Key Ore Veins",
+    "icon": "ore:dust:magnetite",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Key Ore Veins" },
+        { "type": "TEXT", "text": "Magnetite veins are the main source of Iron, plus some Gold and Vanadium. Chalcopyrite veins provide Copper and Tin. Redstone veins give Redstone, Ruby, Chrome, and Mercury. Sapphire veins are a source of Aluminium. Galena veins provide Lead and Silver." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Coal veins are common. Lapis veins give Lapis Lazuli, Aluminium, Sodium, and Chlorine. Nether veins include Sulfur and Quartz. Later you will need Bauxite (Aluminium, Titanium, Gallium), Sheldonite (Platinum group metals), and Naquadah veins." }
+    ]
+}

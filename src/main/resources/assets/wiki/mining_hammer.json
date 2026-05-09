@@ -1,0 +1,12 @@
+{
+    "id": "mining_hammer",
+    "title": "Mining Hammer",
+    "icon": "tool:mining_hammer:iron",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Mining Hammer" },
+        { "type": "TEXT", "text": "The Mining Hammer is a 3x3 pickaxe. It mines a 3x3 area in front of you, making it extremely useful for mining through ore veins quickly. Its durability wears down faster than a regular pickaxe, so consider making it from a durable material like Diamond or Steel." }
+    ]
+}

@@ -3,7 +3,11 @@ package meowmel.quantumhue;
 import com.meowmel.quantumhue.Tags;
 import meowmel.quantumhue.biomeInfo.BiomeInfoEventHandler;
 import meowmel.quantumhue.blur.SimpleBlurHandler;
+import meowmel.quantumhue.command.CommandWiki;
+import meowmel.quantumhue.network.PacketHandler;
 import meowmel.quantumhue.tooltips.AdvancedTooltipHandler;
+import meowmel.quantumhue.wiki.WikiScreen;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
@@ -12,7 +16,11 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.InputEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -38,7 +46,14 @@ public class QuantumHue {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         LOGGER.info("Hello From {}!", Tags.MOD_NAME);
+        PacketHandler.init();
     }
+
+    @Mod.EventHandler
+    public void serverStart(FMLServerStartingEvent event) {
+        event.registerServerCommand(new CommandWiki());
+    }
+
 
     @SubscribeEvent
     public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {

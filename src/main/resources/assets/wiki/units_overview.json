@@ -1,0 +1,14 @@
+{
+    "id": "units_overview",
+    "title": "Units Overview",
+    "icon": "item:minecraft:paper",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Units Overview" },
+        { "type": "TEXT", "text": "Fluids are measured in millibuckets (mB). One nugget is 16 mB of molten material, one ingot is 144 mB, one gem is 250 mB, one bucket is 1000 mB, and one block is 1296 mB." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Time is measured in ticks (t). Each tick is 1/20 of an in-game second. Energy is measured in EU (Energy Units). Power is EU/t. Voltage tiers correspond to specific EU/t values: LV is 32, MV is 128, and so on." }
+    ]
+}

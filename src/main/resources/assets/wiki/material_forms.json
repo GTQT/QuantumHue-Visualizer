@@ -1,0 +1,14 @@
+{
+    "id": "material_forms",
+    "title": "Forms and Prefixes",
+    "icon": "ore:plate:steel",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Forms and Prefixes" },
+        { "type": "TEXT", "text": "Each material form is called a prefix. Not every material has every form. Metals typically have ingots, plates, rods, and wires. Gems have gem and lens forms. The material's properties determine which forms exist." },
+        { "type": "GAP" },
+        { "type": "TABLE", "text": "Prefix\tExample\tNotes\ningot\tSteel Ingot\tBase metal form\ndust\tGold Dust\tMacerator output\nplate\tIron Plate\tBender or hammer\nrod\tBronze Rod\tLathe output\ngear\tBrass Gear\tMachine recipes\nwire\tCopper Wire\tWiremill output\npipe\tSteel Pipe\tFluid transport\nnugget\tIron Nugget\t1/9 of ingot, 16 mB" }
+    ]
+}

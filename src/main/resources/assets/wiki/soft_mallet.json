@@ -1,0 +1,12 @@
+{
+    "id": "soft_mallet",
+    "title": "Soft Mallet",
+    "icon": "tool:soft_mallet:wood",
+    "tier": 1,
+    "discoveryHint": "Craft a Soft Mallet to learn about it.",
+    "discoveryTag": "soft_mallet",
+    "sections": [
+        { "type": "HEADING", "text": "Soft Mallet" },
+        { "type": "TEXT", "text": "The Soft Mallet toggles machines on and off. Right-click a machine to pause or resume its operation. This is useful for stopping a machine without disconnecting power. It also toggles transformer direction between step-up and step-down." }
+    ]
+}

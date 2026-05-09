@@ -1,0 +1,16 @@
+{
+    "id": "cables_wires",
+    "title": "Cables and Wires",
+    "icon": "ore:cableGtSingle:tin",
+    "tier": 1,
+    "discoveryHint": "You need to reach the LV age first.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Cables and Wires" },
+        { "type": "TEXT", "text": "Wires carry EU between machines but suffer energy loss per block. Cables are insulated wires that do not shock players. Each material has a voltage limit, a loss-per-block value, and an amperage capacity." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Sending voltage above a wire's rating will burn it. Sending more amps than the amperage limit will also burn it. Larger wire bundles carry more amps: single (1A), double (2A), quadruple (4A), octal (8A), hex (16A)." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "GT6-style cables are enabled: placing cables only connects to the block you placed against. Use a Wire Cutter to open connections on other sides. GTCEu cables have native RF support at a 4:1 (RF:EU) ratio." }
+    ]
+}

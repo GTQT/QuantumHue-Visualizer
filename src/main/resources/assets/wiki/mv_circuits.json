@@ -1,0 +1,12 @@
+{
+    "id": "mv_circuits",
+    "title": "MV Circuits",
+    "icon": "metaitem:integrated_circuit_mv",
+    "tier": 3,
+    "discoveryHint": "Reach MV age to learn about MV circuits.",
+    "discoveryTag": "mv",
+    "sections": [
+        { "type": "HEADING", "text": "MV Circuits" },
+        { "type": "TEXT", "text": "MV circuits use the Good Circuit Board, which is more complex to produce. Diodes appear at this tier. The Circuit Assembler becomes essential from MV onward, as all future circuits are made in it. It also makes cheaper LV circuits." }
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "id": "processing_array",
+    "title": "Processing Array",
+    "icon": "machine:processing_array",
+    "tier": 5,
+    "discoveryHint": "Reach EV to learn about the Processing Array.",
+    "discoveryTag": "ev",
+    "sections": [
+        { "type": "HEADING", "text": "Processing Array" },
+        { "type": "TEXT", "text": "The Processing Array accepts single-block machines in its inventory and runs their recipes as if they were multiblock-parallel. This is a powerful way to scale up production without building duplicate machines." }
+    ]
+}

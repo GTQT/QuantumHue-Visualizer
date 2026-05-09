@@ -1,0 +1,14 @@
+{
+    "id": "pressure_config",
+    "title": "Configuration",
+    "icon": "item:minecraft:writable_book",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Pressure Configuration" },
+        { "type": "TEXT", "text": "Pressure settings are in the GregTech config under the machines section." },
+        { "type": "GAP" },
+        { "type": "TABLE", "text": "Setting\tDefault\tDescription\nenablePressureSystem\ttrue\tMaster toggle\ngravityPenaltyPerBlock\t100\tmBar cost per block up\nmaxFlowPerTick\t8000\tMax fluid transfer per tick (mB)\nminimumFlowThreshold\t10\tMin pressure delta for flow\nburstCountdown\t100\tTicks before burst\ndefaultPipeFriction\t10\tBase friction value\nenableSiphon\ttrue\tAllow siphoning\nmaxSiphonHeight\t16\tMax siphon height (blocks)\nsiphonEfficiency\t0.5\tSiphon strength multiplier" }
+    ]
+}

@@ -1,0 +1,14 @@
+{
+    "id": "circuit_overview",
+    "title": "Circuit Overview",
+    "icon": "metaitem:vacuum_tube",
+    "tier": 1,
+    "discoveryHint": "Craft circuit components to learn about circuits.",
+    "discoveryTag": "circuit",
+    "sections": [
+        { "type": "HEADING", "text": "Circuit Overview" },
+        { "type": "TEXT", "text": "Each voltage tier has corresponding circuits. The first circuits are Vacuum Tube-based (ULV). LV circuits use Electronic Circuits on Coated Circuit Boards. MV uses Good Electronic Circuits. Each tier has multiple circuit levels with varying costs and complexity." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Circuit crafting has four key components: the Board (base substrate), passive components (Resistors, Capacitors, Inductors), active components (Vacuum Tubes, Diodes, Transistors, SMDs), and soldering. Higher-tier circuits need the Circuit Assembler machine." }
+    ]
+}

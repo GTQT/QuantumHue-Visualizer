@@ -1,0 +1,16 @@
+{
+    "id": "coil_behavior",
+    "title": "Coils Behavior",
+    "icon": "ore:ingot:cupronickel",
+    "tier": 2,
+    "discoveryHint": "Build an EBF to learn about coils.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Coils Behavior" },
+        { "type": "TEXT", "text": "The Electric Blast Furnace, Pyrolyse Oven, Multi Smelter, and Cracking Unit all require heating coils. Each uses coils differently:" },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "EBF: Higher coils increase temperature, enabling more recipes and providing energy discounts and perfect overclocking bonuses as described above." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Pyrolyse Oven: Higher coils reduce processing time. Cracking Unit: Higher coils reduce energy usage. Multi Smelter: Higher coils increase parallel smelts and reduce energy usage." }
+    ]
+}

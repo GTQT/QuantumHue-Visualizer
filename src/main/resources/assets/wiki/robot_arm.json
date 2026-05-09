@@ -1,0 +1,12 @@
+{
+    "id": "robot_arm",
+    "title": "Robot Arm",
+    "icon": "metaitem:robot_arm_lv",
+    "tier": 2,
+    "discoveryHint": "Craft a Robot Arm to learn about advanced covers.",
+    "discoveryTag": "cover",
+    "sections": [
+        { "type": "HEADING", "text": "Robot Arm" },
+        { "type": "TEXT", "text": "The Robot Arm is a more advanced Conveyor Module. It lets you transfer items in specific batches, at specific rates, or keep a certain amount in the destination. It is more expensive but offers much finer control over item logistics." }
+    ]
+}

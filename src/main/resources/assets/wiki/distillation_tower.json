@@ -1,0 +1,12 @@
+{
+    "id": "distillation_tower",
+    "title": "Distillation Tower",
+    "icon": "machine:distillation_tower",
+    "tier": 4,
+    "discoveryHint": "Reach HV to learn about the Distillation Tower.",
+    "discoveryTag": "hv",
+    "sections": [
+        { "type": "HEADING", "text": "Distillation Tower" },
+        { "type": "TEXT", "text": "The Distillation Tower separates fluid mixtures into component parts. Oil processing runs through it to produce fuels and chemical feedstocks. Each output layer produces a different fraction. It is essential for producing the many chemicals needed from HV onward." }
+    ]
+}

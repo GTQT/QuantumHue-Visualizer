@@ -1,0 +1,14 @@
+{
+    "id": "basic_gathering",
+    "title": "Basic Gathering",
+    "icon": "item:minecraft:iron_ingot",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Basic Gathering" },
+        { "type": "TEXT", "text": "Your first steps are familiar: punch trees, gather stone, mine iron. GregTech does change some vanilla recipes, so keep an eye on JEI. Buckets, for example, require plates instead of ingots." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Wrought Iron is your first material upgrade. Smelt Iron Nuggets in a furnace to get Wrought Iron Nuggets, then combine them back. GregTech tools made from Wrought Iron have 50% more durability than regular Iron tools." }
+    ]
+}

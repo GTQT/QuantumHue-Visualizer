@@ -1,0 +1,12 @@
+{
+    "id": "wire_cutter",
+    "title": "Wire Cutter",
+    "icon": "tool:wire_cutter:iron",
+    "tier": 1,
+    "discoveryHint": "Craft a Wire Cutter to learn about it.",
+    "discoveryTag": "wire_cutter",
+    "sections": [
+        { "type": "HEADING", "text": "Wire Cutter" },
+        { "type": "TEXT", "text": "The Wire Cutter manages cable and pipe connections. Right-click a pipe or cable face to enable or disable connections on that side. With GT6-style cables enabled, placing cables only connects them to the block they were placed against. Use the Wire Cutter on the grid to open more connections." }
+    ]
+}

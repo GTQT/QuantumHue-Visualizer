@@ -1,0 +1,16 @@
+{
+    "id": "mb_basics",
+    "title": "Multiblock Basics",
+    "icon": "machine:electric_blast_furnace",
+    "tier": 2,
+    "discoveryHint": "Reach the LV age to learn about multiblocks.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Multiblock Basics" },
+        { "type": "TEXT", "text": "Multiblock machines are large structures built from specific blocks in a pattern. The controller block is placed first, then the structure is built around it. When the pattern is correct, the controller activates." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Check the JEI preview for each multiblock. It shows not just the structure but also which blocks can be substituted. Use your mouse to rotate the preview and check all sides." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Hatches and buses provide I/O. Energy Hatches supply power. Item Import/Export Buses handle items, Fluid Import/Export Hatches handle fluids. Multiblocks do not check voltage of recipes; they simply check if they have enough total power input. Two LV Energy Hatches provide 128 EU/t." }
+    ]
+}

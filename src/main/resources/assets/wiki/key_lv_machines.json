@@ -1,0 +1,14 @@
+{
+    "id": "key_lv_machines",
+    "title": "Key LV Machines",
+    "icon": "machine_array:wiremill:1",
+    "tier": 2,
+    "discoveryHint": "Craft LV machines to learn about them.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Key LV Machines" },
+        { "type": "TEXT", "text": "The Wiremill is arguably the most important first LV machine. It converts ingots directly into wires, which is much more efficient than hand-crafting. The Bending Machine is the second priority, converting one Ingot into one Plate instead of the 2:1 ratio from hand-hammering." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "The Lathe shapes metals into rods and screws. The Polarizer converts Redstone-related recipes cheaply. The Chemical Reactor opens up a huge array of chemical synthesis recipes. The Assembler automates complex crafting recipes." }
+    ]
+}

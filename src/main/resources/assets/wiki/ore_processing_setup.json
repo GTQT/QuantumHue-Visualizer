@@ -1,0 +1,14 @@
+{
+    "id": "ore_processing_setup",
+    "title": "Setting Up Processing",
+    "icon": "machine_array:centrifuge:1",
+    "tier": 2,
+    "discoveryHint": "Build ore processing machines to learn about setups.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Setting Up Ore Processing" },
+        { "type": "TEXT", "text": "A basic ore processing line consists of a Macerator feeding into an Ore Washer, which feeds into either a Thermal Centrifuge or a Furnace. Use conveyors on machine output faces to chain them together." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "For more byproducts, add a second Macerator after the Ore Washer to convert Purified Ore into Purified Dust, then centrifuge or electrolyze the results." }
+    ]
+}

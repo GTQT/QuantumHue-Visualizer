@@ -1,0 +1,12 @@
+{
+    "id": "assembly_line",
+    "title": "Assembly Line",
+    "icon": "machine:assembly_line",
+    "tier": 7,
+    "discoveryHint": "Advanced multiblock. Progress further to discover.",
+    "discoveryTag": "ev",
+    "sections": [
+        { "type": "HEADING", "text": "Assembly Line" },
+        { "type": "TEXT", "text": "The Assembly Line is a late-game multiblock for the most advanced components. Making LuV components and beyond requires it. This multiblock has a variable size, with each input slot corresponding to a physical position along the line. Recipes are loaded from Research data produced in the Scanner or Research Station." }
+    ]
+}

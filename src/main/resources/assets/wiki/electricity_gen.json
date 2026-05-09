@@ -1,0 +1,14 @@
+{
+    "id": "electricity_gen",
+    "title": "Electricity Generation",
+    "icon": "machine_array:steam_turbine:0",
+    "tier": 1,
+    "discoveryHint": "Reach the LV age to learn about electricity.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Electricity Generation" },
+        { "type": "TEXT", "text": "The Steam Turbine is the first generator available. It converts steam into EU at a ratio of 2 Steam = 1 EU. Later tiers unlock combustion generators, gas turbines, and eventually fusion reactors." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Each single-block generator produces 1 Amp at its voltage tier. For LV, that means 32 EU/t. If a machine requires 16 EU/t, one packet of 32 EU is sent every other tick." }
+    ]
+}

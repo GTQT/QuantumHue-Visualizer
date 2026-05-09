@@ -1,0 +1,16 @@
+{
+    "id": "overclocking",
+    "title": "Overclocking",
+    "icon": "machine_array:macerator:3",
+    "tier": 2,
+    "discoveryHint": "Build higher-tier machines to learn about overclocking.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Overclocking" },
+        { "type": "TEXT", "text": "When a machine's tier is higher than a recipe requires, it overclocks automatically. Each overclock gives 2x speed but 4x power consumption, meaning the total energy cost doubles per overclock." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Machines have a button to set maximum overclock voltage. Set it to X to disable overclocking. For automated setups, overclock as little as possible to save energy." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Some machines have perfect overclocking where speed quadruples instead of doubling, such as the Electric Blast Furnace under certain temperature conditions." }
+    ]
+}

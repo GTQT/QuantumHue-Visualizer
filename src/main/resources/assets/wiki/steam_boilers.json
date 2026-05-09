@@ -1,0 +1,16 @@
+{
+    "id": "steam_boilers",
+    "title": "Steam Boilers",
+    "icon": "machine:steam_boiler_coal_bronze",
+    "tier": 0,
+    "discoveryHint": "Craft a bronze item to unlock this page.",
+    "discoveryTag": "steam",
+    "sections": [
+        { "type": "HEADING", "text": "Steam Boilers" },
+        { "type": "TEXT", "text": "The Solid Fuel Boiler burns coal or charcoal to heat water into steam. It is the cheapest to make and easy to maintain. The Solar Boiler uses sunlight, and the Lava Boiler uses lava as fuel." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Boilers can explode if they run dry while hot. Always keep them supplied with water. Connect steam pipes from the top output to your machines. You will need multiple boilers as your machine count grows." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "High Pressure Boilers (made with Steel) produce more steam and are more fuel-efficient. They are a significant upgrade over the bronze variants." }
+    ]
+}

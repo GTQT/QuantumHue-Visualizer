@@ -1,0 +1,24 @@
+{
+    "id": "siphon_limits",
+    "title": "Siphon Limitations",
+    "icon": "item:minecraft:water_bucket",
+    "tier": 1,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Siphon Limitations" },
+        { "type": "TEXT", "text": "Siphons have several inherent limitations compared to pumps:" },
+        { "type": "GAP" },
+        { "type": "HEADING", "text": "Height Limit" },
+        { "type": "TEXT", "text": "Atmospheric pressure in Minecraft can only lift fluid about 16 blocks. Beyond that height, the siphon effect breaks down. If you need to move fluid higher, use a Pipe Pump." },
+        { "type": "GAP" },
+        { "type": "HEADING", "text": "Pressure Weakness" },
+        { "type": "TEXT", "text": "Siphon pressure is derived only from the fill level of the lower source pipe, multiplied by a small efficiency factor (default 0.5). A pump at 2000 mBar will always outperform a siphon at the same height." },
+        { "type": "GAP" },
+        { "type": "HEADING", "text": "Priming Requirement" },
+        { "type": "TEXT", "text": "The source pipe must already contain fluid for the siphon to work. You may need to fill it by hand or with a pump first." },
+        { "type": "GAP" },
+        { "type": "HEADING", "text": "No Horizontal Lift" },
+        { "type": "TEXT", "text": "Siphons only work when moving fluid upward after a downward path. Pure horizontal flow (or attempting to move fluid upward without gravity assist first) will not trigger siphon pressure." }
+    ]
+}

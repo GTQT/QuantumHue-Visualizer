@@ -1,0 +1,16 @@
+{
+    "id": "ore_veins",
+    "title": "Ore Veins",
+    "icon": "ore:dust:copper",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Ore Veins" },
+        { "type": "TEXT", "text": "GregTech replaces vanilla ore deposits with huge veins containing thousands of ore blocks. Veins generate on a grid, spaced 3 chunks apart from each other. Each vein has up to four different ores: primary, secondary, tertiary, and sporadic." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Surface rocks indicate the type of veins below them. In JEI, press U on the Tiny Dust you mined from a surface rock to see what vein it belongs to. Veins are harder to find than vanilla ores, but when you find one, you get a massive supply." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Prospecting with the Prospector's Scanner helps locate veins underground. The HV Prospector has a wider scanning range than the LV version." }
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "id": "conveyor_cover",
+    "title": "Conveyor Cover",
+    "icon": "metaitem:conveyor_module_lv",
+    "tier": 2,
+    "discoveryHint": "Craft a Conveyor Module to see this page.",
+    "discoveryTag": "cover",
+    "sections": [
+        { "type": "HEADING", "text": "Conveyor Cover" },
+        { "type": "TEXT", "text": "The Conveyor cover moves items into or out of the block. It supports import, export, and conditional modes. Combined with item filters, it provides fine-grained automation. It has a special interaction with Item Pipes to enable perfect Round Robin distribution." }
+    ]
+}

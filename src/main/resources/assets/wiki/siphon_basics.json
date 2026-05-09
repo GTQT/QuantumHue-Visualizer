@@ -1,0 +1,16 @@
+{
+    "id": "siphon_basics",
+    "title": "Siphon Effect",
+    "icon": "item:minecraft:water_bucket",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Siphon Effect" },
+        { "type": "TEXT", "text": "The siphon is a natural fluid flow phenomenon that allows water (or other fluids) to move upward through pipes without a pump, under specific conditions. This is based on real-world physics: atmospheric pressure can push fluid up one leg of a U-bend if the other leg is lower." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "A siphon works when: (1) you have a fluid source at a lower level, (2) the pipe rises to a higher level, and (3) the height difference is within the maximum siphon height (default 16 blocks). Unlike pumps which require energy, siphons work passively as long as these conditions are met." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Siphons are weaker than pumps—they generate pressure only from the fill level of the lower source pipe, with an efficiency penalty. This means they are useful for early-game or auxiliary setups, but you will eventually want pumps for reliable, high-pressure fluid systems." }
+    ]
+}

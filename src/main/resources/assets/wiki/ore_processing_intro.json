@@ -1,0 +1,14 @@
+{
+    "id": "ore_processing_intro",
+    "title": "Introduction",
+    "icon": "ore:dust:iron",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Ore Processing Introduction" },
+        { "type": "TEXT", "text": "At its simplest, GregTech ore processing converts one ore into two ingots through two dusts, similar to other tech mods. The added complexity comes from multiple optional and required steps, each providing valuable byproducts." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "At the Steam Age, you only need the Macerator and a Furnace. As you unlock more machines, longer processing chains yield more byproducts and materials you cannot get any other way." }
+    ]
+}

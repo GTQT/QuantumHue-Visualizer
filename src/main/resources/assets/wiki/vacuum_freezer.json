@@ -1,0 +1,12 @@
+{
+    "id": "vacuum_freezer",
+    "title": "Vacuum Freezer",
+    "icon": "machine:vacuum_freezer",
+    "tier": 3,
+    "discoveryHint": "Reach MV to learn about the Vacuum Freezer.",
+    "discoveryTag": "mv",
+    "sections": [
+        { "type": "HEADING", "text": "Vacuum Freezer" },
+        { "type": "TEXT", "text": "The Vacuum Freezer cools hot ingots produced by the Electric Blast Furnace. Many high-tier materials come out of the EBF as hot ingots that must be frozen before use in crafting. Some materials like Aluminium require it." }
+    ]
+}

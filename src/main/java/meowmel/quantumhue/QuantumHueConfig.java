@@ -16,9 +16,61 @@ public class QuantumHueConfig {
     public static Blur blur = new Blur();
 
     @Config.Name("Biome Info")
-    public static biomeInfo biome_info = new biomeInfo();
+    public static BiomeInfo biome_info = new BiomeInfo();
 
-    public static class biomeInfo {
+    @Config.Name("Smooth Menus")
+    public static SmoothMenus smooth_menus = new SmoothMenus();
+
+    @Config.Name("Smooth Scrolling")
+    public static SmoothScrolling smoothScrolling = new SmoothScrolling();
+
+    public static class SmoothScrolling {
+        @Config.Name("Scroll Duration")
+        @Config.Comment({
+                "滚动动画持续时间（毫秒）",
+                "值越大，滚动越慢",
+                "范围: 0 ~ 5000"
+        })
+        @Config.RangeInt(min = 0, max = 5000)
+        public int scrollDuration = 600;
+
+        @Config.Name("Scroll Step")
+        @Config.Comment({
+                "滚动步长（像素）",
+                "影响每帧滚动的距离",
+                "范围: 0 ~ 100"
+        })
+        @Config.RangeDouble(min = 0, max = 100)
+        public double scrollStep = 19.0;
+
+        @Config.Name("Bounce Back Multiplier")
+        @Config.Comment({
+                "回弹系数",
+                "控制滚动超出边界后的回弹强度",
+                "建议值: 0.0 ~ 1.0"
+        })
+        public double bounceBackMultiplier = 0.24;
+
+        @Config.Name("Unlimit FPS")
+        @Config.Comment({
+                "在标题画面解除 FPS 限制（默认 Minecraft 限制为 30 FPS）",
+                "true: 解除限制",
+                "false: 保持原有限制"
+        })
+        public boolean unlimitFps = true;
+    }
+
+    public static class SmoothMenus {
+        @Config.Name("Rate")
+        @Config.Comment({
+                "Target frame rate for menu screens."
+        })
+        @Config.SlidingOption
+        @Config.RangeInt(min = 60, max = 144)
+        public int targetFrameRate = 60;
+    }
+
+    public static class BiomeInfo {
         @Config.Name("Enabled")
         @Config.Comment("Enable/disable biome info display")
         public boolean ENABLED = true;

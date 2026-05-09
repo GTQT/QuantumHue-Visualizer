@@ -1,0 +1,16 @@
+{
+    "id": "cover_basics",
+    "title": "Cover Basics",
+    "icon": "metaitem:conveyor_module_lv",
+    "tier": 2,
+    "discoveryHint": "Craft a Pump or Conveyor to learn about covers.",
+    "discoveryTag": "cover",
+    "sections": [
+        { "type": "HEADING", "text": "Cover Basics" },
+        { "type": "TEXT", "text": "Covers are attachments placed on machine and pipe faces. They automate item and fluid transfer, provide redstone control, and filter throughput. Each face can hold one cover. Place by right-clicking with the cover item. Remove with a Crowbar." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Open a cover's configuration GUI by shift-right-clicking with an empty hand, or right-clicking with a Screwdriver. You can also shift-right-click on another face using the grid in the machine GUI." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Covers have transfer mode settings: Disabled (only the cover transfers), Allow Filtered (external transfer only if it matches the filter), and Allow Unfiltered (any transfer allowed). Placing a lower-tier cover on a higher-tier machine is safe." }
+    ]
+}

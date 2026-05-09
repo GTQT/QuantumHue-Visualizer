@@ -1,0 +1,14 @@
+{
+    "id": "welcome",
+    "title": "Welcome",
+    "icon": "item:minecraft:book",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Welcome to GregTech" },
+        { "type": "TEXT", "text": "GregTech: Community Edition Unofficial (GTCEu) is a tech mod that overhauls Minecraft progression with a tiered system of machines, materials, and multiblocks. The journey starts with primitive tools and steam power, and eventually reaches fusion reactors and exotic materials." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "The modpack progresses through voltage tiers: starting with the Steam Age, then Low Voltage, Medium Voltage, High Voltage, and beyond all the way to Ultimate Voltage. Each tier introduces new machines, materials, and challenges." }
+    ]
+}

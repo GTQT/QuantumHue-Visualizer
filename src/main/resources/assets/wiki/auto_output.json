@@ -1,0 +1,16 @@
+{
+    "id": "auto_output",
+    "title": "Auto-Output Behavior",
+    "icon": "machine_array:macerator:1",
+    "tier": 1,
+    "discoveryHint": "Use an electric machine to learn about auto-output.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Auto-Output Behavior" },
+        { "type": "TEXT", "text": "All machines have a Front Face (the obvious one) and an Output Face (marked with a dot or hole, typically the back). Machines can auto-output through their output face. Toggle auto-output for items and fluids separately in the machine GUI." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Right-clicking with a Wrench changes the output side. Shift-right-clicking changes the front side. The front side cannot also be the output side. By default, the output side does not accept item/fluid insertion, but this can be toggled with a Screwdriver." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Some unique machines like the Pump, Miner, Fisher, and Item Collector output through their Front Face instead." }
+    ]
+}

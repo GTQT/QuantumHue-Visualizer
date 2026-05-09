@@ -1,0 +1,16 @@
+{
+    "id": "siphon_setup",
+    "title": "Setting Up a Siphon",
+    "icon": "item:minecraft:water_bucket",
+    "tier": 0,
+    "discoveryHint": "Early game: before you can build pumps.",
+    "discoveryTag": "steam",
+    "sections": [
+        { "type": "HEADING", "text": "Setting Up a Siphon" },
+        { "type": "TEXT", "text": "To create a working siphon, you need a U-shaped pipe path: the intake must be lower than the output. Fill the intake pipe with fluid. The lower pipe provides passive pressure that can push fluid up the higher leg of the U, within the maximum siphon height." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Example: Place a water source tank at ground level. Build pipes up 10 blocks, then back down to your destination on the other side. The water will siphon across and down to the destination without a pump." },
+        { "type": "GAP" },
+        { "type": "DIAGRAM", "text": "  Siphon Setup:\n                    [ Destination ]\n                          |\n              [U-bend] --- [Pipe down]\n              |\n      [Water Source] (draws siphon\n                       pressure from fill level)" }
+    ]
+}

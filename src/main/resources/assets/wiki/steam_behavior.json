@@ -1,0 +1,16 @@
+{
+    "id": "steam_behavior",
+    "title": "Steam Machine Behavior",
+    "icon": "machine:steam_furnace_bronze",
+    "tier": 1,
+    "discoveryHint": "Craft any steam machine to unlock this page.",
+    "discoveryTag": "steam",
+    "sections": [
+        { "type": "HEADING", "text": "Steam Machine Behavior" },
+        { "type": "TEXT", "text": "Steam machines accept steam into an internal tank piped from boilers. They run recipes up to 32 EU/t (LV equivalent) using a proportional amount of steam. The conversion rate is 2 Steam = 1 EU." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "After each recipe, steam machines vent cooler steam from their exhaust port (the face with the square pattern). Keep this face unblocked or the machine will stop working. Use a Wrench to change which face the exhaust port is on." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Standing on steam pipes or in front of a venting machine will damage you, so be careful around active setups." }
+    ]
+}

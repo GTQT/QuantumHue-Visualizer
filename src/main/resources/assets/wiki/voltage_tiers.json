@@ -1,0 +1,14 @@
+{
+    "id": "voltage_tiers",
+    "title": "Voltage Tiers",
+    "icon": "machine_hull:1",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Voltage Tiers" },
+        { "type": "TEXT", "text": "GregTech organizes all machines, cables, and components into voltage tiers. Each tier handles a specific voltage range. Machines must receive energy at their rated voltage. If a machine receives higher voltage than its tier, it will explode." },
+        { "type": "GAP" },
+        { "type": "TABLE", "text": "Tier\tName\tVoltage (EU/t)\nULV\tUltra Low Voltage\t8\nLV\tLow Voltage\t32\nMV\tMedium Voltage\t128\nHV\tHigh Voltage\t512\nEV\tExtreme Voltage\t2,048\nIV\tInsane Voltage\t8,192\nLuV\tLudicrous Voltage\t32,768\nZPM\tZero Point Module\t131,072\nUV\tUltimate Voltage\t524,288" }
+    ]
+}

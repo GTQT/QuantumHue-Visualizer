@@ -1,0 +1,14 @@
+{
+    "id": "key_materials",
+    "title": "Key Progression Materials",
+    "icon": "ore:ingot:aluminium",
+    "tier": 3,
+    "discoveryHint": "Reach MV to see key material progression.",
+    "discoveryTag": "mv",
+    "sections": [
+        { "type": "HEADING", "text": "Key Progression Materials" },
+        { "type": "TEXT", "text": "Aluminium is the main ingredient for MV machine hulls. It requires the Electric Blast Furnace at 1700 K. Stainless Steel is needed from HV onward. Titanium gates EV. Tungsten and Tungstensteel appear at IV. Naquadah and its variants are endgame materials." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Many materials cannot be smelted directly from ores. They are obtained as byproducts from processing other ores, or through chemical chains. Gallium Arsenide, for example, comes from byproduct processing." }
+    ]
+}

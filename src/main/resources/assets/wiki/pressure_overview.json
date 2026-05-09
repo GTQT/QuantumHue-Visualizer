@@ -1,0 +1,14 @@
+{
+    "id": "pressure_overview",
+    "title": "Overview",
+    "icon": "ore:pipeNormalFluid:bronze",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Fluid Pressure" },
+        { "type": "TEXT", "text": "Fluid pipes use a pressure system to control vertical flow. Fluids move freely horizontally and downward. Pushing fluid upward requires mechanical force from a Pipe Pump." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Each pipe tracks its own pressure in milliBar (mBar). Passive pressure from fluid weight is too weak for upward flow. A Pipe Pump injects active pressure that propagates through connected pipes. Horizontal propagation is free; each block upward costs 100 mBar." }
+    ]
+}

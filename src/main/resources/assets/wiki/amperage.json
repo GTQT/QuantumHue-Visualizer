@@ -1,0 +1,16 @@
+{
+    "id": "amperage",
+    "title": "Amperage",
+    "icon": "ore:cableGtSingle:copper",
+    "tier": 2,
+    "discoveryHint": "Build more LV machines to discover this.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Amperage" },
+        { "type": "TEXT", "text": "Each energy packet has Voltage and Amperage. Power = Voltage x Amperage. Energy = Power x Time. This follows real-world physics." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Machine energy input is limited by voltage (too high = explosion) and amperage. An MV machine with 2A input on an LV line can never exceed 64 EU/t. Generic machines draw up to 2 Amps when below 50% charge to account for cable loss, but normally draw 1 Amp." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "A Battery Buffer with 4 batteries can produce up to 4 Amps. For LV, that is 128 EU/t, which is important for the Electric Blast Furnace. Cables have an amperage limit. Transporting more amps than the limit will burn them. Amps are only drawn through cables connecting active producers and consumers directly." }
+    ]
+}

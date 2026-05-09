@@ -1,0 +1,12 @@
+{
+    "id": "item_pipes",
+    "title": "Item Pipes",
+    "icon": "ore:pipeNormalItem:brass",
+    "tier": 1,
+    "discoveryHint": "Use LV machines to learn about item pipes.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Item Pipes" },
+        { "type": "TEXT", "text": "Item pipes move items between inventories using a priority and routing system. Items flow toward the closest valid destination. Covers on endpoints control which items are accepted or extracted. Restrictive pipes have a higher routing weight, making items prefer other paths." }
+    ]
+}

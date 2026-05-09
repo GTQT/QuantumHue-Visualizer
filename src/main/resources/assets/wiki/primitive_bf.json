@@ -1,0 +1,14 @@
+{
+    "id": "primitive_bf",
+    "title": "Primitive Blast Furnace",
+    "icon": "machine:primitive_blast_furnace",
+    "tier": 1,
+    "discoveryHint": "Reach the steam age to see this page.",
+    "discoveryTag": "steam",
+    "sections": [
+        { "type": "HEADING", "text": "Primitive Blast Furnace" },
+        { "type": "TEXT", "text": "The Primitive Blast Furnace is your first big project. It turns Iron into Steel by combining it with a carbon source like Coal or Charcoal. The process is slow but essential, as Steel is required for almost everything beyond the bronze age." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Steel is significantly tougher than Iron or Wrought Iron. It opens up High Pressure Steam machines, the Coke Oven, and eventually the path to electric machines." }
+    ]
+}

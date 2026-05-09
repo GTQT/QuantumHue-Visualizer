@@ -1,0 +1,14 @@
+{
+    "id": "wrench",
+    "title": "Wrench",
+    "icon": "tool:wrench:iron",
+    "tier": 0,
+    "discoveryHint": "Craft a Wrench to discover this page.",
+    "discoveryTag": "wrench",
+    "sections": [
+        { "type": "HEADING", "text": "Wrench" },
+        { "type": "TEXT", "text": "The Wrench is a crafting tool and machine interaction tool. Right-click a machine to change its output face. Shift-right-click to change the front face. It also doubles as a Forge Wrench for other mods and can mine GregTech machines without needing a pickaxe." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "The output face and front face cannot be the same side. The output face is marked with a dot or hole, typically the back of the machine." }
+    ]
+}

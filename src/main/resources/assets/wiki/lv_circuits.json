@@ -1,0 +1,14 @@
+{
+    "id": "lv_circuits",
+    "title": "LV Circuits",
+    "icon": "metaitem:vacuum_tube",
+    "tier": 1,
+    "discoveryHint": "Start making circuits to unlock this page.",
+    "discoveryTag": "circuit",
+    "sections": [
+        { "type": "HEADING", "text": "LV Circuits" },
+        { "type": "TEXT", "text": "LV circuits start with Resistors (the easier component, prefer the Fine Wire recipe to save materials) and Vacuum Tubes (harder, requiring wires and sticks). The board is a Coated Circuit Board made from Wood Pulp compressed into Wood Plates combined with Glue or Sticky Resin." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Red Alloy, an alloy of Copper and Redstone, is needed for Electronic Circuits. It is completely fictional but essential for conductivity in early electronics." }
+    ]
+}

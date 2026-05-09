@@ -1,0 +1,12 @@
+{
+    "id": "pump_cover",
+    "title": "Pump Cover",
+    "icon": "metaitem:electric_pump_lv",
+    "tier": 2,
+    "discoveryHint": "Craft a Pump component to see this page.",
+    "discoveryTag": "cover",
+    "sections": [
+        { "type": "HEADING", "text": "Pump Cover" },
+        { "type": "TEXT", "text": "The Pump cover moves fluids into or out of the block it is attached to. Configure it to import or export. Higher tiers transfer more fluid per operation. Can accept a Fluid Filter for precise control." }
+    ]
+}

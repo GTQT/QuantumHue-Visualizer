@@ -1,0 +1,14 @@
+{
+    "id": "hv_circuits",
+    "title": "HV and Beyond",
+    "icon": "ore:plate:polyethylene",
+    "tier": 4,
+    "discoveryHint": "Reach HV to learn about advanced circuits.",
+    "discoveryTag": "hv",
+    "sections": [
+        { "type": "HEADING", "text": "HV Circuits and Beyond" },
+        { "type": "TEXT", "text": "HV circuits require Plastic Circuit Boards, unlocking a dependency on Polyethylene production. SMD components (Resistors, Capacitors, Transistors, Diodes, Inductors) become available and are used for all subsequent tiers." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "EV introduces the Cleanroom requirement for most circuit recipes. IV and beyond require increasingly complex processing chains, eventually needing the Assembly Line and Wetware processing." }
+    ]
+}

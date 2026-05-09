@@ -1,0 +1,12 @@
+{
+    "id": "tricorder",
+    "title": "Tricorder",
+    "icon": "metaitem:tool_data_stick",
+    "tier": 2,
+    "discoveryHint": "Reach the LV age to learn about the Tricorder.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Tricorder" },
+        { "type": "TEXT", "text": "The Portable Scanner (Tricorder) is GTCEu's debug tool. It shows a block's details, the energy network status, current contents, and performance impact. Using it anywhere also displays the percentage of fluid remaining in the fluid vein for Fluid Drilling Rigs." }
+    ]
+}

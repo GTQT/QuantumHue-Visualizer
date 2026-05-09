@@ -1,0 +1,14 @@
+{
+    "id": "cable_materials",
+    "title": "Cable Materials",
+    "icon": "ore:cableGtSingle:gold",
+    "tier": 1,
+    "discoveryHint": "Reach LV to learn about cable materials.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Cable Materials" },
+        { "type": "TEXT", "text": "Each cable material has a maximum voltage, loss rate per block, and amperage capacity per wire size. Early materials like Tin and Copper have high loss. Gold and Aluminium are more efficient. Late-game superconductors have zero loss." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Using cables rated below the transmitted voltage will cause them to catch fire and be destroyed." }
+    ]
+}

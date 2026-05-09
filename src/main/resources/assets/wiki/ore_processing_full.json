@@ -1,0 +1,16 @@
+{
+    "id": "ore_processing_full",
+    "title": "Full Ore Processing",
+    "icon": "machine_array:ore_washer:1",
+    "tier": 2,
+    "discoveryHint": "Process some ores to learn the full processing chain.",
+    "discoveryTag": "ore_processing",
+    "sections": [
+        { "type": "HEADING", "text": "Full Ore Processing Chain" },
+        { "type": "TEXT", "text": "The full processing chain: Macerator turns raw ore into Crushed Ore. Ore Washer cleans Crushed Ore into Purified Ore and gives byproducts. Thermal Centrifuge processes Crushed or Purified Ore into refined dust with different byproducts. Centrifuge and Electrolyzer decompose complex dusts into component materials." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "The Chemical Bath provides alternative processing paths for certain ores. The Sifter works with gem-type Purified Ores to find Exquisite and Flawless gems. The Autoclave is typically the last step, turning select gem dusts back into gems." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "The Electromagnetic Separator uses magnetic fields on some ores to extract additional byproducts not available through other paths. Check the Ore Byproduct tab in JEI (press U on any GT ore) to see all possible processing paths for each ore." }
+    ]
+}

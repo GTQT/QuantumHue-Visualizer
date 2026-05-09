@@ -1,0 +1,12 @@
+{
+    "id": "gt_axe",
+    "title": "GregTech Axe",
+    "icon": "tool:axe:iron",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "GregTech Axe" },
+        { "type": "TEXT", "text": "GregTech axes are equivalent to vanilla axes but with a special ability: mining a Wood Log will fell the entire tree. Their durability wears down fast, so you may want to make them from Diamond or better." }
+    ]
+}

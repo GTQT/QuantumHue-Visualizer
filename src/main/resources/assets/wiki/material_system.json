@@ -1,0 +1,12 @@
+{
+    "id": "material_system",
+    "title": "Material System",
+    "icon": "ore:ingot:iron",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Material System" },
+        { "type": "TEXT", "text": "GregTech has a unified material system. Each material can exist in many forms: ingots, plates, rods, wires, pipes, dusts, gems, and more. The system generates items automatically for valid material-form combinations. The OreDictionary unifies items across mods so copper from any mod is interchangeable." }
+    ]
+}

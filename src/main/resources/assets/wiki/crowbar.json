@@ -1,0 +1,12 @@
+{
+    "id": "crowbar",
+    "title": "Crowbar",
+    "icon": "tool:crowbar:iron",
+    "tier": 1,
+    "discoveryHint": "Craft a Crowbar to learn about it.",
+    "discoveryTag": "crowbar",
+    "sections": [
+        { "type": "HEADING", "text": "Crowbar" },
+        { "type": "TEXT", "text": "The Crowbar removes covers from machines and pipes. Right-click a face that has a cover attached to pop it off and return it to your inventory. You can also remove covers by mining the machine, but the Crowbar is more precise." }
+    ]
+}

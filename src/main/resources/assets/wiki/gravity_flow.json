@@ -1,0 +1,12 @@
+{
+    "id": "gravity_flow",
+    "title": "Gravity and Flow",
+    "icon": "item:minecraft:water_bucket",
+    "tier": 0,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Gravity and Flow" },
+        { "type": "TEXT", "text": "Without a pump, fluid flows freely downward and sideways but never upward. Each block upward costs 100 mBar of pressure. A pump at 2000 mBar reaches 20 blocks up. Horizontal distance is free." }
+    ]
+}

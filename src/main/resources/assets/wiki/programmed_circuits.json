@@ -1,0 +1,12 @@
+{
+    "id": "programmed_circuits",
+    "title": "Programmed Circuits",
+    "icon": "metaitem:integrated_circuit",
+    "tier": 2,
+    "discoveryHint": "Use machines with multiple recipe options to discover this.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Programmed Circuits" },
+        { "type": "TEXT", "text": "Programmed Circuits (also called Integrated Circuits) are not consumed in recipes. They act as recipe selectors when a machine has multiple recipes with the same inputs. Set the circuit number in the machine GUI to select which recipe to run." }
+    ]
+}

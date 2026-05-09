@@ -1,0 +1,12 @@
+{
+    "id": "screwdriver",
+    "title": "Screwdriver",
+    "icon": "tool:screwdriver:iron",
+    "tier": 1,
+    "discoveryHint": "Craft a Screwdriver to learn about it.",
+    "discoveryTag": "screwdriver",
+    "sections": [
+        { "type": "HEADING", "text": "Screwdriver" },
+        { "type": "TEXT", "text": "The Screwdriver configures machines and covers. Right-click a cover to open its settings GUI. Right-click a machine to cycle through its available modes. On the output face, it toggles whether items and fluids can be inserted through that side." }
+    ]
+}

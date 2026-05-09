@@ -1,0 +1,14 @@
+{
+    "id": "transformers",
+    "title": "Transformers",
+    "icon": "machine_transformer:1",
+    "tier": 2,
+    "discoveryHint": "Progress into the LV age to see this.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Transformers" },
+        { "type": "TEXT", "text": "Transformers convert between voltage tiers safely. They change power into an equivalent amount one tier above or below the input. Apart from running machines on different tiers, transformers are useful for transporting power over long distances at high voltage with less loss, then stepping it down at the destination." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "By default a transformer steps down. Use a Soft Mallet to switch modes." }
+    ]
+}

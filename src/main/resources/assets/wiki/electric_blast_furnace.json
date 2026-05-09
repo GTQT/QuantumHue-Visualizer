@@ -1,0 +1,18 @@
+{
+    "id": "electric_blast_furnace",
+    "title": "Electric Blast Furnace",
+    "icon": "machine:electric_blast_furnace",
+    "tier": 2,
+    "discoveryHint": "Progress to LV to learn about the EBF.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Electric Blast Furnace" },
+        { "type": "TEXT", "text": "The EBF smelts materials at high temperatures that regular furnaces cannot reach. The temperature rating depends on the heating coils used in the structure. It also needs at least 120 EU/t, achievable with two LV Energy Hatches." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Higher-tier coils unlock higher-temperature recipes and provide energy discounts. For every 900 K above the recipe temperature, energy is multiplied by 0.95x (stacking). For every 1800 K above, one additional overclock becomes 100% efficient, quadrupling speed instead of doubling it." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Starting from HV tier energy input, each energy tier adds 100 K to the temperature, on top of the coil's base rating." },
+        { "type": "GAP" },
+        { "type": "TABLE", "text": "Coil\tTemperature\nCupronickel\t1,800 K\nKanthal\t2,700 K\nNichrome\t3,600 K\nTungstensteel\t4,500 K\nHSS-G\t5,400 K\nNaquadah\t7,200 K\nTrinium\t8,600 K\nTritanium\t10,800 K" }
+    ]
+}

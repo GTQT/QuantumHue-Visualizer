@@ -1,0 +1,14 @@
+{
+    "id": "crafting_station",
+    "title": "Crafting Station",
+    "icon": "block:minecraft:crafting_table",
+    "tier": 0,
+    "discoveryHint": "Craft your first bronze item to learn about this.",
+    "discoveryTag": "steam",
+    "sections": [
+        { "type": "HEADING", "text": "Crafting Station" },
+        { "type": "TEXT", "text": "The Crafting Station is designed to reduce the tedium of tool-based crafting. It holds tools in dedicated slots so you do not need to place and remove your Hammer, Wrench, or File from the grid every single time." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Place your GregTech tools in the slots around the grid and they will be used automatically for recipes that require them." }
+    ]
+}

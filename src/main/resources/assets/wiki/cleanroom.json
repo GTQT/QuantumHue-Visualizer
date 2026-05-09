@@ -1,0 +1,12 @@
+{
+    "id": "cleanroom",
+    "title": "Cleanroom",
+    "icon": "machine:cleanroom",
+    "tier": 5,
+    "discoveryHint": "Reach EV to learn about the Cleanroom.",
+    "discoveryTag": "ev",
+    "sections": [
+        { "type": "HEADING", "text": "Cleanroom" },
+        { "type": "TEXT", "text": "The Cleanroom is a hollow multiblock free of contaminants. Most circuit-related recipes from EV onward require a Cleanroom. Some special items like Fusion Casings also need it. Place your circuit assembly machines inside the cleanroom structure." }
+    ]
+}

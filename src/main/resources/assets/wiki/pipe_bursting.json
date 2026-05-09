@@ -1,0 +1,12 @@
+{
+    "id": "pipe_bursting",
+    "title": "Pipe Bursting",
+    "icon": "ore:pipeNormalFluid:wood",
+    "tier": 1,
+    "discoveryHint": "",
+    "discoveryTag": "",
+    "sections": [
+        { "type": "HEADING", "text": "Pipe Bursting" },
+        { "type": "TEXT", "text": "Every pipe material has a burst pressure rating. When exceeded, a countdown begins (default 100 ticks / 5 seconds). Smoke particles at 50% of burst, steam and hissing at 75%, rapid jets and alarms past 100%. If the fluid is flammable, a burst causes fire and explosion." }
+    ]
+}

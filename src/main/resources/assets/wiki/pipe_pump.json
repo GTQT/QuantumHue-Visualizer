@@ -1,0 +1,14 @@
+{
+    "id": "pipe_pump",
+    "title": "Pipe Pump",
+    "icon": "machine_array:pipe_pump:0",
+    "tier": 2,
+    "discoveryHint": "Build LV machines to discover this.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Pipe Pump" },
+        { "type": "TEXT", "text": "The Pipe Pump pressurizes fluid pipes. Place its front face against a pipe. Set a target pressure in its GUI. It only draws power while below target, then idles. Higher tiers reach higher pressures for more vertical reach." },
+        { "type": "GAP" },
+        { "type": "TABLE", "text": "Tier\tMax Pressure\tPower\tVertical Reach\nLV\t2,000 mBar\t8 EU/t\t20 blocks\nMV\t4,000 mBar\t32 EU/t\t40 blocks\nHV\t8,000 mBar\t128 EU/t\t80 blocks\nEV\t16,000 mBar\t512 EU/t\t160 blocks\nIV\t32,000 mBar\t2,048 EU/t\t320 blocks" }
+    ]
+}

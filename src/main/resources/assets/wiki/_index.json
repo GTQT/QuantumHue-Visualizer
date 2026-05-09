@@ -1,0 +1,69 @@
+{
+    "categories": [
+        {
+            "name": "Getting Started",
+            "icon": "item:minecraft:book",
+            "pages": ["welcome", "basic_gathering", "units_overview", "crafting_station"]
+        },
+        {
+            "name": "Steam Age",
+            "icon": "machine:steam_boiler_coal_bronze",
+            "pages": ["steam_basics", "steam_boilers", "steam_behavior", "steam_multiblocks", "primitive_bf", "coke_oven"]
+        },
+        {
+            "name": "Tools",
+            "icon": "tool:wrench:iron",
+            "pages": ["hammer", "wrench", "screwdriver", "soft_mallet", "crowbar", "wire_cutter", "mortar", "mining_hammer", "gt_axe", "drill", "tricorder"]
+        },
+        {
+            "name": "Energy",
+            "icon": "ore:cableGtSingle:copper",
+            "pages": ["voltage_tiers", "electricity_gen", "cables_wires", "amperage", "transformers", "batteries"]
+        },
+        {
+            "name": "Machines",
+            "icon": "machine_array:macerator:1",
+            "pages": ["machine_basics", "auto_output", "overclocking", "recipe_maps", "key_lv_machines", "programmed_circuits"]
+        },
+        {
+            "name": "Ore Processing",
+            "icon": "machine_array:macerator:1",
+            "pages": ["ore_processing_intro", "ore_processing_full", "ore_processing_setup"]
+        },
+        {
+            "name": "Multiblocks",
+            "icon": "machine:electric_blast_furnace",
+            "pages": ["mb_basics", "maintenance", "electric_blast_furnace", "coil_behavior", "vacuum_freezer", "distillation_tower", "cleanroom", "assembly_line", "large_chemical_reactor", "processing_array"]
+        },
+        {
+            "name": "Materials",
+            "icon": "ore:ingot:steel",
+            "pages": ["material_system", "material_forms", "alloys", "key_materials"]
+        },
+        {
+            "name": "Pipes and Cables",
+            "icon": "ore:pipeNormalFluid:bronze",
+            "pages": ["fluid_pipes", "item_pipes", "cable_materials"]
+        },
+        {
+            "name": "Covers",
+            "icon": "metaitem:electric_pump_lv",
+            "pages": ["cover_basics", "pump_cover", "conveyor_cover", "robot_arm"]
+        },
+        {
+            "name": "Circuits",
+            "icon": "metaitem:integrated_circuit_mv",
+            "pages": ["circuit_overview", "lv_circuits", "mv_circuits", "hv_circuits"]
+        },
+        {
+            "name": "World Generation",
+            "icon": "ore:dust:stone",
+            "pages": ["ore_veins", "key_veins", "rubber_trees"]
+        },
+        {
+            "name": "Fluid Pressure",
+            "icon": "ore:pipeNormalFluid:steel",
+            "pages": ["pressure_overview", "pipe_pump", "pressure_sensor", "pipe_bursting", "gravity_flow", "pressure_config", "siphon_basics", "siphon_setup", "siphon_limits", "siphon_vs_pump"]
+        }
+    ]
+}

@@ -1,0 +1,14 @@
+{
+    "id": "maintenance",
+    "title": "Maintenance",
+    "icon": "tool:wrench:iron",
+    "tier": 2,
+    "discoveryHint": "Build a multiblock to learn about maintenance.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Maintenance" },
+        { "type": "TEXT", "text": "Most multiblocks require a Maintenance Hatch. Before the multiblock can operate, you must perform initial maintenance with six tools: Wrench, Screwdriver, Soft Mallet, Hammer, Wire Cutter, and Crowbar." },
+        { "type": "GAP" },
+        { "type": "TEXT", "text": "Over time, maintenance problems may develop, reducing efficiency. Open the Maintenance Hatch and apply the indicated tools to fix them. The Muffler Hatch is also required on some multiblocks and must have an unobstructed front to vent particles." }
+    ]
+}

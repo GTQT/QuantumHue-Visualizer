@@ -1,0 +1,12 @@
+{
+    "id": "drill",
+    "title": "Drill",
+    "icon": "tool:drill_lv:steel",
+    "tier": 2,
+    "discoveryHint": "Reach the LV age to discover this page.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Drill" },
+        { "type": "TEXT", "text": "Drills are electric tools which come in different tiers. The LV Drill mines a 3x3x1 area. Higher-tier drills can mine larger areas. They require a charged battery to function and are rechargeable." }
+    ]
+}

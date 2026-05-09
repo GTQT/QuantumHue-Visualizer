@@ -1,0 +1,12 @@
+{
+    "id": "large_chemical_reactor",
+    "title": "Large Chemical Reactor",
+    "icon": "machine:large_chemical_reactor",
+    "tier": 4,
+    "discoveryHint": "Reach HV to learn about this.",
+    "discoveryTag": "hv",
+    "sections": [
+        { "type": "HEADING", "text": "Large Chemical Reactor" },
+        { "type": "TEXT", "text": "The Large Chemical Reactor shares its recipe map with the single-block Chemical Reactor but can handle recipes with more inputs and outputs. It is essential for complex chemistry from HV onward." }
+    ]
+}

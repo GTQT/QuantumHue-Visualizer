@@ -1,0 +1,12 @@
+{
+    "id": "pressure_sensor",
+    "title": "Pressure Sensor",
+    "icon": "machine_array:pressure_sensor:0",
+    "tier": 2,
+    "discoveryHint": "Build LV machines to discover this.",
+    "discoveryTag": "lv",
+    "sections": [
+        { "type": "HEADING", "text": "Pressure Sensor" },
+        { "type": "TEXT", "text": "The Pressure Sensor reads pressure from a connected pipe and outputs a redstone signal proportional to how close it is to the burst rating. Signal = (pressure / burst rating) x 15, rounded down. Wire it to a Pipe Pump's redstone control for automated shutoff." }
+    ]
+}
