@@ -20,16 +20,21 @@ public final class WikiDiscovery {
     private static final Set<String> discovered = new HashSet<>();
     private static boolean loaded = false;
 
-    private WikiDiscovery() {}
+    private WikiDiscovery() {
+    }
 
-    /** Pages with tier 0 are always visible (introductory content). */
+    /**
+     * Pages with tier 0 are always visible (introductory content).
+     */
     public static boolean isDiscovered(WikiPage page) {
         if (page.tier <= 0) return true;
         ensureLoaded();
         return discovered.contains(page.id);
     }
 
-    /** Discover a page by its id. Returns true if newly discovered. */
+    /**
+     * Discover a page by its id. Returns true if newly discovered.
+     */
     public static boolean discover(String pageId) {
         ensureLoaded();
         if (discovered.add(pageId)) {
@@ -39,7 +44,9 @@ public final class WikiDiscovery {
         return false;
     }
 
-    /** Discover all pages that match a given tier or below. */
+    /**
+     * Discover all pages that match a given tier or below.
+     */
     public static void discoverTier(int tier) {
         boolean changed = false;
         for (WikiCategory cat : WikiContent.getCategories()) {
@@ -52,7 +59,9 @@ public final class WikiDiscovery {
         if (changed) save();
     }
 
-    /** Discover a specific page and save. Used from item pickup / craft triggers. */
+    /**
+     * Discover a specific page and save. Used from item pickup / craft triggers.
+     */
     public static void discoverByTag(String tag) {
         boolean changed = false;
         for (WikiCategory cat : WikiContent.getCategories()) {
@@ -65,7 +74,9 @@ public final class WikiDiscovery {
         if (changed) save();
     }
 
-    /** Reset state on logout so it reloads for the next player. */
+    /**
+     * Reset state on logout so it reloads for the next player.
+     */
     public static void reset() {
         discovered.clear();
         loaded = false;

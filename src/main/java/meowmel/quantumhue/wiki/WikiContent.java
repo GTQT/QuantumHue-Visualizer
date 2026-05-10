@@ -18,7 +18,9 @@ public final class WikiContent {
         return CATEGORIES;
     }
 
-    /** Force reload from JSON (e.g. after resource pack change). */
+    /**
+     * Force reload from JSON (e.g. after resource pack change).
+     */
     public static void reload() {
         CATEGORIES = null;
     }

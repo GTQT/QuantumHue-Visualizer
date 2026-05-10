@@ -1,14 +1,9 @@
 {
-    "id": "welcome",
-    "title": "Welcome",
-    "icon": "item:minecraft:book",
-    "tier": 0,
-    "discoveryHint": "",
-    "discoveryTag": "",
-    "sections": [
-        { "type": "HEADING", "text": "Welcome to GregTech" },
-        { "type": "TEXT", "text": "GregTech: Community Edition Unofficial (GTCEu) is a tech mod that overhauls Minecraft progression with a tiered system of machines, materials, and multiblocks. The journey starts with primitive tools and steam power, and eventually reaches fusion reactors and exotic materials." },
-        { "type": "GAP" },
-        { "type": "TEXT", "text": "The modpack progresses through voltage tiers: starting with the Steam Age, then Low Voltage, Medium Voltage, High Voltage, and beyond all the way to Ultimate Voltage. Each tier introduces new machines, materials, and challenges." }
-    ]
+  "id": "welcome",
+  "title": "欢迎使用 Wiki 系统",
+  "icon": "item:minecraft:book",
+  "tier": 0,
+  "discoveryHint": "",
+  "discoveryTag": "",
+  "content": "# 欢迎使用 Wiki 系统\n\n本模组内置了一套**完全由 JSON + Markdown 驱动**的动态百科系统。你无需编写任何 Java 代码，只需修改 `config/wiki/` 目录下的文本文件，即可自由添加、修改或删除页面。\n\n### 核心优势\n- **零代码修改**：所有内容均为标准 JSON 格式\n- **Markdown 渲染**：支持标题、粗体、表格、列表、自定义颜色等常用语法\n- **实时重载**：修改文件后按 `F3 + T` 或调用重载方法即可生效\n- **进度联动**：支持根据玩家背包物品自动解锁隐藏页面\n\n### 快速开始\n1. 打开 `config/wiki/` 目录\n2. 编辑或创建 `.json` 文件\n3. 使用 `content` 字段编写 Markdown 正文\n4. 保存后在游戏中按 `F3 + T` 重载资源\n\n> 提示：首次运行时，模组会自动将默认示例文件解压到 `config/wiki/`。你可以直接覆盖它们开始编写！"
 }

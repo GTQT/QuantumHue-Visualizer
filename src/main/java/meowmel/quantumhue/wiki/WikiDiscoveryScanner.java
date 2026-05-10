@@ -1,10 +1,6 @@
 package meowmel.quantumhue.wiki;
 
-import gregtech.api.unification.material.Materials;
 import gregtech.common.items.MetaItems;
-import gregtech.common.items.ToolItems;
-import gregtech.common.metatileentities.MetaTileEntities;
-
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -72,9 +68,8 @@ public final class WikiDiscoveryScanner {
         rule("cover", stack -> {
             if (MetaItems.ELECTRIC_PUMP_LV != null &&
                     MetaItems.ELECTRIC_PUMP_LV.isItemEqual(stack)) return true;
-            if (MetaItems.CONVEYOR_MODULE_LV != null &&
-                    MetaItems.CONVEYOR_MODULE_LV.isItemEqual(stack)) return true;
-            return false;
+            return MetaItems.CONVEYOR_MODULE_LV != null &&
+                    MetaItems.CONVEYOR_MODULE_LV.isItemEqual(stack);
         });
         rule("ore_processing", stack -> {
             String name = stack.getDisplayName().toLowerCase();
@@ -103,14 +98,5 @@ public final class WikiDiscoveryScanner {
 
     private static void rule(String tag, Predicate<ItemStack> test) {
         RULES.add(new DiscoveryRule(tag, test));
-    }
-
-    private static class DiscoveryRule {
-        final String tag;
-        final Predicate<ItemStack> test;
-        DiscoveryRule(String tag, Predicate<ItemStack> test) {
-            this.tag = tag;
-            this.test = test;
-        }
     }
 }

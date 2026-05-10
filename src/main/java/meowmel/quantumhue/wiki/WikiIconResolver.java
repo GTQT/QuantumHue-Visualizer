@@ -1,6 +1,5 @@
 package meowmel.quantumhue.wiki;
 
-
 import gregtech.api.unification.OreDictUnifier;
 import gregtech.api.unification.material.Material;
 import gregtech.api.unification.material.Materials;
@@ -8,7 +7,6 @@ import gregtech.api.unification.ore.OrePrefix;
 import gregtech.common.items.MetaItems;
 import gregtech.common.items.ToolItems;
 import gregtech.common.metatileentities.MetaTileEntities;
-
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
@@ -19,21 +17,22 @@ import java.util.function.Supplier;
 
 /**
  * Resolves icon strings from wiki JSON into ItemStack Suppliers.
- *
+ * <p>
  * Supported formats:
- *   item:minecraft:book         - vanilla item by registry name
- *   block:minecraft:crafting_table - vanilla block by registry name
- *   ore:prefix:material         - OreDictUnifier.get(OrePrefix, Material)
- *   tool:toolname:material      - ToolItems field, e.g. tool:wrench:iron
- *   machine:fieldname           - MetaTileEntities single field, e.g. machine:electric_blast_furnace
- *   machine_array:fieldname:tier - MetaTileEntities array field, e.g. machine_array:macerator:1
- *   machine_hull:tier           - MetaTileEntities.HULL[tier]
- *   machine_transformer:tier    - MetaTileEntities.TRANSFORMER[tier]
- *   metaitem:fieldname          - MetaItems field, e.g. metaitem:electric_pump_lv
+ * item:minecraft:book         - vanilla item by registry name
+ * block:minecraft:crafting_table - vanilla block by registry name
+ * ore:prefix:material         - OreDictUnifier.get(OrePrefix, Material)
+ * tool:toolname:material      - ToolItems field, e.g. tool:wrench:iron
+ * machine:fieldname           - MetaTileEntities single field, e.g. machine:electric_blast_furnace
+ * machine_array:fieldname:tier - MetaTileEntities array field, e.g. machine_array:macerator:1
+ * machine_hull:tier           - MetaTileEntities.HULL[tier]
+ * machine_transformer:tier    - MetaTileEntities.TRANSFORMER[tier]
+ * metaitem:fieldname          - MetaItems field, e.g. metaitem:electric_pump_lv
  */
 public final class WikiIconResolver {
 
-    private WikiIconResolver() {}
+    private WikiIconResolver() {
+    }
 
     public static Supplier<ItemStack> resolve(String iconStr) {
         if (iconStr == null || iconStr.isEmpty()) {
@@ -112,7 +111,8 @@ public final class WikiIconResolver {
                     Object result = getMethod.invoke(tool, mat);
                     if (result instanceof ItemStack) return (ItemStack) result;
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
             return ItemStack.EMPTY;
         };
     }
@@ -128,7 +128,8 @@ public final class WikiIconResolver {
                     Object result = m.invoke(mte);
                     if (result instanceof ItemStack) return (ItemStack) result;
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
             return ItemStack.EMPTY;
         };
     }
@@ -147,7 +148,8 @@ public final class WikiIconResolver {
                         if (result instanceof ItemStack) return (ItemStack) result;
                     }
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
             return ItemStack.EMPTY;
         };
     }
@@ -163,7 +165,8 @@ public final class WikiIconResolver {
                     Object result = m.invoke(item);
                     if (result instanceof ItemStack) return (ItemStack) result;
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
             return ItemStack.EMPTY;
         };
     }
@@ -175,14 +178,16 @@ public final class WikiIconResolver {
             Field f = Materials.class.getField(fieldName);
             Object mat = f.get(null);
             if (mat instanceof Material) return (Material) mat;
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         // Try all-caps
         try {
             Field f = Materials.class.getField(name.toUpperCase());
             Object mat = f.get(null);
             if (mat instanceof Material) return (Material) mat;
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         // Try case-insensitive scan
         try {
@@ -192,7 +197,8 @@ public final class WikiIconResolver {
                     if (mat instanceof Material) return (Material) mat;
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         return null;
     }

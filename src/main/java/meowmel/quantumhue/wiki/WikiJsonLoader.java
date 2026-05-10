@@ -1,13 +1,11 @@
 package meowmel.quantumhue.wiki;
 
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
+import net.minecraft.util.text.translation.I18n;
 import net.minecraftforge.fml.common.Loader;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -22,32 +20,27 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * Loads wiki categories and pages from JSON files in config/wiki/.
- * On first run, default files are extracted from the mod JAR.
- * Players can edit, add, or remove entries by modifying files in that folder.
- */
 public final class WikiJsonLoader {
-
     private static final Logger LOG = LogManager.getLogger("Wiki");
 
-    private WikiJsonLoader() {}
+    private WikiJsonLoader() {
+    }
 
-    /** Resolve the config/wiki/ directory path. */
     private static Path getWikiDir() {
         return Loader.instance().getConfigDir().toPath().resolve("wiki");
     }
 
-    /**
-     * Load all categories and pages from JSON.
-     * Extracts defaults on first run, then reads from config/wiki/.
-     */
+    private static String localize(String key) {
+        if (key == null || key.isEmpty()) return "";
+        String translated = I18n.translateToLocal(key);
+        return translated.equals(key) ? key : translated;
+    }
+
     public static List<WikiCategory> loadCategories() {
         List<WikiCategory> categories = new ArrayList<>();
         try {
             Path wikiDir = getWikiDir();
             extractDefaultsIfNeeded(wikiDir);
-
             JsonObject index = readJson(wikiDir, "_index");
             if (index == null || !index.has("categories")) {
                 LOG.warn("Wiki _index.json not found or has no categories");
@@ -57,9 +50,8 @@ public final class WikiJsonLoader {
             JsonArray catArray = index.getAsJsonArray("categories");
             for (JsonElement catEl : catArray) {
                 JsonObject catObj = catEl.getAsJsonObject();
-                String name = catObj.get("name").getAsString();
+                String name = localize(catObj.get("name").getAsString());
                 String iconStr = catObj.has("icon") ? catObj.get("icon").getAsString() : "";
-
                 WikiCategory cat = new WikiCategory(name, WikiIconResolver.resolve(iconStr));
 
                 if (catObj.has("pages")) {
@@ -67,15 +59,10 @@ public final class WikiJsonLoader {
                     for (JsonElement pageIdEl : pageIds) {
                         String pageId = pageIdEl.getAsString();
                         WikiPage page = loadPage(wikiDir, pageId);
-                        if (page != null) {
-                            cat.add(page);
-                        } else {
-                            LOG.warn("Wiki page not found: {}", pageId);
-                        }
+                        if (page != null) cat.add(page);
+                        else LOG.warn("Wiki page not found: {}", pageId);
                     }
                 }
-
-                cat.sortAlphabetically();
                 categories.add(cat);
             }
         } catch (Exception e) {
@@ -84,63 +71,20 @@ public final class WikiJsonLoader {
         return categories;
     }
 
-    /**
-     * Load a single wiki page from its JSON file.
-     */
     private static WikiPage loadPage(Path wikiDir, String pageId) {
         try {
             JsonObject obj = readJson(wikiDir, pageId);
             if (obj == null) return null;
 
             String id = obj.has("id") ? obj.get("id").getAsString() : pageId;
-            String title = obj.has("title") ? obj.get("title").getAsString() : pageId;
+            String title = obj.has("title") ? localize(obj.get("title").getAsString()) : pageId;
             String iconStr = obj.has("icon") ? obj.get("icon").getAsString() : "";
 
             WikiPage page = new WikiPage(id, title, WikiIconResolver.resolve(iconStr));
-
             if (obj.has("tier")) page.tier(obj.get("tier").getAsInt());
-            if (obj.has("discoveryHint")) {
-                String hint = obj.get("discoveryHint").getAsString();
-                if (!hint.isEmpty()) page.hint(hint);
-            }
-            if (obj.has("discoveryTag")) {
-                String tag = obj.get("discoveryTag").getAsString();
-                if (!tag.isEmpty()) page.tag(tag);
-            }
-
-            if (obj.has("sections")) {
-                JsonArray sections = obj.getAsJsonArray("sections");
-                for (JsonElement secEl : sections) {
-                    JsonObject sec = secEl.getAsJsonObject();
-                    String type = sec.get("type").getAsString();
-                    String text = sec.has("text") ? sec.get("text").getAsString() : "";
-
-                    switch (type.toUpperCase()) {
-                        case "TEXT":
-                            page.text(text);
-                            break;
-                        case "HEADING":
-                            page.heading(text);
-                            break;
-                        case "SUBHEADING":
-                            page.subheading(text);
-                            break;
-                        case "TABLE":
-                            // Table rows are separated by \n in JSON text
-                            page.table(text.split("\n"));
-                            break;
-                        case "DIAGRAM":
-                            page.diagram(text.split("\n"));
-                            break;
-                        case "GAP":
-                            page.gap();
-                            break;
-                        default:
-                            LOG.warn("Unknown section type '{}' in page '{}'", type, pageId);
-                            break;
-                    }
-                }
-            }
+            if (obj.has("discoveryHint")) page.hint(localize(obj.get("discoveryHint").getAsString()));
+            if (obj.has("discoveryTag")) page.tag(obj.get("discoveryTag").getAsString());
+            if (obj.has("content")) page.content(localize(obj.get("content").getAsString()));
 
             return page;
         } catch (Exception e) {
@@ -149,9 +93,6 @@ public final class WikiJsonLoader {
         }
     }
 
-    /**
-     * Read a JSON file from config/wiki/{name}.json
-     */
     private static JsonObject readJson(Path wikiDir, String name) {
         Path file = wikiDir.resolve(name + ".json");
         if (!Files.exists(file)) return null;
@@ -165,25 +106,18 @@ public final class WikiJsonLoader {
         }
     }
 
-    /**
-     * If config/wiki/ is missing or has no _index.json,
-     * extract all default wiki JSON files from the mod JAR.
-     */
     private static void extractDefaultsIfNeeded(Path wikiDir) {
         if (Files.exists(wikiDir.resolve("_index.json"))) return;
-
         LOG.info("Extracting default wiki files to {}", wikiDir);
         FileSystem zipFs = null;
         try {
             Files.createDirectories(wikiDir);
-
             URL marker = WikiJsonLoader.class.getResource("/assets/.gtassetsroot");
             if (marker == null) {
                 LOG.error("Could not find .gtassetsroot - cannot extract wiki defaults");
                 return;
             }
             URI markerUri = marker.toURI();
-
             Path jarWikiPath;
             if (markerUri.getScheme().equals("jar") || markerUri.getScheme().equals("zip")) {
                 zipFs = FileSystems.newFileSystem(markerUri, Collections.emptyMap());
@@ -218,15 +152,13 @@ public final class WikiJsonLoader {
                 Files.createDirectories(target.getParent());
                 Files.copy(jarFile, target, StandardCopyOption.REPLACE_EXISTING);
             }
-
             LOG.info("Extracted {} default wiki files", jsonFiles.size());
         } catch (Exception e) {
             LOG.error("Failed to extract default wiki files", e);
         } finally {
-            if (zipFs != null) {
-                try {
-                    zipFs.close();
-                } catch (IOException ignored) {}
+            if (zipFs != null) try {
+                zipFs.close();
+            } catch (IOException ignored) {
             }
         }
     }
