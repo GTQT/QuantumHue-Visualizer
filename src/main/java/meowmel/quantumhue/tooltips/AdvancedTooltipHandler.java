@@ -2,14 +2,10 @@ package meowmel.quantumhue.tooltips;
 
 import meowmel.quantumhue.QuantumHueConfig;
 import meowmel.quantumhue.tooltips.applecore.AppleSkinIntegration;
-import meowmel.quantumhue.tooltips.applecore.AppleSkinRenderer;
 import meowmel.quantumhue.tooltips.thaumcraft.ThaumcraftIntegration;
-import meowmel.quantumhue.tooltips.thaumcraft.ThaumcraftRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
@@ -39,6 +35,10 @@ public class AdvancedTooltipHandler {
     private final TooltipRenderer tooltipRenderer = new TooltipRenderer();
     private final PaginationHandler paginationHandler = new PaginationHandler();
     private final ModInfoHelper modInfoHelper = new ModInfoHelper();
+    private final TooltipAnimation tooltipAnimation = new TooltipAnimation();
+    private TooltipLayout lastRenderedLayout = null;
+    private long lastRenderTime = 0;
+    private static final long ANIMATION_THRESHOLD_MS = 500;
 
     public static int getCurrentPage() {
         return currentPage;
@@ -64,10 +64,14 @@ public class AdvancedTooltipHandler {
         event.setCanceled(true);
 
         boolean isItemTooltip = !event.getStack().isEmpty();
-        if (isItemTooltip) {
-            renderCustomItemTooltip(event);
-        } else {
+
+        if (!isItemTooltip) {
+            // 切换到简单tooltip时，重置物品状态并停止动画
+            currentItemId = null;
+            tooltipAnimation.stopAnimation();
             renderSimpleTooltip(event);
+        } else {
+            renderCustomItemTooltip(event);
         }
     }
 
@@ -86,6 +90,13 @@ public class AdvancedTooltipHandler {
         String itemId = TooltipUtils.getItemUniqueId(stack);
 
         if (!itemId.equals(currentItemId)) {
+            if (QuantumHueConfig.tooltip_animation.enabled) {
+                long timeSinceLastRender = System.currentTimeMillis() - lastRenderTime;
+                if (timeSinceLastRender < ANIMATION_THRESHOLD_MS && lastRenderedLayout != null) {
+                    tooltipAnimation.startAnimation(lastRenderedLayout);
+                }
+            }
+
             currentItemId = itemId;
             currentPage = 0;
             currentKeyState = new KeyState();
@@ -130,6 +141,9 @@ public class AdvancedTooltipHandler {
         paginationHandler.calculatePagination(content, event.getScreenHeight(), currentKeyState);
 
         TooltipLayout layout = layoutManager.calculateLayout(content, event);
+        if (QuantumHueConfig.tooltip_animation.enabled) {
+            layout = tooltipAnimation.getAnimatedLayout(layout);
+        }
 
         GlStateManager.pushMatrix();
         GLStateHelper.setupGLState();
@@ -148,6 +162,9 @@ public class AdvancedTooltipHandler {
 
         GLStateHelper.restoreGLState();
         GlStateManager.popMatrix();
+
+        lastRenderedLayout = layout;
+        lastRenderTime = System.currentTimeMillis();
     }
 
     private void renderSimpleTooltip(RenderTooltipEvent.Pre event) {

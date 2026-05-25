@@ -65,4 +65,27 @@ dependencies {
     // implementation ('com.google.code.gson:gson:2.8.6') {
     //     transitive = false
     // }
+
+    implementation rfg.deobf("curse.maven:mixin-booter-419286:6344449")
+    implementation rfg.deobf('curse.maven:the-one-probe-community-edition-885670:7718301')
+    implementation rfg.deobf("curse.maven:gregtech-ce-unofficial-557242:5050979")
+    implementation rfg.deobf("curse.maven:code-chicken-lib-1-8-242818:2779848")
+    api rfg.deobf("curse.maven:ctm-267602:2915363") // CTM 1.0.2.31
+    implementation rfg.deobf("curse.maven:ae2-extended-life-570458:6302098") // AE2FC 2.6.6
+    //test
+    implementation rfg.deobf('curse.maven:jei-238222:5846804')
+
+    compileOnly rfg.deobf('curse.maven:mekanism-ce-unofficial-840735:7481450')
+
+    // 苹果核
+    compileOnly rfg.deobf('curse.maven:appleskin-248787:2987247')
+
+    // 神秘要素
+    compileOnly rfg.deobf("curse.maven:baubles-227083:2518667")
+    compileOnly rfg.deobf("curse.maven:thaumcraft-223628:2629023")
+
+    // 匠魂怀古
+    implementation rfg.deobf('curse.maven:tinkers-antique-1242239:7339332')
+    implementation rfg.deobf('curse.maven:mantle-74924:2713386')
+    implementation rfg.deobf('curse.maven:antique-armory-1394222:7339320')
 }

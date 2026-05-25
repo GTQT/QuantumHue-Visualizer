@@ -12,14 +12,14 @@ public class QuantumHueConfig {
     @Config.Name("The One Probe Color")
     public static TOPCustomColor top_custom = new TOPCustomColor();
 
+    @Config.Name("Tooltip Animation")
+    public static TooltipAnimation tooltip_animation = new TooltipAnimation();
+
     @Config.Name("Blur Config")
     public static Blur blur = new Blur();
 
     @Config.Name("Biome Info")
     public static BiomeInfo biome_info = new BiomeInfo();
-
-    @Config.Name("Smooth Menus")
-    public static SmoothMenus smooth_menus = new SmoothMenus();
 
     @Config.Name("Smooth Scrolling")
     public static SmoothScrolling smoothScrolling = new SmoothScrolling();
@@ -58,16 +58,6 @@ public class QuantumHueConfig {
                 "false: 保持原有限制"
         })
         public boolean unlimitFps = true;
-    }
-
-    public static class SmoothMenus {
-        @Config.Name("Rate")
-        @Config.Comment({
-                "Target frame rate for menu screens."
-        })
-        @Config.SlidingOption
-        @Config.RangeInt(min = 60, max = 144)
-        public int targetFrameRate = 60;
     }
 
     public static class BiomeInfo {
@@ -159,6 +149,26 @@ public class QuantumHueConfig {
         public static String[] skippedGuiPatterns = new String[] {
                 "*GuiDrawer*"
         };
+    }
+
+    public static class TooltipAnimation {
+        @Config.Comment({
+                "是否启用Tooltip切换动画",
+                "当鼠标从不同物品间切换时，Tooltip框会平滑过渡而非瞬间变换",
+                "true: 启用平滑过渡",
+                "false: 禁用（瞬间切换）"
+        })
+        @Config.Name("启用")
+        public boolean enabled = true;
+
+        @Config.Comment({
+                "动画持续时间（毫秒）",
+                "值越大，过渡越慢",
+                "范围: 50 ~ 500"
+        })
+        @Config.RangeInt(min = 50, max = 500)
+        @Config.Name("动画时长")
+        public int duration = 150;
     }
 
     public static class TOPCustomColor {
