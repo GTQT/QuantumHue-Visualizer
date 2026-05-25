@@ -12,7 +12,7 @@ public class PacketHandler {
     private static int packetId = 0;
 
     public static void init() {
-        instance = new SimpleNetworkWrapper("gtqtcore");
+        instance = new SimpleNetworkWrapper("quantumhue");
         instance.registerMessage(
                 ShowWikiPacket.Handler.class,
                 ShowWikiPacket.class,
