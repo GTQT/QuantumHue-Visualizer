@@ -81,9 +81,6 @@ public final class WikiJsonLoader {
             String iconStr = obj.has("icon") ? obj.get("icon").getAsString() : "";
 
             WikiPage page = new WikiPage(id, title, WikiIconResolver.resolve(iconStr));
-            if (obj.has("tier")) page.tier(obj.get("tier").getAsInt());
-            if (obj.has("discoveryHint")) page.hint(localize(obj.get("discoveryHint").getAsString()));
-            if (obj.has("discoveryTag")) page.tag(obj.get("discoveryTag").getAsString());
             if (obj.has("content")) page.content(localize(obj.get("content").getAsString()));
 
             return page;

@@ -1,9 +1,0 @@
-{
-  "id": "discovery_system",
-  "title": "进度解锁机制",
-  "icon": "item:minecraft:compass",
-  "tier": 0,
-  "discoveryHint": "",
-  "discoveryTag": "",
-  "content": "# 进度与解锁系统\n\nWiki 支持**防剧透机制**。高阶段页面默认锁定，需满足条件后自动解锁，引导玩家循序渐进。\n\n### 核心字段\n| 字段 | 说明 |\n|---|---|\n| `tier` | 进度等级。`0` 为公开，`1` 为蒸汽时代，`2` 为 LV，依此类推 |\n| `discoveryTag` | 扫描匹配标签。玩家背包中出现对应物品时自动解锁 |\n| `discoveryHint` | 锁定状态下显示的引导提示 |\n\n### 内置扫描规则\n系统打开 Wiki 时会自动扫描背包，匹配以下关键词：\n| 标签 (Tag) | 触发条件示例 |\n|---|---|\n| `steam` | 拥有青铜或蒸汽相关物品 |\n| `lv` / `mv` / `hv` | 对应电压等级的机器 |\n| `wrench` / `hammer` | 拥有对应工具 |\n\n### 自定义解锁\n1. 设置 `\"discoveryTag\": \"custom_tag\"`\n2. 在代码中调用 `WikiDiscovery.discoverByTag(\"custom_tag\")`\n3. 或通过 `/give` 发放匹配物品，下次打开 Wiki 时自动扫描解锁\n\n> 提示：锁定页面在侧边栏显示为 `???`，点击后显示引导提示。解锁后自动替换为真实标题与内容。"
-}

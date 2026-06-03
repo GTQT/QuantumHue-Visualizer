@@ -1,0 +1,73 @@
+package meowmel.quantumhue.wiki;
+
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/** Wiki 渲染引擎的类型定义 */
+public final class WikiRenderTypes {
+
+    private WikiRenderTypes() {}
+
+    /* ═══════════════ 渲染行类型 ═══════════════ */
+    public enum LineType {
+        HEADING, SUBHEADING, SUBSUBHEADING,
+        TEXT,
+        TABLE_HEADER, TABLE_ROW,
+        INLINE_ICON, INLINE_IMAGE, INLINE_LATEX,
+        BLOCKQUOTE, CODE_BLOCK, LATEX_BLOCK,
+        GAP
+    }
+
+    /* ═══════════════ 行内片段类型 ═══════════════ */
+    public enum PartType { TEXT, ICON, LATEX }
+
+    /* ═══════════════ 行内样式片段 ═══════════════ */
+    public static class TextPart {
+        public final PartType type;
+        public final String text;
+        public final int color;
+        public final ItemStack icon;
+
+        public TextPart(PartType t, String txt, int col) {
+            type = t; text = txt; color = col; icon = null;
+        }
+
+        public TextPart(PartType t, ItemStack i) {
+            type = t; text = null; color = 0; icon = i;
+        }
+    }
+
+    /* ═══════════════ 行级渲染单元 ═══════════════ */
+    public static class RenderLine {
+        public final LineType type;
+        public final String text;
+        public List<TextPart> parts = new ArrayList<>();
+        public int height, extra;
+        public ItemStack icon;
+        public ResourceLocation image;
+        public int imageW, imageH;
+
+        public RenderLine(LineType t, String txt, int h) {
+            type = t; text = txt; height = h;
+        }
+
+        public RenderLine(LineType t, TextPart p, int h) {
+            type = t; parts.add(p); text = null; height = h;
+        }
+
+        public RenderLine(LineType t, List<TextPart> p, int h) {
+            type = t; parts = p; text = null; height = h;
+        }
+
+        public RenderLine(LineType t, ItemStack i) {
+            type = t; icon = i; text = null; height = 16;
+        }
+
+        public RenderLine(LineType t, ResourceLocation img, int w, int h) {
+            type = t; image = img; imageW = w; imageH = h; text = null; height = h + 4;
+        }
+    }
+}

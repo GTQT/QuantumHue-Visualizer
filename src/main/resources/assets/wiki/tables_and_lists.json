@@ -2,8 +2,5 @@
   "id": "tables_and_lists",
   "title": "表格与列表排版",
   "icon": "item:minecraft:crafting_table",
-  "tier": 0,
-  "discoveryHint": "",
-  "discoveryTag": "",
   "content": "# 表格与列表\n\n使用标准 Markdown 语法即可创建清晰的表格与列表，系统会自动计算列宽与斑马纹背景。\n\n### 表格语法\n使用 `|` 分隔列，首行自动识别为表头。支持任意数量的列：\n\n| 参数 | 描述 | 示例 |\n|---|---|---|\n| Voltage | 电压等级 | LV, MV, HV |\n| Amperage | 电流安培数 | 1A, 2A, 4A |\n| EU/t | 能量单位 | 32, 128, 512 |\n\n### 列表语法\n- **无序列表**：以 `- `、`* ` 或 `+ ` 开头\n- **有序列表**：以 `1. `、`2. ` 开头（序号会自动重置）\n\n### 混合使用示例\n1. 收集基础材料\n - 铁锭 × 5 \n![item:item:minecraft:iron_ingot]\n\n - 煤炭 × 2 \n![item:item:minecraft:coal]\n\n2. 放入熔炉烧炼\n3. 取出成品 \n![item:item:minecraft:stone]\n\n### 排版建议\n- 表格列数建议不超过 4 列，避免小屏幕溢出\n- 单元格内可使用 Markdown 格式（如颜色、物品图标）\n- 列表项支持自动缩进，保持层级清晰"
 }

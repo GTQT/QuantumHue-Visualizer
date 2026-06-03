@@ -2,8 +2,5 @@
   "id": "inline_assets",
   "title": "物品与图片嵌入",
   "icon": "item:minecraft:chest",
-  "tier": 0,
-  "discoveryHint": "",
-  "discoveryTag": "",
   "content": "# 内联物品与图片\n\nWiki 支持在文本中直接嵌入游戏内物品图标与自定义图片，无需额外配置。\n\n### 物品图标语法\n使用 `![item:解析字符串]`，格式与 `icon` 字段完全一致：\n- 钻石 \n![item:item:minecraft:diamond]\n\n- 工作台 \n![item:item:minecraft:crafting_table]\n\n- 红石 \n![item:item:minecraft:redstone]\n\n ### 图片嵌入语法（实测示例）\n使用 `![image:域:资源路径]` 或 `![image:域:路径:宽:高]`：\n\n原始尺寸（16×16）：\n![image:quantumhue:wiki/img.png]\n\n放大 4 倍显示（64×64）：\n![image:quantumhue:wiki/img.png:64:64]\n\n### 路径规则\n| 语法 | 实际文件位置 |\n|---|---|\n| `![image:quantumhue:wiki/img.png]` | `assets/quantumhue/wiki/img.png` |\n| `![image:minecraft:textures/gui/demo.png]` | `assets/minecraft/textures/gui/demo.png` |\n\n### 注意事项\n- 图片**不需要**放在 `textures/` 目录下，直接按路径映射即可\n- 推荐宽度不超过 400px，避免溢出内容区域\n- 如果图片显示为紫黑格子，请检查文件名大小写与 PNG 格式\n- 图片会自动在页面中**水平居中**显示"
 }

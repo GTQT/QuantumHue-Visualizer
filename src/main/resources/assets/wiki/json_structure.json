@@ -2,8 +2,5 @@
   "id": "json_structure",
   "title": "JSON 文件结构规范",
   "icon": "item:minecraft:paper",
-  "tier": 0,
-  "discoveryHint": "",
-  "discoveryTag": "",
-  "content": "# JSON 页面结构\n\n每个 `.json` 文件代表一个独立的 Wiki 页面。文件存放于 `config/wiki/` 目录下，文件名需与 `id` 字段完全一致。\n\n### 字段说明\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| `id` | String | ✅ | 页面唯一标识符，用于解锁系统与日志 |\n| `title` | String | ✅ | 侧边栏与标题栏显示的名称 |\n| `icon` | String | ✅ | 图标解析字符串（如 `item:minecraft:diamond`） |\n| `content` | String | ✅ | Markdown 格式的完整正文内容 |\n| `tier` | Integer | ❌ | 进度等级。`0` 始终可见，`1+` 需解锁 |\n| `discoveryTag` | String | ❌ | 背包匹配标签，用于自动发现 |\n| `discoveryHint` | String | ❌ | 未解锁时显示的引导提示文本 |\n\n### 完整模板示例\n```json\n{\n  \"id\": \"my_page\",\n  \"title\": \"我的页面\",\n  \"icon\": \"item:minecraft:book\",\n  \"tier\": 0,\n  \"discoveryHint\": \"制作铁镐以解锁此页。\",\n  \"discoveryTag\": \"pickaxe\",\n  \"content\": \"# 标题\\n\\n这里是正文内容...\"\n}\n```\n\n### 注意事项\n- JSON 中的 `\n` 代表换行，编写长文本时请务必保留转义符\n- `icon` 字段支持多种格式，详见《物品与图片嵌入》章节\n- 修改 `tier` 或 `discoveryTag` 后，需重新打开 Wiki 或重载以触发扫描"
+  "content": "# JSON 页面结构\n\n每个 `.json` 文件代表一个独立的 Wiki 页面。文件存放于 `config/wiki/` 目录下，文件名需与 `id` 字段完全一致。\n\n### 字段说明\n| 字段 | 类型 | 必填 | 说明 |\n|---|---|---|---|\n| `id` | String | ✅ | 页面唯一标识符，用于日志 |\n| `title` | String | ✅ | 侧边栏与标题栏显示的名称 |\n| `icon` | String | ✅ | 图标解析字符串（如 `item:minecraft:diamond`） |\n| `content` | String | ✅ | Markdown 格式的完整正文内容 |\n\n### 完整模板示例\n```json\n{\n  \"id\": \"my_page\",\n  \"title\": \"我的页面\",\n  \"icon\": \"item:minecraft:book\",\n  \"content\": \"# 标题\\n\\n这里是正文内容...\"\n}\n```\n\n### 注意事项\n- JSON 中的 `\n` 代表换行，编写长文本时请务必保留转义符\n- `icon` 字段支持多种格式，详见《物品与图片嵌入》章节"
 }
