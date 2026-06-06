@@ -1,0 +1,17 @@
+{
+  "package": "meowmel.quantumhue.modernsplash.mixin",
+  "required": true,
+  "refmap": "mixins.quantumhue.refmap.json",
+  "target": "@env(DEFAULT)",
+  "minVersion": "0.8.5",
+  "compatibilityLevel": "JAVA_8",
+  "plugin": "meowmel.quantumhue.modernsplash.MSMixinConfigPlugin",
+  "mixins": [],
+  "server": [],
+  "client": [
+    "FMLClientHandlerMixin",
+    "FontRendererHookMixin",
+    "MinecraftMixin",
+    "TextureUtilMixin"
+  ]
+}

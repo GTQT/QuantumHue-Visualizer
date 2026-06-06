@@ -5,6 +5,7 @@ import meowmel.quantumhue.biomeInfo.BiomeInfoEventHandler;
 import meowmel.quantumhue.blur.SimpleBlurHandler;
 import meowmel.quantumhue.client.highlight.ClientHighlightHandler;
 import meowmel.quantumhue.command.CommandWiki;
+import meowmel.quantumhue.modernsplash.ModernSplashEvents;
 import meowmel.quantumhue.network.PacketHandler;
 import meowmel.quantumhue.tooltips.AdvancedTooltipHandler;
 import meowmel.quantumhue.wiki.WikiScreen;
@@ -48,6 +49,7 @@ public class QuantumHue {
     public void preInit(FMLPreInitializationEvent event) {
         LOGGER.info("Hello From {}!", Tags.MOD_NAME);
         PacketHandler.init();
+        MinecraftForge.EVENT_BUS.register(new ModernSplashEvents());
     }
 
     @Mod.EventHandler

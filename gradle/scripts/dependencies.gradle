@@ -65,7 +65,6 @@ dependencies {
     // implementation ('com.google.code.gson:gson:2.8.6') {
     //     transitive = false
     // }
-    implementation("com.google.flatbuffers:flatbuffers-java:23.5.26") { transitive = false }
     implementation("org.scilab.forge:jlatexmath:1.0.7") { transitive = false }
 
     implementation rfg.deobf("curse.maven:mixin-booter-419286:6344449")
@@ -76,6 +75,7 @@ dependencies {
     implementation rfg.deobf("curse.maven:ae2-extended-life-570458:6302098") // AE2FC 2.6.6
     //test
     implementation rfg.deobf('curse.maven:jei-238222:5846804')
+    implementation rfg.deobf('curse.maven:smoothfont-285742:3944565')
 
     compileOnly rfg.deobf('curse.maven:mekanism-ce-unofficial-840735:7481450')
 
