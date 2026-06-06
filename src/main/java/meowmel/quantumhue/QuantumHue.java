@@ -3,6 +3,7 @@ package meowmel.quantumhue;
 import com.meowmel.quantumhue.Tags;
 import meowmel.quantumhue.biomeInfo.BiomeInfoEventHandler;
 import meowmel.quantumhue.blur.SimpleBlurHandler;
+import meowmel.quantumhue.client.highlight.ClientHighlightHandler;
 import meowmel.quantumhue.command.CommandWiki;
 import meowmel.quantumhue.network.PacketHandler;
 import meowmel.quantumhue.tooltips.AdvancedTooltipHandler;
@@ -67,5 +68,6 @@ public class QuantumHue {
         MinecraftForge.EVENT_BUS.register(new SimpleBlurHandler());
         MinecraftForge.EVENT_BUS.register(new AdvancedTooltipHandler());
         MinecraftForge.EVENT_BUS.register(new BiomeInfoEventHandler());
+        MinecraftForge.EVENT_BUS.register(new ClientHighlightHandler());
     }
 }

@@ -18,6 +18,16 @@ public class PacketHandler {
                 ShowWikiPacket.class,
                 packetId++,
                 Side.CLIENT);
+        instance.registerMessage(
+                HighlightPacket.ServerHandler.class,
+                HighlightPacket.class,
+                packetId++,
+                Side.SERVER);
+        instance.registerMessage(
+                HighlightPacket.ClientHandler.class,
+                HighlightPacket.class,
+                packetId++,
+                Side.CLIENT);
     }
 
     public static void sendTo(IMessage message, net.minecraft.entity.player.EntityPlayerMP player) {

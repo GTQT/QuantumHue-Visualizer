@@ -24,6 +24,9 @@ public class QuantumHueConfig {
     @Config.Name("Smooth Scrolling")
     public static SmoothScrolling smoothScrolling = new SmoothScrolling();
 
+    @Config.Name("Middle Click Highlight")
+    public static Highlight highlight = new Highlight();
+
     public static class SmoothScrolling {
         @Config.Name("Scroll Duration")
         @Config.Comment({
@@ -224,5 +227,53 @@ public class QuantumHueConfig {
         @Config.RangeInt(min = 0, max = 20)
         @Config.Name("边框偏移")
         public int offset = 1;
+    }
+
+    public static class Highlight {
+        @Config.Name("Enabled")
+        @Config.Comment({
+                "启用/禁用手表中键提醒功能",
+                "true: 启用",
+                "false: 禁用"
+        })
+        public boolean enabled = true;
+
+        @Config.Name("Duration")
+        @Config.Comment({
+                "高亮持续显示时间（秒）",
+                "范围: 1 ~ 120"
+        })
+        @Config.RangeInt(min = 1, max = 120)
+        public int duration = 10;
+
+        @Config.Name("Block Outline Color")
+        @Config.Comment({
+                "方块线框颜色 (RGB 十六进制)",
+                "默认: 00FF00 (绿色)"
+        })
+        public int color = 0x00FF00;
+
+        @Config.Name("Entity Outline Color")
+        @Config.Comment({
+                "生物/实体线框颜色 (RGB 十六进制)",
+                "默认: FF0000 (红色)"
+        })
+        public int entityColor = 0xFF0000;
+
+        @Config.Name("Opacity")
+        @Config.Comment({
+                "线框透明度",
+                "范围: 0 ~ 255, 0=完全透明, 255=完全不透明"
+        })
+        @Config.RangeInt(min = 0, max = 255)
+        public int opacity = 200;
+
+        @Config.Name("Line Width")
+        @Config.Comment({
+                "线框线条宽度",
+                "范围: 0.5 ~ 10"
+        })
+        @Config.RangeDouble(min = 0.5, max = 10)
+        public float lineWidth = 2.0f;
     }
 }
