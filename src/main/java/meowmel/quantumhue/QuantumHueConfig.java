@@ -15,6 +15,9 @@ public class QuantumHueConfig {
     @Config.Name("Tooltip Animation")
     public static TooltipAnimation tooltip_animation = new TooltipAnimation();
 
+    @Config.Name("Tooltip Background")
+    public static TooltipBackground tooltip_background = new TooltipBackground();
+
     @Config.Name("Blur Config")
     public static Blur blur = new Blur();
 
@@ -172,6 +175,19 @@ public class QuantumHueConfig {
         @Config.RangeInt(min = 50, max = 500)
         @Config.Name("动画时长")
         public int duration = 150;
+    }
+
+    public static class TooltipBackground {
+
+        @Config.Comment({
+                "是否启用Tooltip内部填充和页眉渐变视觉效果",
+                " - 内部填充：在背景上叠加一层极淡的边框色",
+                " - 页眉渐变：物品名字区域从左到右渐隐的色块",
+                "true: 启用",
+                "false: 禁用"
+        })
+        @Config.Name("启用")
+        public boolean enabled = true;
     }
 
     public static class TOPCustomColor {

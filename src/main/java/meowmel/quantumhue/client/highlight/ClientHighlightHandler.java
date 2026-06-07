@@ -16,6 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -58,13 +59,16 @@ public class ClientHighlightHandler {
         }
     }
 
+    private static final double MAX_TRACE_DISTANCE = 200.0;
+
     private void handleMiddleClick() {
         Minecraft mc = Minecraft.getMinecraft();
         if (mc.player == null || mc.world == null) return;
-        if (mc.currentScreen != null) return; // 有 GUI 时不触发
+        if (mc.currentScreen != null) return;
         if (!QuantumHueConfig.highlight.enabled) return;
 
-        RayTraceResult result = mc.objectMouseOver;
+        // 使用自定义远距离射线检测
+        RayTraceResult result = rayTrace(mc.player, MAX_TRACE_DISTANCE, 1.0f);
         if (result == null || result.typeOfHit == RayTraceResult.Type.MISS) return;
 
         BlockPos pos;
@@ -73,14 +77,12 @@ public class ClientHighlightHandler {
         String targetName;
 
         if (result.typeOfHit == RayTraceResult.Type.ENTITY && result.entityHit != null) {
-            // 指向生物/实体
             Entity entity = result.entityHit;
             pos = entity.getPosition();
             entityId = entity.getEntityId();
             targetType = 1;
             targetName = entity.getName();
         } else if (result.typeOfHit == RayTraceResult.Type.BLOCK && result.getBlockPos() != null) {
-            // 指向方块
             pos = result.getBlockPos();
             targetType = 0;
             IBlockState state = mc.world.getBlockState(pos);
@@ -98,9 +100,66 @@ public class ClientHighlightHandler {
             return;
         }
 
-        // 发送数据包到服务端
         HighlightPacket packet = new HighlightPacket(pos, entityId, targetType, targetName, "");
         PacketHandler.sendToServer(packet);
+    }
+
+    /**
+     * 远距离射线检测，同时检测方块和实体
+     */
+    private RayTraceResult rayTrace(EntityPlayer player, double distance, float partialTicks) {
+        Vec3d start = player.getPositionEyes(partialTicks);
+        Vec3d look = player.getLook(partialTicks);
+        Vec3d end = start.add(look.x * distance, look.y * distance, look.z * distance);
+
+        // 先检测方块
+        RayTraceResult blockHit = player.world.rayTraceBlocks(start, end, false, false, true);
+
+        // 再检测实体
+        double blockDist = blockHit != null ? blockHit.hitVec.distanceTo(start) : Double.MAX_VALUE;
+
+        // 扩展搜索区域：以射线为中心的长方体
+        double expand = 2.0;
+        Vec3d min = new Vec3d(
+                Math.min(start.x, end.x) - expand,
+                Math.min(start.y, end.y) - expand,
+                Math.min(start.z, end.z) - expand
+        );
+        Vec3d max = new Vec3d(
+                Math.max(start.x, end.x) + expand,
+                Math.max(start.y, end.y) + expand,
+                Math.max(start.z, end.z) + expand
+        );
+
+        AxisAlignedBB searchBox = new AxisAlignedBB(min.x, min.y, min.z, max.x, max.y, max.z);
+        Entity closestEntity = null;
+        double closestEntityDist = blockDist;
+
+        for (Entity entity : player.world.getEntitiesWithinAABBExcludingEntity(player, searchBox)) {
+            if (!entity.canBeCollidedWith() && !entity.isEntityAlive()) continue;
+
+            AxisAlignedBB entityBB = entity.getEntityBoundingBox();
+            if (entityBB == null) continue;
+
+            // 扩大一点点边界框使瞄准更友好
+            RayTraceResult entityHit = entityBB.grow(0.3).calculateIntercept(start, end);
+            if (entityHit != null) {
+                double dist = start.distanceTo(entityHit.hitVec);
+                if (dist < closestEntityDist) {
+                    closestEntity = entity;
+                    closestEntityDist = dist;
+                }
+            }
+        }
+
+        // 如果实体比方块更近，返回实体命中
+        if (closestEntity != null && closestEntityDist < blockDist) {
+            Vec3d hitVec = start.add(look.scale(closestEntityDist / Math.sqrt(look.x * look.x + look.y * look.y + look.z * look.z)));
+            return new RayTraceResult(closestEntity, hitVec);
+        }
+
+        // 否则返回方块命中
+        return blockHit;
     }
 
     // ========== 高亮接收 ==========

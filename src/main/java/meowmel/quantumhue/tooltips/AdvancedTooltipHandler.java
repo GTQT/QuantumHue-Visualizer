@@ -157,8 +157,17 @@ public class AdvancedTooltipHandler {
                 GlStateManager.DestFactor.ZERO
         );
 
+        // 动画期间启用裁剪，防止文本/图标溢出动画中的外框
+        if (tooltipAnimation.isAnimating()) {
+            GLStateHelper.enableScissorClip(layout);
+        }
+
         tooltipRenderer.drawItemIcon(stack, layout.iconX, layout.iconY);
         tooltipRenderer.drawTooltipText(content, layout, event.getFontRenderer());
+
+        if (tooltipAnimation.isAnimating()) {
+            GLStateHelper.disableScissorClip();
+        }
 
         GLStateHelper.restoreGLState();
         GlStateManager.popMatrix();

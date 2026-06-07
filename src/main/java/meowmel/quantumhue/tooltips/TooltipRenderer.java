@@ -3,10 +3,14 @@ package meowmel.quantumhue.tooltips;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
+import meowmel.quantumhue.QuantumHueConfig;
 import meowmel.quantumhue.tooltips.applecore.AppleSkinRenderer;
 import meowmel.quantumhue.tooltips.thaumcraft.ThaumcraftIntegration;
 import meowmel.quantumhue.tooltips.thaumcraft.ThaumcraftRenderer;
@@ -25,6 +29,12 @@ public class TooltipRenderer {
                 layout.x + layout.width + 1,
                 layout.y + layout.height + 1,
                 colors.background);
+
+        // 内部填充：与外框同色的淡透明层
+        drawInnerBorderFill(layout, colors);
+
+        // 页眉渐变：物品名字区域从左到右渐变色背景
+        drawHeaderGradient(layout, colors, content);
 
         drawBorder(layout, colors);
 
@@ -75,6 +85,9 @@ public class TooltipRenderer {
                 layout.x + layout.width + 1,
                 layout.y + layout.height + 1,
                 colors.background);
+
+        // 内部填充：与外框同色的淡透明层
+        drawInnerBorderFill(layout, colors);
 
         drawSimpleBorder(layout, colors);
     }
@@ -188,5 +201,80 @@ public class TooltipRenderer {
             font.drawStringWithShadow(line, layout.x + textPadding, currentY, 0xFFFFFF);
             currentY += lineHeight;
         }
+    }
+
+    /**
+     * 绘制内部填充：使用边框颜色但极低透明度，覆盖在背景之上
+     */
+    private void drawInnerBorderFill(TooltipLayout layout, TooltipColors colors) {
+        if (!QuantumHueConfig.tooltip_background.enabled) return;
+
+        int borderColor = colors.borderStart;
+        int alpha = Math.max(4, ((borderColor >> 24) & 0xFF) / 8);
+        int fillColor = (borderColor & 0x00FFFFFF) | (alpha << 24);
+        Gui.drawRect(layout.x, layout.y, layout.x + layout.width, layout.y + layout.height, fillColor);
+    }
+
+    /**
+     * 绘制页眉渐变：物品名字区域从左到右渐隐的背景色块
+     */
+    private void drawHeaderGradient(TooltipLayout layout, TooltipColors colors, TooltipContent content) {
+        if (!QuantumHueConfig.tooltip_background.enabled) return;
+
+        // 计算页眉区域底部（物品名 + 模组名区域，到分隔线为止）
+        int headerBottom = layout.separatorY;
+        if (headerBottom <= layout.y) return;
+
+        int borderColor = colors.borderStart;
+        // 左侧：使用边框原始透明度，上限提高到更深
+        int leftAlpha = Math.min(0x80, Math.max(0x20, ((borderColor >> 24) & 0xFF)));
+        int leftColor = (borderColor & 0x00FFFFFF) | (leftAlpha << 24);
+        // 右侧：完全透明
+        int rightColor = leftColor & 0x00FFFFFF;
+
+        drawHorizontalGradient(layout.x, layout.y, layout.x + layout.width, headerBottom, leftColor, rightColor);
+    }
+
+    /**
+     * 绘制水平渐变矩形（从左到右由 startColor 渐变为 endColor）
+     */
+    private void drawHorizontalGradient(int left, int top, int right, int bottom, int startColor, int endColor) {
+        float a1 = (float)(startColor >> 24 & 255) / 255.0F;
+        float r1 = (float)(startColor >> 16 & 255) / 255.0F;
+        float g1 = (float)(startColor >> 8 & 255) / 255.0F;
+        float b1 = (float)(startColor & 255) / 255.0F;
+        float a2 = (float)(endColor >> 24 & 255) / 255.0F;
+        float r2 = (float)(endColor >> 16 & 255) / 255.0F;
+        float g2 = (float)(endColor >> 8 & 255) / 255.0F;
+        float b2 = (float)(endColor & 255) / 255.0F;
+
+        GlStateManager.disableTexture2D();
+        GlStateManager.enableBlend();
+        GlStateManager.disableAlpha();
+        GlStateManager.tryBlendFuncSeparate(
+                GlStateManager.SourceFactor.SRC_ALPHA,
+                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                GlStateManager.SourceFactor.ONE,
+                GlStateManager.DestFactor.ZERO
+        );
+        GlStateManager.shadeModel(7425);
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+        buffer.begin(7, DefaultVertexFormats.POSITION_COLOR);
+        // 右上 (endColor)
+        buffer.pos(right, top, 0.0D).color(r2, g2, b2, a2).endVertex();
+        // 左上 (startColor)
+        buffer.pos(left, top, 0.0D).color(r1, g1, b1, a1).endVertex();
+        // 左下 (startColor)
+        buffer.pos(left, bottom, 0.0D).color(r1, g1, b1, a1).endVertex();
+        // 右下 (endColor)
+        buffer.pos(right, bottom, 0.0D).color(r2, g2, b2, a2).endVertex();
+        tessellator.draw();
+
+        GlStateManager.shadeModel(7424);
+        GlStateManager.disableBlend();
+        GlStateManager.enableAlpha();
+        GlStateManager.enableTexture2D();
     }
 }
