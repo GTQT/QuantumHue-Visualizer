@@ -201,7 +201,7 @@ public final class WikiRenderer {
             int x = startX;
 
             if (y + ln.height < cy - 200 && ln.type != LineType.TABLE_ROW) {
-                y += ln.height;
+                y += ln.type == LineType.LATEX_BLOCK ? Math.max(ln.height, 40) : ln.height;
                 continue;
             }
             if (y > height + 200) break;
