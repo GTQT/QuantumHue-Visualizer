@@ -1,55 +1,63 @@
 package meowmel.quantumhue.igi;
 
-import meowmel.quantumhue.igi.info.*;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
- * IGI 正式 HUD 信息注册。
+ * IGI HUD 初始化器。
+ * 从 JSON 配置文件加载 HUD 布局，首次运行自动复制默认配置。
  */
 public final class IGIInit {
+    private static final Logger LOGGER = LogManager.getLogger("IGI-Init");
+
     private IGIInit() {
     }
 
     /**
-     * 注册左上角 HUD 信息（字号 8）。
+     * 从 JSON 配置加载 IGI HUD 布局。
+     *
+     * @param configDir Minecraft 配置目录（event.getModConfigurationDirectory()）
      */
-    public static void registerDefaults() {
-        IGI.register()
-                .pos(Alignment.TOP_LEFT)
-                .offset(2, 2)
-                .size(8)
-                .info(TextColor.WHITE, "TPS: ", TextColor.WHITE, new TpsInfo(),
-                        TextColor.WHITE, " | MSPT: ", TextColor.WHITE, new MsptInfo(),
-                        TextColor.WHITE, " | RAM: ", TextColor.WHITE, new MemoryInfo(), TextColor.RESET)
-                .info("")
-                .info("")
-                .info("")
-                .info(new ItemIcon(new ItemStack(Items.NAME_TAG)), " ",
-                        TextColor.AQUA, new PlayerNameInfo(), TextColor.RESET,
-                        TextColor.WHITE, " FPS: ", TextColor.GREEN, new FpsInfo(), TextColor.RESET," ",
-                        new ItemIcon(new ItemStack(Blocks.DAYLIGHT_DETECTOR)),
-                        TextColor.WHITE, " 现实时间: ", TextColor.GOLD, new RealTimeInfo(), TextColor.RESET)
-                .info(new ItemIcon(new ItemStack(Items.CLOCK)),
-                        TextColor.WHITE, " MC日期: ", TextColor.GOLD, new McDateInfo(),
-                        TextColor.WHITE, "；时间: ", TextColor.YELLOW, new McTimeFormattedInfo(), TextColor.RESET)
-                .info(new ItemIcon(new ItemStack(Blocks.GRASS)),
-                        TextColor.WHITE, " 世界: ", TextColor.GREEN, new DimFullInfo(),
-                        TextColor.WHITE, " 当前天气: ", TextColor.YELLOW, new WeatherInfo(), TextColor.RESET)
-                .info(new ItemIcon(new ItemStack(Blocks.SAPLING, 1, 4)),
-                        TextColor.WHITE, " 生物群系: ", TextColor.DARK_AQUA, new BiomeInfo(),
-                        TextColor.WHITE, " 温度: ", TextColor.GOLD, new BiomeTempInfo(),
-                        TextColor.WHITE, " 湿度: ", TextColor.AQUA, new BiomeHumidityInfo(), TextColor.RESET)
-                .info(new ItemIcon(new ItemStack(Items.COMPASS)),
-                        TextColor.WHITE, " 区块坐标: X: ", TextColor.WHITE, new ChunkXInfo(),
-                        TextColor.WHITE, " Z: ", TextColor.WHITE, new ChunkZInfo(),
-                        TextColor.WHITE, " Off: ", TextColor.WHITE, new ChunkOffsetInfo(),
-                        TextColor.WHITE, " 面向: ", TextColor.GOLD, new FacingInfo(), TextColor.RESET)
-                .info(new ItemIcon(new ItemStack(Blocks.TORCH)),
-                        TextColor.WHITE, " 光照等级: ", TextColor.YELLOW, new FootLightInfo(),
-                        TextColor.WHITE, "（立足处光照等级: ", TextColor.YELLOW, new EyeLightInfo(),
-                        TextColor.WHITE, "）", TextColor.RESET)
-                .builder();
+    public static void registerDefaults(File configDir) {
+        if (configDir == null) return;
+
+        File configFile = new File(configDir, "quantumhue/igi.json");
+
+        // 配置文件不存在 → 从资源中复制默认配置
+        if (!configFile.exists()) {
+            try {
+                configFile.getParentFile().mkdirs();
+                try (InputStream in = IGIInit.class.getClassLoader()
+                        .getResourceAsStream("assets/quantumhue/igi/default_igi.json");
+                     OutputStream out = new FileOutputStream(configFile)) {
+                    if (in != null) {
+                        byte[] buf = new byte[4096];
+                        int len;
+                        while ((len = in.read(buf)) > 0) {
+                            out.write(buf, 0, len);
+                        }
+                        LOGGER.info("已创建默认 IGI 配置文件: {}", configFile.getAbsolutePath());
+                    } else {
+                        LOGGER.warn("内置默认 IGI 配置资源未找到，跳过");
+                        return;
+                    }
+                }
+            } catch (IOException e) {
+                LOGGER.error("无法创建默认 IGI 配置文件", e);
+                return;
+            }
+        }
+
+        // 加载 JSON 配置
+        boolean loaded = JsonConfigParser.load(configFile);
+        if (!loaded) {
+            LOGGER.info("IGI 配置文件未加载，HUD 信息已关闭");
+        }
     }
 }

@@ -169,6 +169,7 @@ public class ClientHighlightHandler {
      */
     public static void addHighlight(HighlightPacket packet) {
         long duration = QuantumHueConfig.highlight.duration * 1000L;
+        activeHighlights.clear();
         activeHighlights.add(new ActiveHighlight(
                 packet.getPos(),
                 packet.getEntityId(),

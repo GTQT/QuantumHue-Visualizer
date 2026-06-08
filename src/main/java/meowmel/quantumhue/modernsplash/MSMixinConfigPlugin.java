@@ -1,15 +1,27 @@
 package meowmel.quantumhue.modernsplash;
 
+import meowmel.quantumhue.QuantumHue;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
-import org.spongepowered.asm.mixin.transformer.Config;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 public class MSMixinConfigPlugin implements IMixinConfigPlugin {
+
+    private static final boolean SMOOTH_FONT_PRESENT;
+
+    static {
+        boolean found = false;
+        try {
+            Class.forName("bre.smoothfont.mod_SmoothFont");
+            found = true;
+        } catch (Throwable ignored) {}
+        SMOOTH_FONT_PRESENT = found;
+        QuantumHue.LOGGER.info("[ModernSplash] SmoothFont detected: {}", SMOOTH_FONT_PRESENT);
+    }
     @Override
     public void onLoad(String s) {
 
@@ -23,13 +35,7 @@ public class MSMixinConfigPlugin implements IMixinConfigPlugin {
     @Override
     public boolean shouldApplyMixin(String s, String s1) {
         if (s1.equals("meowmel.quantumhue.modernsplash.mixin.FontRendererHookMixin")) {
-            boolean sfLoaded = true;
-            try {
-                Class.forName("bre.smoothfont.mod_SmoothFont");
-            } catch (Throwable ignored) {
-                sfLoaded = false;
-            }
-            return sfLoaded;
+            return SMOOTH_FONT_PRESENT;
         }
         return true;
     }

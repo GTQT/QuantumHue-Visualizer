@@ -46,8 +46,33 @@ public class TextColor implements IInfoElement {
 
     private final String code;
 
+    private static final java.util.Map<String, TextColor> BY_NAME = new java.util.HashMap<>();
+
+    static {
+        for (java.lang.reflect.Field field : TextColor.class.getFields()) {
+            if (field.getType() == TextColor.class) {
+                try {
+                    TextColor tc = (TextColor) field.get(null);
+                    BY_NAME.put(field.getName().toLowerCase(java.util.Locale.ENGLISH), tc);
+                } catch (Exception ignored) {
+                }
+            }
+        }
+    }
+
     private TextColor(String code) {
         this.code = code;
+    }
+
+    /**
+     * 根据名称查找颜色常量，不区分大小写。
+     * 例如 "red"、"GOLD"、"reset"、"bold"。
+     *
+     * @return 对应的 TextColor，未找到返回 null
+     */
+    public static TextColor fromName(String name) {
+        if (name == null) return null;
+        return BY_NAME.get(name.toLowerCase(java.util.Locale.ENGLISH));
     }
 
     @Override

@@ -1,6 +1,6 @@
 {
   "package": "meowmel.quantumhue.modernsplash.mixin",
-  "required": true,
+  "required": false,
   "refmap": "mixins.quantumhue.refmap.json",
   "target": "@env(DEFAULT)",
   "minVersion": "0.8.5",

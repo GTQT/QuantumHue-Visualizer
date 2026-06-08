@@ -63,4 +63,19 @@ public enum Alignment {
                 return offsetY;
         }
     }
+
+    /**
+     * 从字符串解析对齐方式，不区分大小写和下划线。
+     * 例如 "top_left"、"TOP_LEFT"、"topleft" 均可识别。
+     */
+    public static Alignment fromString(String str) {
+        if (str == null) return null;
+        String normalized = str.toUpperCase(java.util.Locale.ENGLISH).replaceAll("[ _-]", "");
+        for (Alignment align : values()) {
+            if (align.name().replace("_", "").equals(normalized)) {
+                return align;
+            }
+        }
+        return null;
+    }
 }

@@ -1,0 +1,105 @@
+{
+  "comment": "QuantumHue IGI HUD 配置文件 — 修改后重启游戏生效。留空或删除 groups 则关闭 IGI 显示。",
+  "groups": [
+    {
+      "alignment": "top_left",
+      "offsetX": 2,
+      "offsetY": 2,
+      "fontSize": 8,
+      "lines": [
+        [
+          {"type": "color", "name": "white"},
+          {"type": "text", "value": "TPS: "},
+          {"type": "tps"},
+          {"type": "text", "value": " | MSPT: "},
+          {"type": "mspt"},
+          {"type": "text", "value": " | RAM: "},
+          {"type": "memory"},
+          {"type": "color", "name": "reset"}
+        ],
+        [],
+        [],
+        [],
+        [
+          {"type": "icon", "item": "minecraft:name_tag"},
+          {"type": "text", "value": " "},
+          {"type": "color", "name": "aqua"},
+          {"type": "player_name"},
+          {"type": "color", "name": "reset"},
+          {"type": "text", "value": " FPS: "},
+          {"type": "color", "name": "green"},
+          {"type": "fps"},
+          {"type": "color", "name": "reset"},
+          {"type": "text", "value": " "},
+          {"type": "icon", "item": "minecraft:daylight_detector"},
+          {"type": "text", "value": " 现实时间: "},
+          {"type": "color", "name": "gold"},
+          {"type": "real_time"},
+          {"type": "color", "name": "reset"}
+        ],
+        [
+          {"type": "icon", "item": "minecraft:clock"},
+          {"type": "text", "value": " MC日期: "},
+          {"type": "color", "name": "gold"},
+          {"type": "mc_date"},
+          {"type": "color", "name": "reset"},
+          {"type": "text", "value": "；时间: "},
+          {"type": "color", "name": "yellow"},
+          {"type": "mc_time"},
+          {"type": "color", "name": "reset"}
+        ],
+        [
+          {"type": "icon", "item": "minecraft:grass"},
+          {"type": "text", "value": " 世界: "},
+          {"type": "color", "name": "green"},
+          {"type": "dim_full"},
+          {"type": "color", "name": "reset"},
+          {"type": "text", "value": " 当前天气: "},
+          {"type": "color", "name": "yellow"},
+          {"type": "weather"},
+          {"type": "color", "name": "reset"}
+        ],
+        [
+          {"type": "icon", "item": "minecraft:sapling", "meta": 4},
+          {"type": "text", "value": " 生物群系: "},
+          {"type": "color", "name": "dark_aqua"},
+          {"type": "biome"},
+          {"type": "color", "name": "reset"},
+          {"type": "text", "value": " 温度: "},
+          {"type": "color", "name": "gold"},
+          {"type": "biome_temp"},
+          {"type": "color", "name": "reset"},
+          {"type": "text", "value": " 湿度: "},
+          {"type": "color", "name": "aqua"},
+          {"type": "biome_humidity"},
+          {"type": "color", "name": "reset"}
+        ],
+        [
+          {"type": "icon", "item": "minecraft:compass"},
+          {"type": "text", "value": " 区块坐标: X: "},
+          {"type": "chunk_x"},
+          {"type": "text", "value": " Z: "},
+          {"type": "chunk_z"},
+          {"type": "text", "value": " Off: "},
+          {"type": "chunk_offset"},
+          {"type": "text", "value": " 面向: "},
+          {"type": "color", "name": "gold"},
+          {"type": "facing"},
+          {"type": "color", "name": "reset"}
+        ],
+        [
+          {"type": "icon", "item": "minecraft:torch"},
+          {"type": "text", "value": " 光照等级: "},
+          {"type": "color", "name": "yellow"},
+          {"type": "foot_light"},
+          {"type": "color", "name": "reset"},
+          {"type": "text", "value": "（立足处光照等级: "},
+          {"type": "color", "name": "yellow"},
+          {"type": "eye_light"},
+          {"type": "color", "name": "reset"},
+          {"type": "text", "value": "）"}
+        ]
+      ]
+    }
+  ]
+}

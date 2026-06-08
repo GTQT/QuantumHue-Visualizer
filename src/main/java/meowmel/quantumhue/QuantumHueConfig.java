@@ -260,7 +260,7 @@ public class QuantumHueConfig {
                 "范围: 1 ~ 120"
         })
         @Config.RangeInt(min = 1, max = 120)
-        public int duration = 10;
+        public int duration = 5;
 
         @Config.Name("Block Outline Color")
         @Config.Comment({

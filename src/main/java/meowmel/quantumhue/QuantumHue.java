@@ -24,12 +24,15 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static com.meowmel.quantumhue.Tags.MOD_ID;
+import java.io.File;
+
 
 @Mod(modid = Tags.MOD_ID, name = Tags.MOD_NAME, version = Tags.VERSION)
 public class QuantumHue {
 
     public static final Logger LOGGER = LogManager.getLogger(Tags.MOD_NAME);
+
+    private static File configDir;
 
     public static boolean GAME_LOADING_DONE = false;
 
@@ -46,6 +49,7 @@ public class QuantumHue {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         LOGGER.info("Hello From {}!", Tags.MOD_NAME);
+        configDir = event.getModConfigurationDirectory();
         PacketHandler.init();
         MinecraftForge.EVENT_BUS.register(new ModernSplashEvents());
     }
@@ -58,8 +62,8 @@ public class QuantumHue {
 
     @SubscribeEvent
     public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
-        if (event.getModID().equals(MOD_ID)) {
-            ConfigManager.sync(MOD_ID, Config.Type.INSTANCE);
+        if (event.getModID().equals(Tags.MOD_ID)) {
+            ConfigManager.sync(Tags.MOD_ID, Config.Type.INSTANCE);
         }
     }
 
@@ -71,6 +75,6 @@ public class QuantumHue {
         MinecraftForge.EVENT_BUS.register(new ClientHighlightHandler());
         MinecraftForge.EVENT_BUS.register(new HudRenderer());
 
-        IGIInit.registerDefaults();
+        IGIInit.registerDefaults(configDir);
     }
 }
