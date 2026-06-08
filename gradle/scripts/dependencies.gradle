@@ -67,12 +67,17 @@ dependencies {
     // }
     implementation("org.scilab.forge:jlatexmath:1.0.7") { transitive = false }
 
+    api("com.cleanroommc:modularui:3.1.5") { transitive = false }
+    api rfg.deobf("curse.maven:ctm-267602:2915363") // CTM 1.0.2.31
+
     implementation rfg.deobf("curse.maven:mixin-booter-419286:6344449")
     implementation rfg.deobf('curse.maven:the-one-probe-community-edition-885670:7718301')
-    implementation rfg.deobf("curse.maven:gregtech-ce-unofficial-557242:5050979")
+    implementation rfg.deobf(files("libs/gregtech-gtqt-1.12.2-1.9.0.jar"))
+    implementation rfg.deobf(files("libs/ae2fc-2.7.10-unofficial.jar"))
+    implementation rfg.deobf(files("libs/appliedenergistics2-v1.0.5-gtqt.jar"))
     implementation rfg.deobf("curse.maven:code-chicken-lib-1-8-242818:2779848")
     api rfg.deobf("curse.maven:ctm-267602:2915363") // CTM 1.0.2.31
-    implementation rfg.deobf("curse.maven:ae2-extended-life-570458:6302098") // AE2FC 2.6.6
+
     //test
     implementation rfg.deobf('curse.maven:jei-238222:5846804')
     implementation rfg.deobf('curse.maven:smoothfont-285742:3944565')

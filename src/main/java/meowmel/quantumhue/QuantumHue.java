@@ -11,6 +11,7 @@ import meowmel.quantumhue.igi.HudRenderer;
 import meowmel.quantumhue.modernsplash.ModernSplashEvents;
 import meowmel.quantumhue.network.PacketHandler;
 import meowmel.quantumhue.tooltips.AdvancedTooltipHandler;
+import meowmel.quantumhue.wiki.WikiRegistration;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
@@ -76,5 +77,7 @@ public class QuantumHue {
         MinecraftForge.EVENT_BUS.register(new HudRenderer());
 
         IGIInit.registerDefaults(configDir);
+
+        WikiRegistration.init();
     }
 }

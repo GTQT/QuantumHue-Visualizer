@@ -18,6 +18,7 @@ public final class WikiRenderTypes {
         TABLE_HEADER, TABLE_ROW,
         INLINE_ICON, INLINE_IMAGE, INLINE_LATEX,
         BLOCKQUOTE, CODE_BLOCK, LATEX_BLOCK,
+        MULTIBLOCK_PREVIEW,
         GAP
     }
 
@@ -49,6 +50,8 @@ public final class WikiRenderTypes {
         public ItemStack icon;
         public ResourceLocation image;
         public int imageW, imageH;
+        /** 任意附加数据（如多方块3D渲染器） */
+        public Object extraData;
 
         public RenderLine(LineType t, String txt, int h) {
             type = t; text = txt; height = h;

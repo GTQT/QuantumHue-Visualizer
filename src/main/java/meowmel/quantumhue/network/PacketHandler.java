@@ -2,6 +2,7 @@ package meowmel.quantumhue.network;
 
 
 import meowmel.quantumhue.command.ShowWikiPacket;
+import meowmel.quantumhue.command.WikiReloadPacket;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
@@ -16,6 +17,11 @@ public class PacketHandler {
         instance.registerMessage(
                 ShowWikiPacket.Handler.class,
                 ShowWikiPacket.class,
+                packetId++,
+                Side.CLIENT);
+        instance.registerMessage(
+                WikiReloadPacket.Handler.class,
+                WikiReloadPacket.class,
                 packetId++,
                 Side.CLIENT);
         instance.registerMessage(

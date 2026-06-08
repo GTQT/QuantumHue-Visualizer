@@ -1,6 +1,7 @@
 package meowmel.quantumhue.tooltips.gregtech;
 
 import gregtech.api.items.materialitem.MetaPrefixItem;
+import gregtech.api.items.metaitem.MetaItem;
 import gregtech.api.items.toolitem.IGTTool;
 import gregtech.api.metatileentity.ITieredMetaTileEntity;
 import gregtech.api.metatileentity.MetaTileEntity;
@@ -26,6 +27,10 @@ public class GregtechIntegration {
         if (stack.getItem() instanceof IGTTool tool){
             return 0xFF000000 | (tool.getToolMaterial(stack).getMaterialRGB() & 0x00FFFFFF);
         }
+        if (stack.getItem() instanceof MetaItem<?> item) {
+            int tier = item.getTier(stack);
+            if(tier > 0) return tier < TIER_COLORS.length ? TIER_COLORS[tier] : TIER_COLORS[0];
+        }
         Material material = extractMaterial(stack);
         if (material != null) {
             return 0xFF000000 | (material.getMaterialRGB() & 0x00FFFFFF);
@@ -33,13 +38,13 @@ public class GregtechIntegration {
         MetaTileEntity mte = GTUtility.getMetaTileEntity(stack);
         if(mte instanceof ITieredMetaTileEntity t){
             int tier = t.getTier();
-            return tier >= 0 && tier < TIER_COLORS.length ? TIER_COLORS[tier] : -1;
+            return tier >= 0 && tier < TIER_COLORS.length ? TIER_COLORS[tier] : TIER_COLORS[0];
         }
         Block block = Block.getBlockFromItem(stack.getItem());
         if(block instanceof BlockMaterialBase bmb){
             return 0xFF000000 | (bmb.getGtMaterial(stack).getMaterialRGB() & 0x00FFFFFF);
         }
-        if(block instanceof BlockMaterialPipe bmb){
+        if(block instanceof BlockMaterialPipe<?,?,?> bmb){
             return 0xFF000000 | (bmb.getItemMaterial(stack).getMaterialRGB() & 0x00FFFFFF);
         }
         return -1;

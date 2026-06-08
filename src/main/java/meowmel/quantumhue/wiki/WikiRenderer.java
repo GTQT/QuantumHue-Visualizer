@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.item.ItemStack;
+import meowmel.quantumhue.wiki.gregtech.MultiblockPreviewRenderer;
 import org.lwjgl.opengl.GL11;
 
 import java.util.List;
@@ -192,7 +193,8 @@ public final class WikiRenderer {
 
     /* ═══════════════ 内容区域 ═══════════════ */
     public static float drawPageContent(Minecraft mc, List<RenderLine> lines, float scroll,
-                                        int cx, int cy, int cr, int width, int height) {
+                                        int cx, int cy, int cr, int width, int height,
+                                        int mouseX, int mouseY) {
         FontRenderer fr = mc.fontRenderer;
         int startX = cx + PAD, maxW = cr - cx - PAD * 2, y = cy + PAD - (int) scroll;
         RenderItem ri = mc.getRenderItem();
@@ -315,6 +317,17 @@ public final class WikiRenderer {
                 case GAP:
                     y += 10;
                     break;
+                case MULTIBLOCK_PREVIEW: {
+                    int previewH = 350;
+                    if (y + previewH >= cy - 200 && y <= height) {
+                        if (ln.extraData instanceof MultiblockPreviewRenderer) {
+                            MultiblockPreviewRenderer mr = (MultiblockPreviewRenderer) ln.extraData;
+                            mr.render(startX, y, maxW, previewH, mouseX, mouseY);
+                        }
+                    }
+                    y += previewH + 8;
+                    break;
+                }
             }
         }
         return Math.max(0, y + (int) scroll - cy - (height - cy) + PAD);

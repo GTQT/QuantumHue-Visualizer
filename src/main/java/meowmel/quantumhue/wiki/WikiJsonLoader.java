@@ -106,6 +106,20 @@ public final class WikiJsonLoader {
     private static void extractDefaultsIfNeeded(Path wikiDir) {
         if (Files.exists(wikiDir.resolve("_index.json"))) return;
         LOG.info("Extracting default wiki files to {}", wikiDir);
+        extractFromAssets(wikiDir);
+    }
+
+    /**
+     * Force copy all .json files from /assets/wiki (mod JAR/resource) to config/wiki.
+     * Always overwrites existing files. Used by /wiki reload command.
+     */
+    public static void reloadFromAssets() {
+        Path wikiDir = getWikiDir();
+        LOG.info("Reloading wiki files from assets to {}", wikiDir);
+        extractFromAssets(wikiDir);
+    }
+
+    private static void extractFromAssets(Path wikiDir) {
         FileSystem zipFs = null;
         try {
             Files.createDirectories(wikiDir);

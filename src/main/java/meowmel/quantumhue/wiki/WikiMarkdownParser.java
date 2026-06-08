@@ -244,15 +244,21 @@ public final class WikiMarkdownParser {
                 String[] words = p.text.split(" ");
                 for (String word : words) {
                     if (word.isEmpty()) continue;
-                    int w = fr.getStringWidth(word + " ");
-                    if (curW + w > maxW && curW > 0) {
-                        if (!currentLine.isEmpty())
-                            out.add(new RenderLine(LineType.TEXT, new ArrayList<>(currentLine), LINE_H));
-                        currentLine.clear();
-                        curW = 0;
+                    // 将单词拆分为可换行片段（西方单词保持完整，CJK 逐字拆分）
+                    String[] segments = splitIntoWrappableSegments(word, maxW, fr);
+                    for (String seg : segments) {
+                        if (seg.isEmpty()) continue;
+                        int w = fr.getStringWidth(seg);
+                        // 若当前行放不下且已有内容，则换行
+                        if (curW + w > maxW && curW > 0) {
+                            if (!currentLine.isEmpty())
+                                out.add(new RenderLine(LineType.TEXT, new ArrayList<>(currentLine), LINE_H));
+                            currentLine.clear();
+                            curW = 0;
+                        }
+                        currentLine.add(new TextPart(PartType.TEXT, seg, p.color));
+                        curW += w;
                     }
-                    currentLine.add(new TextPart(PartType.TEXT, word + " ", p.color));
-                    curW += w;
                 }
             } else if (p.type == PartType.LATEX) {
                 currentLine.add(p);
@@ -483,6 +489,49 @@ public final class WikiMarkdownParser {
             sb.append(arr[i]);
         }
         return sb.toString();
+    }
+
+    /**
+     * 将单词拆分为可换行片段：
+     * - 西方单词（不含 CJK）保持原样，末尾加空格
+     * - 含 CJK 字符的文本逐字拆分（每个字符独立）
+     * - 若单个字/单词超过 maxW，则按字符硬切
+     */
+    private static String[] splitIntoWrappableSegments(String word, int maxW, FontRenderer fr) {
+        // 判断是否包含 CJK 字符
+        boolean hasCJK = false;
+        for (int i = 0; i < word.length(); i++) {
+            char c = word.charAt(i);
+            if (isCJK(c)) { hasCJK = true; break; }
+        }
+
+        if (!hasCJK) {
+            // 西方单词：末尾加空格，保持单词完整
+            return new String[]{word + " "};
+        }
+
+        // CJK 文本：逐字拆分
+        List<String> segs = new ArrayList<>();
+        for (int i = 0; i < word.length(); i++) {
+            char c = word.charAt(i);
+            segs.add(String.valueOf(c));
+        }
+        return segs.toArray(new String[0]);
+    }
+
+    /**
+     * 判断是否为 CJK 字符（中日韩统一表意文字及扩展区）
+     */
+    private static boolean isCJK(char c) {
+        Character.UnicodeBlock block = Character.UnicodeBlock.of(c);
+        return block == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS
+                || block == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A
+                || block == Character.UnicodeBlock.CJK_COMPATIBILITY_IDEOGRAPHS
+                || block == Character.UnicodeBlock.CJK_SYMBOLS_AND_PUNCTUATION
+                || block == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS
+                || block == Character.UnicodeBlock.CJK_RADICALS_SUPPLEMENT
+                || block == Character.UnicodeBlock.KANGXI_RADICALS
+                || block == Character.UnicodeBlock.GENERAL_PUNCTUATION;
     }
 
     private static int tryParse(String s, int def) {

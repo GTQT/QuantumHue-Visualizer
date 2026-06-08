@@ -3,6 +3,8 @@ package meowmel.quantumhue.tooltips;
 import meowmel.quantumhue.QuantumHueConfig;
 import meowmel.quantumhue.tooltips.applecore.AppleSkinIntegration;
 import meowmel.quantumhue.tooltips.thaumcraft.ThaumcraftIntegration;
+import meowmel.quantumhue.wiki.WikiScreen;
+import meowmel.quantumhue.wiki.gregtech.MultiblockBase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
@@ -20,6 +22,8 @@ import thaumcraft.api.aspects.AspectList;
 
 import java.util.List;
 
+import static net.minecraftforge.fml.common.Loader.isModLoaded;
+
 @SideOnly(Side.CLIENT)
 public class AdvancedTooltipHandler {
 
@@ -29,6 +33,13 @@ public class AdvancedTooltipHandler {
     private static TooltipColors cachedColors = null;
     private static AspectList cachedAspects = null;
     private static AppleSkinIntegration.FoodInfo cachedFoodInfo = null;
+
+    // ── Wiki 集成 ──
+    private static String wikiPageId = null;
+    private static String lastWikiCheckedItemId = null;
+    private static long wKeyPressStartTime = 0;
+    private static boolean wWasDownLastFrame = false;
+    private static final long WIKI_HOLD_THRESHOLD_MS = 400;
 
     private final TooltipContentExtractor contentExtractor = new TooltipContentExtractor();
     private final TooltipLayoutManager layoutManager = new TooltipLayoutManager();
@@ -55,6 +66,18 @@ public class AdvancedTooltipHandler {
 
         if (modName != null && !modInfoHelper.isModNameAlreadyPresent(event.getToolTip(), modName)) {
             event.getToolTip().add(TextFormatting.YELLOW + modName);
+        }
+
+        if(isModLoaded("gregtech")) {
+            String itemId = TooltipUtils.getItemUniqueId(stack);
+            if (!itemId.equals(lastWikiCheckedItemId)) {
+                lastWikiCheckedItemId = itemId;
+                MultiblockBase wikiEntry = MultiblockBase.getDocumentedMultiblockFor(stack);
+                wikiPageId = wikiEntry != null ? wikiEntry.getPageId() : null;
+            }
+            if (wikiPageId != null) {
+                event.getToolTip().add(2, TextFormatting.AQUA + "[W]" + TextFormatting.GRAY + " 长按打开Wiki攻略");
+            }
         }
     }
 
@@ -171,6 +194,23 @@ public class AdvancedTooltipHandler {
 
         GLStateHelper.restoreGLState();
         GlStateManager.popMatrix();
+
+        // ── Wiki 长按 W 检测 ──
+        if (wikiPageId != null) {
+            boolean wDown = Keyboard.isKeyDown(Keyboard.KEY_W);
+            if (wDown && !wWasDownLastFrame) {
+                wKeyPressStartTime = System.currentTimeMillis();
+            }
+            if (wDown && System.currentTimeMillis() - wKeyPressStartTime > WIKI_HOLD_THRESHOLD_MS) {
+                // 长按 W → 打开 Wiki 并导航到对应页面
+                Minecraft.getMinecraft().displayGuiScreen(null); // 关闭当前 GUI
+                WikiScreen.open(wikiPageId);
+                wikiPageId = null; // 防止重复打开
+            }
+            wWasDownLastFrame = wDown;
+        } else {
+            wWasDownLastFrame = false;
+        }
 
         lastRenderedLayout = layout;
         lastRenderTime = System.currentTimeMillis();

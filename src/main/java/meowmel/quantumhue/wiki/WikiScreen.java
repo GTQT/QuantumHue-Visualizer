@@ -5,11 +5,17 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.item.ItemStack;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import meowmel.quantumhue.wiki.gregtech.MultiblockPreviewRenderer;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static meowmel.quantumhue.wiki.WikiRenderTypes.*;
@@ -25,8 +31,13 @@ public class WikiScreen extends GuiScreen {
     private GuiTextField searchField;
     private String lastSearch = "", toastMessage = "";
     private int toastTimer = 0;
+    private MultiblockPreviewRenderer currentPreview;
 
     public WikiScreen() {
+        this(null);
+    }
+
+    public WikiScreen(String initialPageId) {
         this.categories = WikiContent.getCategories();
         if (!categories.isEmpty()) {
             categories.get(0).collapsed = false;
@@ -34,10 +45,33 @@ public class WikiScreen extends GuiScreen {
                 activePage = categories.get(0).pages.get(0);
             }
         }
+        if (initialPageId != null) {
+            navigateToPage(initialPageId);
+        }
     }
 
     public static void open() {
         Minecraft.getMinecraft().displayGuiScreen(new WikiScreen());
+    }
+
+    public static void open(String pageId) {
+        Minecraft.getMinecraft().displayGuiScreen(new WikiScreen(pageId));
+    }
+
+    /** 导航到指定 pageId 的页面，自动展开对应分类并滚动到该页面 */
+    private void navigateToPage(String pageId) {
+        for (WikiCategory cat : categories) {
+            for (WikiPage page : cat.pages) {
+                if (page.id.equals(pageId)) {
+                    cat.collapsed = false;
+                    activePage = page;
+                    scroll = 0;
+                    scrollTarget = 0;
+                    dirty = true;
+                    return;
+                }
+            }
+        }
     }
 
     @Override
@@ -83,11 +117,54 @@ public class WikiScreen extends GuiScreen {
         int cx = WikiRenderer.SIDEBAR_W + 1, cy = WikiRenderer.HEADER_H,
                 cr = width - WikiRenderer.SCROLLBAR_W, cb = height;
         WikiRenderer.enableScissor(mc, cx, cy, cr, cb, width, height);
-        maxScroll = WikiRenderer.drawPageContent(mc, lines, scroll, cx, cy, cr, width, height);
+        maxScroll = WikiRenderer.drawPageContent(mc, lines, scroll, cx, cy, cr, width, height, mx, my);
         WikiRenderer.disableScissor();
         WikiRenderer.drawScrollbar(cy, cb, scroll, maxScroll, cr);
 
         toastTimer = WikiRenderer.drawToast(mc, width, toastMessage, toastTimer);
+
+        // 3D 预览 tooltip（优先级：槽位物品 > 3D 方块 > 信息图标）
+        if (currentPreview != null && !org.lwjgl.input.Mouse.isButtonDown(0)) {
+            // 1) 2D 物品槽位（左侧部件 + 右侧候选方块）
+            ItemStack slotStack = currentPreview.getSlotStackAt(mx, my);
+            if (slotStack != null && !slotStack.isEmpty()) {
+                List<String> tooltip = slotStack.getTooltip(mc.player,
+                        mc.gameSettings.advancedItemTooltips ?
+                                ITooltipFlag.TooltipFlags.ADVANCED :
+                                ITooltipFlag.TooltipFlags.NORMAL);
+                List<String> slotTips = currentPreview.getSlotPredicateTips(mx, my);
+                if (slotTips != null && !slotTips.isEmpty()) {
+                    tooltip.addAll(slotTips);
+                }
+                drawHoveringText(tooltip, mx, my);
+            } else {
+                // 2) 3D 场景方块悬停
+                ItemStack hovered = MultiblockPreviewRenderer.getHoveredItemStack();
+                if (hovered != null && !hovered.isEmpty()) {
+                    List<String> tooltip = hovered.getTooltip(mc.player,
+                            mc.gameSettings.advancedItemTooltips ?
+                                    ITooltipFlag.TooltipFlags.ADVANCED :
+                                    ITooltipFlag.TooltipFlags.NORMAL);
+                    List<String> predTips = currentPreview.getPredicateTips();
+                    if (predTips != null && !predTips.isEmpty()) {
+                        tooltip.addAll(predTips);
+                    }
+                    drawHoveringText(tooltip, mx, my);
+                }
+            }
+            // 3) 信息图标 tooltip
+            int[] bounds = currentPreview.getPreviewBounds();
+            int iconX = bounds[0] + bounds[2] - 25;
+            int iconY = bounds[1] + 22;
+            if (mx >= iconX && mx <= iconX + 20 && my >= iconY && my <= iconY + 20) {
+                drawHoveringText(Arrays.asList(
+                        I18n.format("gregtech.multiblock.preview.zoom"),
+                        I18n.format("gregtech.multiblock.preview.rotate"),
+                        I18n.format("gregtech.multiblock.preview.select")
+                ), mx, my);
+            }
+        }
+
         super.drawScreen(mx, my, pt);
     }
 
@@ -104,6 +181,14 @@ public class WikiScreen extends GuiScreen {
         FontRenderer fr = mc.fontRenderer;
         int maxW = width - WikiRenderer.SIDEBAR_W - 1 - WikiRenderer.PAD * 2 - WikiRenderer.SCROLLBAR_W;
         lines.addAll(WikiMarkdownParser.parse(content, maxW, fr));
+
+        // 如果页面有多方块预览，在正文后插入 3D 渲染行
+        currentPreview = activePage.getAttachment(MultiblockPreviewRenderer.class);
+        if (currentPreview != null) {
+            RenderLine rl = new RenderLine(LineType.MULTIBLOCK_PREVIEW, "", 0);
+            rl.extraData = currentPreview;
+            lines.add(rl);
+        }
     }
 
     @Override
@@ -112,7 +197,11 @@ public class WikiScreen extends GuiScreen {
         int dw = Mouse.getEventDWheel();
         if (dw != 0) {
             int mx = Mouse.getEventX() * width / mc.displayWidth;
-            if (mx < WikiRenderer.SIDEBAR_W) {
+            int my = Mouse.getEventY() * height / mc.displayHeight;
+            // 如果鼠标在 3D 预览区域内，优先缩放场景
+            if (currentPreview != null && currentPreview.isMouseOverPreview(mx, my)) {
+                currentPreview.handleScroll(dw, mx, my);
+            } else if (mx < WikiRenderer.SIDEBAR_W) {
                 sidebarScrollTarget -= dw * 0.35f;
                 sidebarScrollTarget = Math.max(0, Math.min(sidebarMaxScroll, sidebarScrollTarget));
             } else {
@@ -125,6 +214,10 @@ public class WikiScreen extends GuiScreen {
     @Override
     protected void mouseClicked(int mx, int my, int btn) throws IOException {
         super.mouseClicked(mx, my, btn);
+        // 如果鼠标在预览区域内（含通道滑条等底部 UI），优先转发给预览渲染器
+        if (currentPreview != null && currentPreview.isMouseOverFullPreview(mx, my)) {
+            if (currentPreview.handleClick(mx, my, btn)) return;
+        }
         searchField.mouseClicked(mx, my, btn);
         if (btn != 0 || mx >= WikiRenderer.SIDEBAR_W) return;
         int listTop = WikiRenderer.HEADER_H + 2 + WikiRenderer.SEARCH_H + 4;
@@ -170,7 +263,7 @@ public class WikiScreen extends GuiScreen {
             }
             return;
         }
-        if (key == Keyboard.KEY_ESCAPE) mc.displayGuiScreen(null);
+        if (key == Keyboard.KEY_ESCAPE || key == Keyboard.KEY_E) mc.displayGuiScreen(null);
         else if (key == Keyboard.KEY_UP) scrollTarget = Math.max(0, scrollTarget - 50);
         else if (key == Keyboard.KEY_DOWN) scrollTarget = Math.min(maxScroll, scrollTarget + 50);
         else if (key == Keyboard.KEY_HOME) scrollTarget = 0;
