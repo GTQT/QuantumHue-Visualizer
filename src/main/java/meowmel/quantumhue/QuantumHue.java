@@ -5,11 +5,12 @@ import meowmel.quantumhue.biomeInfo.BiomeInfoEventHandler;
 import meowmel.quantumhue.blur.SimpleBlurHandler;
 import meowmel.quantumhue.client.highlight.ClientHighlightHandler;
 import meowmel.quantumhue.command.CommandWiki;
+import meowmel.quantumhue.igi.IGI;
+import meowmel.quantumhue.igi.IGIInit;
+import meowmel.quantumhue.igi.HudRenderer;
 import meowmel.quantumhue.modernsplash.ModernSplashEvents;
 import meowmel.quantumhue.network.PacketHandler;
 import meowmel.quantumhue.tooltips.AdvancedTooltipHandler;
-import meowmel.quantumhue.wiki.WikiScreen;
-import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
@@ -20,9 +21,6 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.InputEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -71,5 +69,8 @@ public class QuantumHue {
         MinecraftForge.EVENT_BUS.register(new AdvancedTooltipHandler());
         MinecraftForge.EVENT_BUS.register(new BiomeInfoEventHandler());
         MinecraftForge.EVENT_BUS.register(new ClientHighlightHandler());
+        MinecraftForge.EVENT_BUS.register(new HudRenderer());
+
+        IGIInit.registerDefaults();
     }
 }
