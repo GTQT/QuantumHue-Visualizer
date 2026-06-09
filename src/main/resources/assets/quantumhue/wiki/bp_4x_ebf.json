@@ -1,0 +1,2116 @@
+{
+  "version": 1,
+  "name": "Region",
+  "author": "MeowmelMuku",
+  "size": [
+    9,
+    4,
+    5
+  ],
+  "blocks": [
+    {
+      "pos": [
+        0,
+        0,
+        0
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 935,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 5
+        }
+      }
+    },
+    {
+      "pos": [
+        0,
+        0,
+        1
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 935,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 5
+        }
+      }
+    },
+    {
+      "pos": [
+        0,
+        0,
+        3
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 935,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 5
+        }
+      }
+    },
+    {
+      "pos": [
+        0,
+        0,
+        4
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 935,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 5
+        }
+      }
+    },
+    {
+      "pos": [
+        1,
+        0,
+        0
+      ],
+      "blockId": "gregtech:cable_quadruple",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:cable_quadruple",
+          "meta": 112,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:pipe_base": {
+          "connections": 50,
+          "blockedConnections": 0,
+          "visualConnections": 50
+        }
+      }
+    },
+    {
+      "pos": [
+        1,
+        0,
+        1
+      ],
+      "blockId": "gregtech:cable_quadruple",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:cable_quadruple",
+          "meta": 112,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:pipe_base": {
+          "connections": 50,
+          "blockedConnections": 0,
+          "visualConnections": 50
+        }
+      }
+    },
+    {
+      "pos": [
+        1,
+        0,
+        3
+      ],
+      "blockId": "gregtech:cable_quadruple",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:cable_quadruple",
+          "meta": 112,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:pipe_base": {
+          "connections": 50,
+          "blockedConnections": 0,
+          "visualConnections": 50
+        }
+      }
+    },
+    {
+      "pos": [
+        1,
+        0,
+        4
+      ],
+      "blockId": "gregtech:cable_quadruple",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:cable_quadruple",
+          "meta": 112,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:pipe_base": {
+          "connections": 50,
+          "blockedConnections": 0,
+          "visualConnections": 50
+        }
+      }
+    },
+    {
+      "pos": [
+        1,
+        1,
+        0
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 935,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 0
+        }
+      }
+    },
+    {
+      "pos": [
+        1,
+        1,
+        1
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 935,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 0
+        }
+      }
+    },
+    {
+      "pos": [
+        1,
+        1,
+        3
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 935,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 0
+        }
+      }
+    },
+    {
+      "pos": [
+        1,
+        1,
+        4
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 935,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 0
+        }
+      }
+    },
+    {
+      "pos": [
+        2,
+        0,
+        0
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1301,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 4
+        }
+      }
+    },
+    {
+      "pos": [
+        2,
+        0,
+        1
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1301,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 4
+        }
+      }
+    },
+    {
+      "pos": [
+        2,
+        0,
+        2
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        2,
+        0,
+        3
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1301,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 4
+        }
+      }
+    },
+    {
+      "pos": [
+        2,
+        0,
+        4
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1301,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 4
+        }
+      }
+    },
+    {
+      "pos": [
+        2,
+        1,
+        0
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        2,
+        1,
+        1
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        2,
+        1,
+        2
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        2,
+        1,
+        3
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        2,
+        1,
+        4
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        2,
+        2,
+        0
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        2,
+        2,
+        1
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        2,
+        2,
+        2
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        2,
+        2,
+        3
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        2,
+        2,
+        4
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        2,
+        3,
+        0
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        2,
+        3,
+        1
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1700,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 4
+        }
+      }
+    },
+    {
+      "pos": [
+        2,
+        3,
+        2
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        2,
+        3,
+        3
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1700,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 4
+        }
+      }
+    },
+    {
+      "pos": [
+        2,
+        3,
+        4
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        3,
+        0,
+        0
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1001,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:controllable": {
+          "workingEnable": true
+        },
+        "gregtech:mte_base": {
+          "facing": 2
+        }
+      }
+    },
+    {
+      "pos": [
+        3,
+        0,
+        1
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        3,
+        0,
+        2
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        3,
+        0,
+        3
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        3,
+        0,
+        4
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1001,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:controllable": {
+          "workingEnable": true
+        },
+        "gregtech:mte_base": {
+          "facing": 3
+        }
+      }
+    },
+    {
+      "pos": [
+        3,
+        1,
+        0
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        3,
+        1,
+        2
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        3,
+        1,
+        4
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        3,
+        2,
+        0
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        3,
+        2,
+        2
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        3,
+        2,
+        4
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        3,
+        3,
+        0
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        3,
+        3,
+        1
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1775,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 1
+        }
+      }
+    },
+    {
+      "pos": [
+        3,
+        3,
+        2
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        3,
+        3,
+        3
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1775,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 1
+        }
+      }
+    },
+    {
+      "pos": [
+        3,
+        3,
+        4
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        0,
+        0
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        0,
+        1
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        0,
+        2
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        0,
+        3
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        0,
+        4
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        1,
+        0
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        1,
+        1
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        1,
+        2
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        1,
+        3
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        1,
+        4
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        2,
+        0
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        2,
+        1
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        2,
+        2
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        2,
+        3
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        2,
+        4
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        3,
+        0
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        3,
+        1
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        3,
+        2
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        3,
+        3
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        4,
+        3,
+        4
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        5,
+        0,
+        0
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1001,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:controllable": {
+          "workingEnable": true
+        },
+        "gregtech:mte_base": {
+          "facing": 2
+        }
+      }
+    },
+    {
+      "pos": [
+        5,
+        0,
+        1
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        5,
+        0,
+        2
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        5,
+        0,
+        3
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        5,
+        0,
+        4
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1001,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:controllable": {
+          "workingEnable": true
+        },
+        "gregtech:mte_base": {
+          "facing": 3
+        }
+      }
+    },
+    {
+      "pos": [
+        5,
+        1,
+        0
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        5,
+        1,
+        2
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        5,
+        1,
+        4
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        5,
+        2,
+        0
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        5,
+        2,
+        2
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        5,
+        2,
+        4
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        5,
+        3,
+        0
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        5,
+        3,
+        1
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1775,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 1
+        }
+      }
+    },
+    {
+      "pos": [
+        5,
+        3,
+        2
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        5,
+        3,
+        3
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1775,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 1
+        }
+      }
+    },
+    {
+      "pos": [
+        5,
+        3,
+        4
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        6,
+        0,
+        0
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1301,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 5
+        }
+      }
+    },
+    {
+      "pos": [
+        6,
+        0,
+        1
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1301,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 5
+        }
+      }
+    },
+    {
+      "pos": [
+        6,
+        0,
+        2
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        6,
+        0,
+        3
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1301,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 5
+        }
+      }
+    },
+    {
+      "pos": [
+        6,
+        0,
+        4
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1301,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 5
+        }
+      }
+    },
+    {
+      "pos": [
+        6,
+        1,
+        0
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        6,
+        1,
+        1
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        6,
+        1,
+        2
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        6,
+        1,
+        3
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        6,
+        1,
+        4
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        6,
+        2,
+        0
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        6,
+        2,
+        1
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        6,
+        2,
+        2
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        6,
+        2,
+        3
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        6,
+        2,
+        4
+      ],
+      "blockId": "gregtech:wire_coil",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:wire_coil",
+          "meta": 0,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        6,
+        3,
+        0
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        6,
+        3,
+        1
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1700,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 5
+        }
+      }
+    },
+    {
+      "pos": [
+        6,
+        3,
+        2
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        6,
+        3,
+        3
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 1700,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 5
+        }
+      }
+    },
+    {
+      "pos": [
+        6,
+        3,
+        4
+      ],
+      "blockId": "gregtech:metal_casing",
+      "meta": 2,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:metal_casing",
+          "meta": 2,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "pos": [
+        7,
+        0,
+        0
+      ],
+      "blockId": "gregtech:cable_quadruple",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:cable_quadruple",
+          "meta": 112,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:pipe_base": {
+          "connections": 50,
+          "blockedConnections": 0,
+          "visualConnections": 50
+        }
+      }
+    },
+    {
+      "pos": [
+        7,
+        0,
+        1
+      ],
+      "blockId": "gregtech:cable_quadruple",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:cable_quadruple",
+          "meta": 112,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:pipe_base": {
+          "connections": 50,
+          "blockedConnections": 0,
+          "visualConnections": 50
+        }
+      }
+    },
+    {
+      "pos": [
+        7,
+        0,
+        3
+      ],
+      "blockId": "gregtech:cable_quadruple",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:cable_quadruple",
+          "meta": 112,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:pipe_base": {
+          "connections": 50,
+          "blockedConnections": 0,
+          "visualConnections": 50
+        }
+      }
+    },
+    {
+      "pos": [
+        7,
+        0,
+        4
+      ],
+      "blockId": "gregtech:cable_quadruple",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:cable_quadruple",
+          "meta": 112,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:pipe_base": {
+          "connections": 50,
+          "blockedConnections": 0,
+          "visualConnections": 50
+        }
+      }
+    },
+    {
+      "pos": [
+        7,
+        1,
+        0
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 935,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 0
+        }
+      }
+    },
+    {
+      "pos": [
+        7,
+        1,
+        1
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 935,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 0
+        }
+      }
+    },
+    {
+      "pos": [
+        7,
+        1,
+        3
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 935,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 0
+        }
+      }
+    },
+    {
+      "pos": [
+        7,
+        1,
+        4
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 935,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 0
+        }
+      }
+    },
+    {
+      "pos": [
+        8,
+        0,
+        0
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 935,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 4
+        }
+      }
+    },
+    {
+      "pos": [
+        8,
+        0,
+        1
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 935,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 4
+        }
+      }
+    },
+    {
+      "pos": [
+        8,
+        0,
+        3
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 935,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 4
+        }
+      }
+    },
+    {
+      "pos": [
+        8,
+        0,
+        4
+      ],
+      "blockId": "gregtech:mte",
+      "meta": 0,
+      "requiredItems": [
+        {
+          "itemId": "gregtech:mte",
+          "meta": 935,
+          "count": 1
+        }
+      ],
+      "teData": {
+        "gregtech:mte_base": {
+          "facing": 4
+        }
+      }
+    }
+  ]
+}

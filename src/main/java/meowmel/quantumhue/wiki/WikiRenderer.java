@@ -8,8 +8,10 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.item.ItemStack;
-import meowmel.quantumhue.wiki.gregtech.MultiblockPreviewRenderer;
-import meowmel.quantumhue.wiki.gregtech.MultiblockPreviewResolver;
+import meowmel.quantumhue.wiki.util.BlueprintPreviewRenderer;
+import meowmel.quantumhue.wiki.util.BlueprintPreviewResolver;
+import meowmel.quantumhue.wiki.util.MultiblockPreviewRenderer;
+import meowmel.quantumhue.wiki.util.MultiblockPreviewResolver;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
@@ -340,6 +342,21 @@ public final class WikiRenderer {
                         if (ln.extraData instanceof MultiblockPreviewRenderer) {
                             MultiblockPreviewRenderer mr = (MultiblockPreviewRenderer) ln.extraData;
                             mr.render(startX, y, maxW, previewH, mouseX, mouseY);
+                        }
+                    }
+                    y += previewH + 8;
+                    break;
+                }
+                case BLUEPRINT_PREVIEW: {
+                    int previewH = 350;
+                    if (y + previewH >= cy - 200 && y <= height) {
+                        // 懒加载：首次渲染时根据 text（蓝图 JSON 资源路径）解析
+                        if (ln.extraData == null && ln.text != null && !ln.text.isEmpty()) {
+                            ln.extraData = BlueprintPreviewResolver.resolve(ln.text);
+                        }
+                        if (ln.extraData instanceof BlueprintPreviewRenderer) {
+                            BlueprintPreviewRenderer br = (BlueprintPreviewRenderer) ln.extraData;
+                            br.render(startX, y, maxW, previewH, mouseX, mouseY);
                         }
                     }
                     y += previewH + 8;

@@ -11,7 +11,8 @@ import net.minecraft.item.ItemStack;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
-import meowmel.quantumhue.wiki.gregtech.MultiblockPreviewRenderer;
+import meowmel.quantumhue.wiki.util.BlueprintPreviewRenderer;
+import meowmel.quantumhue.wiki.util.MultiblockPreviewRenderer;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,14 +34,41 @@ public class WikiScreen extends GuiScreen {
     private int toastTimer = 0;
 
     /**
-     * 从已渲染的行中查找第一个已解析的多方块预览渲染器。
+     * 收集所有已解析的预览渲染器（多方块 + 蓝图）。
      * 预览由 WikiRenderer 在渲染时懒加载，因此该值在首帧 drawScreen() 之后才可用。
+     */
+    private List<Object> getAllPreviewRenderers() {
+        List<Object> result = new ArrayList<>();
+        for (RenderLine line : lines) {
+            if (line.extraData instanceof MultiblockPreviewRenderer
+                    || line.extraData instanceof BlueprintPreviewRenderer) {
+                result.add(line.extraData);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 获取多方块预览渲染器（兼容旧方法）。
      */
     private MultiblockPreviewRenderer getActivePreview() {
         for (RenderLine line : lines) {
             if (line.type == LineType.MULTIBLOCK_PREVIEW
                     && line.extraData instanceof MultiblockPreviewRenderer) {
                 return (MultiblockPreviewRenderer) line.extraData;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取蓝图预览渲染器。
+     */
+    private BlueprintPreviewRenderer getActiveBlueprintPreview() {
+        for (RenderLine line : lines) {
+            if (line.type == LineType.BLUEPRINT_PREVIEW
+                    && line.extraData instanceof BlueprintPreviewRenderer) {
+                return (BlueprintPreviewRenderer) line.extraData;
             }
         }
         return null;
@@ -137,49 +165,92 @@ public class WikiScreen extends GuiScreen {
         toastTimer = WikiRenderer.drawToast(mc, width, toastMessage, toastTimer);
 
         // 3D 预览 tooltip（优先级最高：槽位物品 > 3D 方块 > 信息图标）
-        MultiblockPreviewRenderer activePreview = getActivePreview();
+        // 遍历所有预览渲染器，根据鼠标所在区域分发 tooltip
+        List<Object> allPreviews = getAllPreviewRenderers();
         boolean previewTooltipShown = false;
-        if (activePreview != null && !org.lwjgl.input.Mouse.isButtonDown(0)) {
-            // 1) 2D 物品槽位（左侧部件 + 右侧候选方块）
-            ItemStack slotStack = activePreview.getSlotStackAt(mx, my);
-            if (slotStack != null && !slotStack.isEmpty()) {
-                List<String> tooltip = slotStack.getTooltip(mc.player,
-                        mc.gameSettings.advancedItemTooltips ?
-                                ITooltipFlag.TooltipFlags.ADVANCED :
-                                ITooltipFlag.TooltipFlags.NORMAL);
-                List<String> slotTips = activePreview.getSlotPredicateTips(mx, my);
-                if (slotTips != null && !slotTips.isEmpty()) {
-                    tooltip.addAll(slotTips);
-                }
-                drawHoveringText(tooltip, mx, my);
-                previewTooltipShown = true;
-            } else {
-                // 2) 3D 场景方块悬停
-                ItemStack hovered = MultiblockPreviewRenderer.getHoveredItemStack();
-                if (hovered != null && !hovered.isEmpty()) {
-                    List<String> tooltip = hovered.getTooltip(mc.player,
-                            mc.gameSettings.advancedItemTooltips ?
-                                    ITooltipFlag.TooltipFlags.ADVANCED :
-                                    ITooltipFlag.TooltipFlags.NORMAL);
-                    List<String> predTips = activePreview.getPredicateTips();
-                    if (predTips != null && !predTips.isEmpty()) {
-                        tooltip.addAll(predTips);
+        if (!org.lwjgl.input.Mouse.isButtonDown(0)) {
+            for (Object previewObj : allPreviews) {
+                if (previewObj instanceof MultiblockPreviewRenderer mr) {
+                    int[] bounds = mr.getPreviewBounds();
+                    boolean inside = mx >= bounds[0] && mx < bounds[0] + bounds[2]
+                            && my >= bounds[1] && my < bounds[1] + bounds[3];
+                    if (!inside) continue;
+
+                    // 1) 2D 物品槽位（左侧部件 + 右侧候选方块）
+                    ItemStack slotStack = mr.getSlotStackAt(mx, my);
+                    if (slotStack != null && !slotStack.isEmpty()) {
+                        List<String> tooltip = slotStack.getTooltip(mc.player,
+                                mc.gameSettings.advancedItemTooltips ?
+                                        ITooltipFlag.TooltipFlags.ADVANCED :
+                                        ITooltipFlag.TooltipFlags.NORMAL);
+                        List<String> slotTips = mr.getSlotPredicateTips(mx, my);
+                        if (slotTips != null && !slotTips.isEmpty()) {
+                            tooltip.addAll(slotTips);
+                        }
+                        drawHoveringText(tooltip, mx, my);
+                        previewTooltipShown = true;
+                        break;
                     }
-                    drawHoveringText(tooltip, mx, my);
-                    previewTooltipShown = true;
+                    // 2) 3D 场景方块悬停
+                    ItemStack hovered = MultiblockPreviewRenderer.getHoveredItemStack();
+                    if (hovered != null && !hovered.isEmpty()) {
+                        List<String> tooltip = hovered.getTooltip(mc.player,
+                                mc.gameSettings.advancedItemTooltips ?
+                                        ITooltipFlag.TooltipFlags.ADVANCED :
+                                        ITooltipFlag.TooltipFlags.NORMAL);
+                        List<String> predTips = mr.getPredicateTips();
+                        if (predTips != null && !predTips.isEmpty()) {
+                            tooltip.addAll(predTips);
+                        }
+                        drawHoveringText(tooltip, mx, my);
+                        previewTooltipShown = true;
+                        break;
+                    }
+                    // 3) 信息图标 tooltip
+                    int iconX = bounds[0] + bounds[2] - 25;
+                    int iconY = bounds[1] + 22;
+                    if (mx >= iconX && mx <= iconX + 20 && my >= iconY && my <= iconY + 20) {
+                        drawHoveringText(Arrays.asList(
+                                I18n.format("gregtech.multiblock.preview.zoom"),
+                                I18n.format("gregtech.multiblock.preview.rotate"),
+                                I18n.format("gregtech.multiblock.preview.select")
+                        ), mx, my);
+                        previewTooltipShown = true;
+                        break;
+                    }
+                } else if (previewObj instanceof BlueprintPreviewRenderer br) {
+                    int[] bounds = br.getPreviewBounds();
+                    boolean inside = mx >= bounds[0] && mx < bounds[0] + bounds[2]
+                            && my >= bounds[1] && my < bounds[1] + bounds[3];
+                    if (!inside) continue;
+
+                    // 1) 2D 物品槽位（左侧部件）
+                    ItemStack slotStack = br.getSlotStackAt(mx, my);
+                    if (slotStack != null && !slotStack.isEmpty()) {
+                        List<String> tooltip = slotStack.getTooltip(mc.player,
+                                mc.gameSettings.advancedItemTooltips ?
+                                        ITooltipFlag.TooltipFlags.ADVANCED :
+                                        ITooltipFlag.TooltipFlags.NORMAL);
+                        drawHoveringText(tooltip, mx, my);
+                        previewTooltipShown = true;
+                        break;
+                    }
+                    // 2) 3D 场景方块悬停
+                    ItemStack hovered = BlueprintPreviewRenderer.getHoveredItemStack();
+                    if (hovered != null && !hovered.isEmpty()) {
+                        List<String> tooltip = hovered.getTooltip(mc.player,
+                                mc.gameSettings.advancedItemTooltips ?
+                                        ITooltipFlag.TooltipFlags.ADVANCED :
+                                        ITooltipFlag.TooltipFlags.NORMAL);
+                        List<String> bpTips = br.getTooltipLines();
+                        if (bpTips != null && !bpTips.isEmpty()) {
+                            tooltip.addAll(bpTips);
+                        }
+                        drawHoveringText(tooltip, mx, my);
+                        previewTooltipShown = true;
+                        break;
+                    }
                 }
-            }
-            // 3) 信息图标 tooltip
-            int[] bounds = activePreview.getPreviewBounds();
-            int iconX = bounds[0] + bounds[2] - 25;
-            int iconY = bounds[1] + 22;
-            if (mx >= iconX && mx <= iconX + 20 && my >= iconY && my <= iconY + 20) {
-                drawHoveringText(Arrays.asList(
-                        I18n.format("gregtech.multiblock.preview.zoom"),
-                        I18n.format("gregtech.multiblock.preview.rotate"),
-                        I18n.format("gregtech.multiblock.preview.select")
-                ), mx, my);
-                previewTooltipShown = true;
             }
         }
 
@@ -226,15 +297,26 @@ public class WikiScreen extends GuiScreen {
             int mx = Mouse.getEventX() * width / mc.displayWidth;
             int my = Mouse.getEventY() * height / mc.displayHeight;
             // 如果鼠标在 3D 预览区域内，优先缩放场景
-            MultiblockPreviewRenderer preview = getActivePreview();
-            if (preview != null && preview.isMouseOverPreview(mx, my)) {
-                preview.handleScroll(dw, mx, my);
-            } else if (mx < WikiRenderer.SIDEBAR_W) {
-                sidebarScrollTarget -= dw * 0.35f;
-                sidebarScrollTarget = Math.max(0, Math.min(sidebarMaxScroll, sidebarScrollTarget));
-            } else {
-                scrollTarget -= dw * 0.4f;
-                scrollTarget = Math.max(0, Math.min(maxScroll, scrollTarget));
+            boolean scrollHandled = false;
+            for (Object previewObj : getAllPreviewRenderers()) {
+                if (previewObj instanceof MultiblockPreviewRenderer mr && mr.isMouseOverPreview(mx, my)) {
+                    mr.handleScroll(dw, mx, my);
+                    scrollHandled = true;
+                    break;
+                } else if (previewObj instanceof BlueprintPreviewRenderer br && br.isMouseOverPreview(mx, my)) {
+                    br.handleScroll(dw, mx, my);
+                    scrollHandled = true;
+                    break;
+                }
+            }
+            if (!scrollHandled) {
+                if (mx < WikiRenderer.SIDEBAR_W) {
+                    sidebarScrollTarget -= dw * 0.35f;
+                    sidebarScrollTarget = Math.max(0, Math.min(sidebarMaxScroll, sidebarScrollTarget));
+                } else {
+                    scrollTarget -= dw * 0.4f;
+                    scrollTarget = Math.max(0, Math.min(maxScroll, scrollTarget));
+                }
             }
         }
     }
@@ -243,9 +325,12 @@ public class WikiScreen extends GuiScreen {
     protected void mouseClicked(int mx, int my, int btn) throws IOException {
         super.mouseClicked(mx, my, btn);
         // 如果鼠标在预览区域内（含通道滑条等底部 UI），优先转发给预览渲染器
-        MultiblockPreviewRenderer preview = getActivePreview();
-        if (preview != null && preview.isMouseOverFullPreview(mx, my)) {
-            if (preview.handleClick(mx, my, btn)) return;
+        for (Object previewObj : getAllPreviewRenderers()) {
+            if (previewObj instanceof MultiblockPreviewRenderer mr && mr.isMouseOverFullPreview(mx, my)) {
+                if (mr.handleClick(mx, my, btn)) return;
+            } else if (previewObj instanceof BlueprintPreviewRenderer br && br.isMouseOverFullPreview(mx, my)) {
+                if (br.handleClick(mx, my, btn)) return;
+            }
         }
         searchField.mouseClicked(mx, my, btn);
         if (btn != 0 || mx >= WikiRenderer.SIDEBAR_W) return;

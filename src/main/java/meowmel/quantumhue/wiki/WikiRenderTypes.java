@@ -30,6 +30,7 @@ public final class WikiRenderTypes {
         INLINE_ICON, INLINE_IMAGE, INLINE_LATEX,
         BLOCKQUOTE, CODE_BLOCK, LATEX_BLOCK,
         MULTIBLOCK_PREVIEW,
+        BLUEPRINT_PREVIEW,
         GAP
     }
 

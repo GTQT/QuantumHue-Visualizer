@@ -49,7 +49,7 @@ public final class WikiRegistration {
         // 2. 统一添加到分类
         WikiCategoryBuilder coreCat = new WikiCategoryBuilder(
                 "多方块教学",
-                () -> MetaTileEntities.ELECTRIC_BLAST_FURNACE.getStackForm());
+                () -> MetaItems.MULTIBLOCK_BUILDER.getStackForm());
     
         for (Map.Entry<MetaTileEntity, MultiblockBase> entry : MultiblockBase.getDocumentedMultiblocks().entrySet()) {
             MultiblockBase mb = entry.getValue();

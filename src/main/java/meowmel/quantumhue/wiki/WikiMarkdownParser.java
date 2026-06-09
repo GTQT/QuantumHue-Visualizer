@@ -130,7 +130,7 @@ public final class WikiMarkdownParser {
             }
 
             // ── 独立资产行 ──
-            if (trimmed.matches("^!?\\[(item|image|multiblock):.*\\]$")) {
+            if (trimmed.matches("^!?\\[(item|image|multiblock|blueprint):.*\\]$")) {
                 flushPara(paraAccum, blocks);
                 blocks.add(new BlockData(BlockType.ASSET, trimmed));
                 continue;
@@ -480,6 +480,11 @@ public final class WikiMarkdownParser {
             // 保留 val（metaTileEntityId 的 ResourceLocation 字符串），
             // 由 WikiRenderer 在渲染时懒加载为 MultiblockPreviewRenderer
             RenderLine rl = new RenderLine(LineType.MULTIBLOCK_PREVIEW, val, 300);
+            return rl;
+        } else if ("blueprint".equals(type)) {
+            // 保留 val（蓝图 JSON 的资源路径），
+            // 由 WikiRenderer 在渲染时懒加载为 BlueprintPreviewRenderer
+            RenderLine rl = new RenderLine(LineType.BLUEPRINT_PREVIEW, val, 300);
             return rl;
         }
         return new RenderLine(LineType.TEXT, line, LINE_H);
