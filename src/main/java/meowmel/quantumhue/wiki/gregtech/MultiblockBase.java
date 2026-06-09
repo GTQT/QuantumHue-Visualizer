@@ -1,9 +1,12 @@
 package meowmel.quantumhue.wiki.gregtech;
 
+import gregtech.api.GregTechAPI;
 import gregtech.api.metatileentity.MetaTileEntity;
 import gregtech.api.metatileentity.multiblock.MultiblockControllerBase;
+import gregtech.api.metatileentity.registry.MTERegistry;
 import gregtech.api.util.GTUtility;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -29,15 +32,11 @@ public abstract class MultiblockBase {
     /** MTE → 页面实例 映射（按插入顺序） */
     protected static final Map<MetaTileEntity, MultiblockBase> documentedMultiblocks = new LinkedHashMap<>();
 
-    /** MTE ID → 页面实例 映射（用于 ItemStack 快速查找） */
-    private static final Map<String, MultiblockBase> documentedMultiblocksByMteId = new LinkedHashMap<>();
-
     protected final MetaTileEntity mte;
 
     protected MultiblockBase(MetaTileEntity mte) {
         this.mte = mte;
         documentedMultiblocks.put(mte, this);
-        documentedMultiblocksByMteId.put(mte.metaTileEntityId.toString(), this);
     }
 
     /** Wiki 页面 ID（必须唯一） */
@@ -46,12 +45,10 @@ public abstract class MultiblockBase {
     /** Wiki 页面标题 */
     public abstract String getPageTitle();
 
-    /** 介绍文本（不含 Markdown 标题等外层格式） */
-    public abstract String getDescription();
-
-    /** 生成完整的 Markdown 正文 */
+    /** 生成完整的 Markdown 正文（自动附加多方块 3D 预览标记） */
     public String getMarkdownContent() {
-        return "# " + getPageTitle() + "\n\n" + getDescription();
+        return "# " + getPageTitle()
+                + "\n\n![multiblock:" + mte.metaTileEntityId + "]";
     }
 
     public MetaTileEntity getMetaTileEntity() {
@@ -79,8 +76,17 @@ public abstract class MultiblockBase {
         if (stack == null || stack.isEmpty()) return null;
         MetaTileEntity mte = GTUtility.getMetaTileEntity(stack);
         if (mte != null) {
-            return documentedMultiblocksByMteId.get(mte.metaTileEntityId.toString());
+            return documentedMultiblocks.get(mte);
         }
         return null;
+    }
+
+    /**
+     * 根据 metaTileEntityId（ResourceLocation 格式）查找对应的 MetaTileEntity。
+     * 通过 GregTech 的 MTE 注册表查找，不使用反射。
+     */
+    public static MetaTileEntity getMteById(ResourceLocation metaTileEntityId) {
+        MTERegistry registry = GregTechAPI.mteManager.getRegistry(metaTileEntityId.getNamespace());
+        return registry.getObject(metaTileEntityId);
     }
 }

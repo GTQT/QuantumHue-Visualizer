@@ -80,6 +80,25 @@ public class WikiLatexRenderer {
     }
 
     /**
+     * 预处理公式：剥离 Markdown 颜色标记 [#RRGGBB] 和 [/]。
+     *
+     * <p>jlatexmath 不支持通过 Markdown 颜色标记来局部着色。
+     * 要在公式中实现彩色效果，请将颜色标记放在 {@code $...$} 外部：</p>
+     * <pre>
+     * 错误：$[#FF5555]E[/] = [#55AAFF]mc^2[/]$
+     * 正确：[#FF5555]$E$[/] = [#55AAFF]$mc^2$[/]
+     * </pre>
+     */
+    static String preprocessFormula(String formula) {
+        if (formula == null || formula.isEmpty()) return formula;
+
+        // 剥离 [#RRGGBB] 和 [/]，保留公式其余部分不变
+        String result = formula.replaceAll("\\[#[0-9A-Fa-f]{6}\\]", "");
+        result = result.replaceAll("\\[/\\]", "");
+        return result;
+    }
+
+    /**
      * 测量公式尺寸 {@code [widthPx, heightPx, depthPx]}，失败返回 null
      * 线程安全
      */
@@ -98,7 +117,8 @@ public class WikiLatexRenderer {
         }
 
         try {
-            TeXFormula texFormula = new TeXFormula(formula);
+            String processed = preprocessFormula(formula);
+            TeXFormula texFormula = new TeXFormula(processed);
             TeXIcon icon = texFormula.new TeXIconBuilder()
                     .setStyle(TeXConstants.STYLE_DISPLAY)
                     .setSize(sourceScale)
@@ -142,7 +162,8 @@ public class WikiLatexRenderer {
         }
 
         try {
-            TeXFormula texFormula = new TeXFormula(formula);
+            String processed = preprocessFormula(formula);
+            TeXFormula texFormula = new TeXFormula(processed);
             TeXIcon icon = texFormula.new TeXIconBuilder()
                     .setStyle(TeXConstants.STYLE_DISPLAY)
                     .setSize(sourceScale)

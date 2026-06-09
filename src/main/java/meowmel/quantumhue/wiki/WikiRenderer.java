@@ -9,8 +9,10 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.item.ItemStack;
 import meowmel.quantumhue.wiki.gregtech.MultiblockPreviewRenderer;
+import meowmel.quantumhue.wiki.gregtech.MultiblockPreviewResolver;
 import org.lwjgl.opengl.GL11;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static meowmel.quantumhue.wiki.WikiRenderTypes.*;
@@ -21,6 +23,14 @@ import static meowmel.quantumhue.wiki.WikiRenderTypes.*;
 public final class WikiRenderer {
 
     private WikiRenderer() {}
+
+    /** 当前帧渲染的图标位置列表，用于 tooltip 查询 */
+    private static final List<IconSlot> iconSlots = new ArrayList<>();
+
+    /** 获取最近一次 drawPageContent() 渲染的图标位置列表 */
+    public static List<IconSlot> getIconSlots() {
+        return iconSlots;
+    }
 
     /* 颜色常量 */
     public static final int BG = 0xFF0E0E16;
@@ -195,6 +205,7 @@ public final class WikiRenderer {
     public static float drawPageContent(Minecraft mc, List<RenderLine> lines, float scroll,
                                         int cx, int cy, int cr, int width, int height,
                                         int mouseX, int mouseY) {
+        iconSlots.clear();
         FontRenderer fr = mc.fontRenderer;
         int startX = cx + PAD, maxW = cr - cx - PAD * 2, y = cy + PAD - (int) scroll;
         RenderItem ri = mc.getRenderItem();
@@ -260,11 +271,13 @@ public final class WikiRenderer {
                     break;
                 case INLINE_ICON:
                     if (ln.icon != null && !ln.icon.isEmpty()) {
+                        int ix = x + (maxW - ICON_SIZE) / 2;
                         GlStateManager.enableDepth();
                         RenderHelper.enableGUIStandardItemLighting();
-                        ri.renderItemAndEffectIntoGUI(ln.icon, x + (maxW - ICON_SIZE) / 2, y);
+                        ri.renderItemAndEffectIntoGUI(ln.icon, ix, y);
                         RenderHelper.disableStandardItemLighting();
                         GlStateManager.disableDepth();
+                        iconSlots.add(new IconSlot(ix, y, ICON_SIZE, ICON_SIZE, ln.icon));
                     }
                     y += ICON_SIZE + 4;
                     break;
@@ -320,6 +333,10 @@ public final class WikiRenderer {
                 case MULTIBLOCK_PREVIEW: {
                     int previewH = 350;
                     if (y + previewH >= cy - 200 && y <= height) {
+                        // 懒加载：首次渲染时根据 text（metaTileEntityId 字符串）解析
+                        if (ln.extraData == null && ln.text != null && !ln.text.isEmpty()) {
+                            ln.extraData = MultiblockPreviewResolver.resolve(ln.text);
+                        }
                         if (ln.extraData instanceof MultiblockPreviewRenderer) {
                             MultiblockPreviewRenderer mr = (MultiblockPreviewRenderer) ln.extraData;
                             mr.render(startX, y, maxW, previewH, mouseX, mouseY);
@@ -370,6 +387,7 @@ public final class WikiRenderer {
                 GlStateManager.scale(0.8f, 0.8f, 1f);
                 ri.renderItemAndEffectIntoGUI(p.icon, 0, 0);
                 GlStateManager.popMatrix();
+                iconSlots.add(new IconSlot(curX, y - 2, ICON_SIZE, ICON_SIZE, p.icon));
                 curX += ICON_SIZE + 2;
             }
         }

@@ -5,7 +5,6 @@ import gregtech.common.items.MetaItems;
 import gregtech.common.metatileentities.MetaTileEntities;
 import meowmel.quantumhue.wiki.gregtech.EBFPage;
 import meowmel.quantumhue.wiki.gregtech.MultiblockBase;
-import meowmel.quantumhue.wiki.gregtech.MultiblockPreviewRenderer;
 import net.minecraft.item.ItemStack;
 
 import java.util.Map;
@@ -54,11 +53,9 @@ public final class WikiRegistration {
     
         for (Map.Entry<MetaTileEntity, MultiblockBase> entry : MultiblockBase.getDocumentedMultiblocks().entrySet()) {
             MultiblockBase mb = entry.getValue();
-            MultiblockPreviewRenderer preview = new MultiblockPreviewRenderer(mb.getController());
             coreCat.page(new WikiPageBuilder(mb.getPageId(), mb.getPageTitle(),
                     () -> mb.getMetaTileEntity().getStackForm())
-                    .content(mb.getMarkdownContent())
-                    .attach(preview));
+                    .content(mb.getMarkdownContent()));
         }
     
         WikiRegistry.builder().category(coreCat).register();

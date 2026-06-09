@@ -49,7 +49,6 @@ public final class WikiMarkdownParser {
         boolean inTable = false;
         List<String[]> tableRows = new ArrayList<>();
         StringBuilder paraAccum = new StringBuilder(); // paragraph 累积
-        String paraFirstLine = null; // 用于判断列表前缀
 
         for (int i = 0; i < rawLines.length; i++) {
             String line = rawLines[i];
@@ -131,7 +130,7 @@ public final class WikiMarkdownParser {
             }
 
             // ── 独立资产行 ──
-            if (trimmed.matches("^!?\\[(item|image):.*\\]$")) {
+            if (trimmed.matches("^!?\\[(item|image|multiblock):.*\\]$")) {
                 flushPara(paraAccum, blocks);
                 blocks.add(new BlockData(BlockType.ASSET, trimmed));
                 continue;
@@ -151,7 +150,6 @@ public final class WikiMarkdownParser {
             // ── 普通段落文本 ──
             if (paraAccum.length() > 0) paraAccum.append(' ');
             paraAccum.append(line);
-            if (paraFirstLine == null) paraFirstLine = line;
         }
 
         // 收尾
@@ -478,6 +476,11 @@ public final class WikiMarkdownParser {
                 try { w = Integer.parseInt(parts[2]); h = Integer.parseInt(parts[3]); } catch (Exception ignored) {}
             }
             return new RenderLine(LineType.INLINE_IMAGE, new ResourceLocation(domain, path), w, h);
+        } else if ("multiblock".equals(type)) {
+            // 保留 val（metaTileEntityId 的 ResourceLocation 字符串），
+            // 由 WikiRenderer 在渲染时懒加载为 MultiblockPreviewRenderer
+            RenderLine rl = new RenderLine(LineType.MULTIBLOCK_PREVIEW, val, 300);
+            return rl;
         }
         return new RenderLine(LineType.TEXT, line, LINE_H);
     }
@@ -498,11 +501,12 @@ public final class WikiMarkdownParser {
      * - 若单个字/单词超过 maxW，则按字符硬切
      */
     private static String[] splitIntoWrappableSegments(String word, int maxW, FontRenderer fr) {
-        // 判断是否包含 CJK 字符
         boolean hasCJK = false;
+        boolean hasFormatCode = false;
         for (int i = 0; i < word.length(); i++) {
             char c = word.charAt(i);
-            if (isCJK(c)) { hasCJK = true; break; }
+            if (c == '§') hasFormatCode = true;
+            else if (isCJK(c)) hasCJK = true;
         }
 
         if (!hasCJK) {
@@ -510,11 +514,15 @@ public final class WikiMarkdownParser {
             return new String[]{word + " "};
         }
 
-        // CJK 文本：逐字拆分
+        // 含 § 格式码的单词不拆分，以免 §x 与正文分离导致格式失效
+        if (hasFormatCode) {
+            return new String[]{word + " "};
+        }
+
+        // 纯 CJK 文本：逐字拆分
         List<String> segs = new ArrayList<>();
         for (int i = 0; i < word.length(); i++) {
-            char c = word.charAt(i);
-            segs.add(String.valueOf(c));
+            segs.add(String.valueOf(word.charAt(i)));
         }
         return segs.toArray(new String[0]);
     }

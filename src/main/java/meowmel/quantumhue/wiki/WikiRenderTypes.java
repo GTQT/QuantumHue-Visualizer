@@ -11,6 +11,17 @@ public final class WikiRenderTypes {
 
     private WikiRenderTypes() {}
 
+    /** 记录页面上已渲染的图标位置，用于 tooltip 查询 */
+    public static class IconSlot {
+        public final int x, y, w, h;
+        public final ItemStack stack;
+
+        public IconSlot(int x, int y, int w, int h, ItemStack stack) {
+            this.x = x; this.y = y; this.w = w; this.h = h;
+            this.stack = stack;
+        }
+    }
+
     /* ═══════════════ 渲染行类型 ═══════════════ */
     public enum LineType {
         HEADING, SUBHEADING, SUBSUBHEADING,
