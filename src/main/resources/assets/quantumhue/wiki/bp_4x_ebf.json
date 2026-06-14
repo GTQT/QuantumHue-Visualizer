@@ -638,7 +638,8 @@
           "workingEnable": true
         },
         "gregtech:mte_base": {
-          "facing": 2
+          "facing": 2,
+          "upwardsFacing": 2
         }
       }
     },
@@ -710,7 +711,8 @@
           "workingEnable": true
         },
         "gregtech:mte_base": {
-          "facing": 3
+          "facing": 3,
+          "upwardsFacing": 3
         }
       }
     },
@@ -1240,7 +1242,8 @@
           "workingEnable": true
         },
         "gregtech:mte_base": {
-          "facing": 2
+          "facing": 2,
+          "upwardsFacing": 2
         }
       }
     },
@@ -1312,7 +1315,8 @@
           "workingEnable": true
         },
         "gregtech:mte_base": {
-          "facing": 3
+          "facing": 3,
+          "upwardsFacing": 3
         }
       }
     },

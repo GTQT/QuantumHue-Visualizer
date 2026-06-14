@@ -47,6 +47,7 @@ public class AdvancedTooltipHandler {
     private final PaginationHandler paginationHandler = new PaginationHandler();
     private final ModInfoHelper modInfoHelper = new ModInfoHelper();
     private final TooltipAnimation tooltipAnimation = new TooltipAnimation();
+    private final ItemIconAnimation itemIconAnimation = new ItemIconAnimation();
     private TooltipLayout lastRenderedLayout = null;
     private long lastRenderTime = 0;
     private static final long ANIMATION_THRESHOLD_MS = 500;
@@ -92,6 +93,7 @@ public class AdvancedTooltipHandler {
             // 切换到简单tooltip时，重置物品状态并停止动画
             currentItemId = null;
             tooltipAnimation.stopAnimation();
+            itemIconAnimation.stop();
             renderSimpleTooltip(event);
         } else {
             renderCustomItemTooltip(event);
@@ -123,6 +125,8 @@ public class AdvancedTooltipHandler {
             currentItemId = itemId;
             currentPage = 0;
             currentKeyState = new KeyState();
+
+            itemIconAnimation.trigger();
 
             cachedColors = TooltipColorHelper.getTooltipColors(stack);
             if (ThaumcraftIntegration.isThaumcraftAvailable()) {
@@ -185,7 +189,7 @@ public class AdvancedTooltipHandler {
             GLStateHelper.enableScissorClip(layout);
         }
 
-        tooltipRenderer.drawItemIcon(stack, layout.iconX, layout.iconY);
+        tooltipRenderer.drawItemIcon(stack, layout.iconX, layout.iconY, itemIconAnimation.getScale());
         tooltipRenderer.drawTooltipText(content, layout, event.getFontRenderer());
 
         if (tooltipAnimation.isAnimating()) {

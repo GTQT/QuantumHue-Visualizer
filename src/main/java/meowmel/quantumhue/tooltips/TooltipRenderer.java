@@ -100,6 +100,20 @@ public class TooltipRenderer {
     }
 
     public void drawItemIcon(ItemStack stack, int x, int y) {
+        drawItemIcon(stack, x, y, 1.0f);
+    }
+
+    public void drawItemIcon(ItemStack stack, int x, int y, float scale) {
+        GlStateManager.pushMatrix();
+
+        if (scale != 1.0f) {
+            float centerX = x + TooltipConstants.ICON_SIZE / 2.0f;
+            float centerY = y + TooltipConstants.ICON_SIZE / 2.0f;
+            GlStateManager.translate(centerX, centerY, 0.0);
+            GlStateManager.scale(scale, scale, 1.0);
+            GlStateManager.translate(-centerX, -centerY, 0.0);
+        }
+
         GlStateManager.enableDepth();
         GlStateManager.enableCull();
         RenderHelper.enableGUIStandardItemLighting();
@@ -111,6 +125,8 @@ public class TooltipRenderer {
 
         RenderHelper.disableStandardItemLighting();
         GlStateManager.disableCull();
+
+        GlStateManager.popMatrix();
     }
 
     public void drawTooltipText(TooltipContent content, TooltipLayout layout, FontRenderer font) {

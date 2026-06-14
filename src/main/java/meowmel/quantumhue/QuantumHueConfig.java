@@ -175,6 +175,35 @@ public class QuantumHueConfig {
         @Config.RangeInt(min = 50, max = 500)
         @Config.Name("动画时长")
         public int duration = 150;
+
+        @Config.Comment({
+                "切换物品时物品图标的果冻弹出动画",
+                "图标会从略小尺寸弹性弹出、微量过冲后回弹稳定",
+                "true: 启用",
+                "false: 禁用"
+        })
+        @Config.Name("图标弹出动画")
+        public boolean icon_pop_enabled = true;
+
+        @Config.Comment({
+                "图标弹出动画持续时间（毫秒）",
+                "值越大，动画越慢",
+                "范围: 100 ~ 1000"
+        })
+        @Config.RangeInt(min = 100, max = 1000)
+        @Config.Name("图标弹出时长")
+        public int icon_pop_duration = 800;
+
+        @Config.Comment({
+                "图标弹出力度",
+                "控制弹性的强弱程度",
+                "0.0 = 无弹性效果",
+                "1.0 = 最强弹性",
+                "范围: 0.0 ~ 1.0"
+        })
+        @Config.RangeDouble(min = 0.0, max = 1.0)
+        @Config.Name("图标弹出力度")
+        public double icon_pop_strength = 1.0;
     }
 
     public static class TooltipBackground {
