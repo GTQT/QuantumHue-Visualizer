@@ -1,12 +1,8 @@
 package meowmel.quantumhue;
 
 import com.meowmel.quantumhue.Tags;
-import meowmel.quantumhue.modernsplash.CustomSplash;
-import meowmel.quantumhue.modernsplash.TimeHistory;
 import net.minecraftforge.common.ForgeVersion;
-import net.minecraftforge.fml.relauncher.FMLLaunchHandler;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
-import net.minecraftforge.fml.relauncher.Side;
 import zone.rong.mixinbooter.IEarlyMixinLoader;
 
 import javax.annotation.Nullable;
@@ -14,16 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static net.minecraftforge.fml.common.Loader.isModLoaded;
-
 @IFMLLoadingPlugin.Name(Tags.MOD_ID)
 @IFMLLoadingPlugin.MCVersion(ForgeVersion.mcVersion)
 public class EarlyMixin implements IEarlyMixinLoader, IFMLLoadingPlugin {
 
     public EarlyMixin() {
-        if(FMLLaunchHandler.side() == Side.CLIENT) {
-            CustomSplash.expectedTime = TimeHistory.getEstimateTime();
-        }
     }
 
     @Override

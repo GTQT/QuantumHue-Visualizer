@@ -101,6 +101,8 @@ public class CustomSplash
 
     public static void start()
     {
+        expectedTime = TimeHistory.getEstimateTime();
+
         File configFile = new File(Minecraft.getMinecraft().gameDir, "config/splash.properties");
 
         File parent = configFile.getParentFile();
