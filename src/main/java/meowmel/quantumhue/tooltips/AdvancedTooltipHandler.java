@@ -2,6 +2,7 @@ package meowmel.quantumhue.tooltips;
 
 import meowmel.quantumhue.QuantumHueConfig;
 import meowmel.quantumhue.tooltips.applecore.AppleSkinIntegration;
+import meowmel.quantumhue.tooltips.comparison.EquipmentCompareHandler;
 import meowmel.quantumhue.tooltips.thaumcraft.ThaumcraftIntegration;
 import meowmel.quantumhue.wiki.WikiScreen;
 import meowmel.quantumhue.wiki.gregtech.MultiblockBase;
@@ -48,6 +49,7 @@ public class AdvancedTooltipHandler {
     private final ModInfoHelper modInfoHelper = new ModInfoHelper();
     private final TooltipAnimation tooltipAnimation = new TooltipAnimation();
     private final ItemIconAnimation itemIconAnimation = new ItemIconAnimation();
+    private final EquipmentCompareHandler compareHandler = new EquipmentCompareHandler();
     private TooltipLayout lastRenderedLayout = null;
     private long lastRenderTime = 0;
     private static final long ANIMATION_THRESHOLD_MS = 500;
@@ -198,6 +200,13 @@ public class AdvancedTooltipHandler {
 
         GLStateHelper.restoreGLState();
         GlStateManager.popMatrix();
+
+        // ── 装备对比 ──
+        if (QuantumHueConfig.equipmentComparison.enabled && !stack.isEmpty()) {
+            GlStateManager.pushMatrix();
+            compareHandler.renderComparisons(stack, content, layout, colors, event, font);
+            GlStateManager.popMatrix();
+        }
 
         // ── Wiki 长按 W 检测 ──
         if (wikiPageId != null) {

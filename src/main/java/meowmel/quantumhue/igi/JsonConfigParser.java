@@ -8,6 +8,7 @@ import meowmel.quantumhue.igi.info.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.Loader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -84,7 +85,30 @@ public class JsonConfigParser {
         JsonArray lines = groupObj.getAsJsonArray("lines");
         if (lines != null) {
             for (JsonElement lineEl : lines) {
-                if (lineEl.isJsonArray()) {
+                // ── 条件行：{"condition": "modid", "segments": [...]} ──
+                if (lineEl.isJsonObject() && lineEl.getAsJsonObject().has("condition")) {
+                    JsonObject lineObj = lineEl.getAsJsonObject();
+                    String condition = getString(lineObj, "condition", "");
+                    if (!condition.isEmpty() && !Loader.isModLoaded(condition)) {
+                        continue; // 模组未加载，跳过整行
+                    }
+                    JsonArray segments = lineObj.getAsJsonArray("segments");
+                    if (segments == null || segments.size() == 0) {
+                        builder.info("");
+                        continue;
+                    }
+                    Object[] parts = new Object[segments.size()];
+                    boolean allEmpty = true;
+                    for (int i = 0; i < segments.size(); i++) {
+                        parts[i] = parseSegment(segments.get(i));
+                        if (parts[i] != null) allEmpty = false;
+                    }
+                    if (!allEmpty) {
+                        builder.info(parts);
+                    } else {
+                        builder.info("");
+                    }
+                } else if (lineEl.isJsonArray()) {
                     JsonArray segments = lineEl.getAsJsonArray();
                     if (segments.size() == 0) {
                         builder.info("");
@@ -174,6 +198,10 @@ public class JsonConfigParser {
             case "health":       return new HealthInfo();
             case "food":         return new FoodInfo();
             case "light":        return new LightInfo();
+
+            // === 神秘时代 ===
+            case "vis":          return new VisInfo();
+            case "flux":         return new FluxInfo();
 
             default:
                 LOGGER.warn("未知的 IGI 段类型: {}", type);

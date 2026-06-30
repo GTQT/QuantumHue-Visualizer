@@ -8,9 +8,11 @@ import meowmel.quantumhue.command.CommandWiki;
 import meowmel.quantumhue.igi.IGI;
 import meowmel.quantumhue.igi.IGIInit;
 import meowmel.quantumhue.igi.HudRenderer;
+import meowmel.quantumhue.igi.ThaumcraftAuraUpdater;
 import meowmel.quantumhue.modernsplash.ModernSplashEvents;
 import meowmel.quantumhue.network.PacketHandler;
 import meowmel.quantumhue.tooltips.AdvancedTooltipHandler;
+import meowmel.quantumhue.tooltips.comparison.EquipmentCompareHandler;
 import meowmel.quantumhue.wiki.WikiRegistration;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Config;
@@ -52,6 +54,7 @@ public class QuantumHue {
         LOGGER.info("Hello From {}!", Tags.MOD_NAME);
         configDir = event.getModConfigurationDirectory();
         PacketHandler.init();
+        EquipmentCompareHandler.registerKeyBinding();
         MinecraftForge.EVENT_BUS.register(new ModernSplashEvents());
     }
 
@@ -72,9 +75,11 @@ public class QuantumHue {
     public void onInit(FMLInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(new SimpleBlurHandler());
         MinecraftForge.EVENT_BUS.register(new AdvancedTooltipHandler());
+        MinecraftForge.EVENT_BUS.register(EquipmentCompareHandler.class);
         MinecraftForge.EVENT_BUS.register(new BiomeInfoEventHandler());
         MinecraftForge.EVENT_BUS.register(new ClientHighlightHandler());
         MinecraftForge.EVENT_BUS.register(new HudRenderer());
+        MinecraftForge.EVENT_BUS.register(new ThaumcraftAuraUpdater());
 
         IGIInit.registerDefaults(configDir);
 

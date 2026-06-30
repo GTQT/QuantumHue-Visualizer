@@ -30,6 +30,9 @@ public class QuantumHueConfig {
     @Config.Name("Middle Click Highlight")
     public static Highlight highlight = new Highlight();
 
+    @Config.Name("Equipment Comparison")
+    public static EquipmentComparison equipmentComparison = new EquipmentComparison();
+
     public static class SmoothScrolling {
         @Config.Name("Scroll Duration")
         @Config.Comment({
@@ -320,5 +323,92 @@ public class QuantumHueConfig {
         })
         @Config.RangeDouble(min = 0.5, max = 10)
         public float lineWidth = 2.0f;
+    }
+
+    public static class EquipmentComparison {
+        @Config.Name("Enabled")
+        @Config.Comment({
+                "启用/禁用装备对比功能",
+                "鼠标悬停在可装备物品上时，同时显示已装备物品的Tooltip进行对比",
+                "true: 启用",
+                "false: 禁用"
+        })
+        public boolean enabled = true;
+
+        @Config.Name("Default On")
+        @Config.Comment({
+                "默认显示对比（按下快捷键隐藏而非显示）",
+                "true: 默认显示对比，按键时隐藏",
+                "false: 默认隐藏对比，按键时显示"
+        })
+        public boolean defaultOn = false;
+
+        @Config.Name("Strict Mode")
+        @Config.Comment({
+                "严格模式：只比较相同物品类型",
+                "例如：剑只能与剑对比，不能与斧对比",
+                "true: 启用严格模式",
+                "false: 关闭严格模式"
+        })
+        public boolean strict = false;
+
+        @Config.Name("Blacklist")
+        @Config.Comment({
+                "不参与对比的物品注册名列表",
+                "格式: modid:item_name",
+                "例如: minecraft:stick"
+        })
+        public String[] blacklist = new String[0];
+
+        @Config.Name("Badge Text")
+        @Config.Comment({
+                "对比徽章显示的文字",
+                "留空则使用默认文字\"已装备\""
+        })
+        public String badgeText = "";
+
+        @Config.Name("Override Badge Text")
+        @Config.Comment({
+                "是否使用自定义徽章文字",
+                "true: 使用 badgeText 中的自定义文字",
+                "false: 使用内置默认文字\"已装备\""
+        })
+        public boolean overrideBadgeText = false;
+
+        @Config.Name("Badge Text Color")
+        @Config.Comment({
+                "徽章文字颜色",
+                "格式: 0xAARRGGBB",
+                "默认: 0xFFFFFFFF (白色)"
+        })
+        @Config.RangeInt(min = 0x00000000, max = 0xFFFFFFFF)
+        public int badgeTextColor = 0xFFFFFFFF;
+
+        @Config.Name("Badge Background Color")
+        @Config.Comment({
+                "徽章背景颜色",
+                "格式: 0xAARRGGBB",
+                "默认: 0xCC1f1f1f"
+        })
+        @Config.RangeInt(min = 0x00000000, max = 0xFFFFFFFF)
+        public int badgeBackgroundColor = 0xCC1f1f1f;
+
+        @Config.Name("Badge Border Start Color")
+        @Config.Comment({
+                "徽章上/左边框颜色",
+                "格式: 0xAARRGGBB",
+                "默认: 0xFF4b4b4b"
+        })
+        @Config.RangeInt(min = 0x00000000, max = 0xFFFFFFFF)
+        public int badgeBorderStartColor = 0xFF4b4b4b;
+
+        @Config.Name("Badge Border End Color")
+        @Config.Comment({
+                "徽章下/右边框颜色",
+                "格式: 0xAARRGGBB",
+                "默认: 0xFF4b4b4b"
+        })
+        @Config.RangeInt(min = 0x00000000, max = 0xFFFFFFFF)
+        public int badgeBorderEndColor = 0xFF4b4b4b;
     }
 }

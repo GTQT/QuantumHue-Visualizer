@@ -34,6 +34,16 @@ public class PacketHandler {
                 HighlightPacket.class,
                 packetId++,
                 Side.CLIENT);
+        instance.registerMessage(
+                ThaumcraftAuraMessage.ServerHandler.class,
+                ThaumcraftAuraMessage.class,
+                packetId++,
+                Side.SERVER);
+        instance.registerMessage(
+                ThaumcraftAuraMessage.ClientHandler.class,
+                ThaumcraftAuraMessage.class,
+                packetId++,
+                Side.CLIENT);
     }
 
     public static void sendTo(IMessage message, net.minecraft.entity.player.EntityPlayerMP player) {

@@ -7,11 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TooltipContent {
-    final String itemName;
-    final String modName;
-    final List<String> remainingLines;
-    List<String> currentPageLines = new ArrayList<>();
-    boolean needsPagination = false;
+    public final String itemName;
+    public final String modName;
+    public final List<String> remainingLines;
+    public List<String> currentPageLines = new ArrayList<>();
+    public boolean needsPagination = false;
     int totalPages = 1;
     int currentPage = 0;
     int maxLinesPerPage = 0;

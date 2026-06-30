@@ -98,7 +98,21 @@
           {"type": "eye_light"},
           {"type": "color", "name": "reset"},
           {"type": "text", "value": "）"}
-        ]
+        ],
+        {
+          "condition": "thaumcraft",
+          "segments": [
+            {"type": "icon", "item": "thaumcraft:thaumonomicon"},
+            {"type": "text", "value": " 神秘时代: 灵气: "},
+            {"type": "color", "name": "aqua"},
+            {"type": "vis"},
+            {"type": "color", "name": "reset"},
+            {"type": "text", "value": " 咒波: "},
+            {"type": "color", "name": "dark_purple"},
+            {"type": "flux"},
+            {"type": "color", "name": "reset"}
+          ]
+        }
       ]
     }
   ]
