@@ -1,6 +1,9 @@
 package meowmel.quantumhue.network;
 
 
+import meowmel.quantumhue.chat.packets.ChatGroupPacket;
+import meowmel.quantumhue.chat.packets.ChatPrivatePacket;
+import meowmel.quantumhue.chat.packets.GroupManagePacket;
 import meowmel.quantumhue.command.ShowWikiPacket;
 import meowmel.quantumhue.command.WikiReloadPacket;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -42,6 +45,39 @@ public class PacketHandler {
         instance.registerMessage(
                 ThaumcraftAuraMessage.ClientHandler.class,
                 ThaumcraftAuraMessage.class,
+                packetId++,
+                Side.CLIENT);
+        // Chat - Private
+        instance.registerMessage(
+                ChatPrivatePacket.ServerHandler.class,
+                ChatPrivatePacket.class,
+                packetId++,
+                Side.SERVER);
+        instance.registerMessage(
+                ChatPrivatePacket.ClientHandler.class,
+                ChatPrivatePacket.class,
+                packetId++,
+                Side.CLIENT);
+        // Chat - Group
+        instance.registerMessage(
+                ChatGroupPacket.ServerHandler.class,
+                ChatGroupPacket.class,
+                packetId++,
+                Side.SERVER);
+        instance.registerMessage(
+                ChatGroupPacket.ClientHandler.class,
+                ChatGroupPacket.class,
+                packetId++,
+                Side.CLIENT);
+        // Chat - Group Manage
+        instance.registerMessage(
+                GroupManagePacket.ServerHandler.class,
+                GroupManagePacket.class,
+                packetId++,
+                Side.SERVER);
+        instance.registerMessage(
+                GroupManagePacket.ClientHandler.class,
+                GroupManagePacket.class,
                 packetId++,
                 Side.CLIENT);
     }

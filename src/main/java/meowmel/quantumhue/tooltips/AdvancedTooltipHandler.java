@@ -79,7 +79,7 @@ public class AdvancedTooltipHandler {
                 wikiPageId = wikiEntry != null ? wikiEntry.getPageId() : null;
             }
             if (wikiPageId != null) {
-                event.getToolTip().add(2, TextFormatting.AQUA + "[W]" + TextFormatting.GRAY + " 长按打开Wiki攻略");
+                event.getToolTip().add(2, TextFormatting.GRAY + " 长按"+TextFormatting.AQUA + " [W]" + TextFormatting.GRAY + "打开Wiki攻略");
             }
         }
     }

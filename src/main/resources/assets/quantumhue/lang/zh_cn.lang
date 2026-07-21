@@ -1,0 +1,14 @@
+# QuantumHue Chat
+quantumhue.chat.sender.system=系统
+
+# 频道名称
+quantumhue.chat.world=世界频道
+quantumhue.chat.private=私聊
+quantumhue.chat.group=群聊
+quantumhue.chat.create_group=创建群聊
+
+# 输入
+quantumhue.chat.input_placeholder=输入消息...
+quantumhue.chat.group_name_placeholder=输入群名...
+quantumhue.chat.no_messages=暂无消息
+quantumhue.chat.go_bottom=回到最新

@@ -2,6 +2,8 @@ package meowmel.quantumhue;
 
 import com.meowmel.quantumhue.Tags;
 import meowmel.quantumhue.biomeInfo.BiomeInfoEventHandler;
+import meowmel.quantumhue.chat.ChatClientListener;
+import meowmel.quantumhue.chat.server.ChatServerListener;
 import meowmel.quantumhue.blur.SimpleBlurHandler;
 import meowmel.quantumhue.client.highlight.ClientHighlightHandler;
 import meowmel.quantumhue.command.CommandWiki;
@@ -80,6 +82,8 @@ public class QuantumHue {
         MinecraftForge.EVENT_BUS.register(new ClientHighlightHandler());
         MinecraftForge.EVENT_BUS.register(new HudRenderer());
         MinecraftForge.EVENT_BUS.register(new ThaumcraftAuraUpdater());
+        MinecraftForge.EVENT_BUS.register(new ChatClientListener());
+        MinecraftForge.EVENT_BUS.register(new ChatServerListener());
 
         IGIInit.registerDefaults(configDir);
 

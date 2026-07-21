@@ -1,0 +1,14 @@
+# QuantumHue Chat
+quantumhue.chat.sender.system=System
+
+# Channel names
+quantumhue.chat.world=World
+quantumhue.chat.private=Private Chat
+quantumhue.chat.group=Group Chat
+quantumhue.chat.create_group=Create Group
+
+# Input
+quantumhue.chat.input_placeholder=Type a message...
+quantumhue.chat.group_name_placeholder=Enter group name...
+quantumhue.chat.no_messages=No messages yet
+quantumhue.chat.go_bottom=Latest
