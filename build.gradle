@@ -315,6 +315,34 @@ tasks.withType(JavaCompile).configureEach {
     }
 }
 
+tasks.register('downloadEmojis') {
+    group 'quantumhue'
+    description 'Download 50 Twemoji PNGs from jsDelivr CDN'
+    doLast {
+        def emojiDir = file('src/main/resources/assets/quantumhue/textures/emoji')
+        emojiDir.mkdirs()
+        def codepoints = [
+            '1f600','1f602','1f923','1f60a','1f60d','1f970','1f618','1f60e','1f929','1f62d',
+            '1f621','1f631','1f914','1f644','1f634','1f917','1f97a','1f60f','1f605','1f60b',
+            '1f44d','1f44e','1f44f','1f64f','1f4aa','2764','1f495','1f494','1f4af','1f525',
+            '2728','1f389','1f38a','2b50','1f31f','1f440','1f382','1f648','1f480','1f608',
+            '1f3ae','1f3c6','1f355','1f3b5','1f4a4','1f680','1f451','1f431','1f308','1f370'
+        ]
+        def baseUrl = 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/72x72'
+        codepoints.each { cp ->
+            def f = new File(emojiDir, "${cp}.png")
+            if (!f.exists()) {
+                def url = new URL("${baseUrl}/${cp}.png")
+                url.withInputStream { f.withOutputStream { it << it } }
+                println "  Downloaded ${cp}.png"
+            } else {
+                println "  Skip ${cp}.png (exists)"
+            }
+        }
+        println "Emoji download complete: ${codepoints.size()} files"
+    }
+}
+
 tasks.register('cleanroomAfterSync') {
     group 'cleanroom helpers'
     dependsOn 'injectTags', 'generateMixinJson'

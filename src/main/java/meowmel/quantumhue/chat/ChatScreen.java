@@ -107,6 +107,9 @@ public class ChatScreen extends GuiScreen {
     private String historyBuffer = "";
     private int historyPos = -1;
 
+    // 表情选择器
+    private boolean showEmojiPicker;
+
     public ChatScreen(String initialText) {
         this.initialText = initialText != null ? initialText : "";
     }
@@ -130,7 +133,7 @@ public class ChatScreen extends GuiScreen {
         activeChannel = ChatMessageStore.getActiveChannel();
 
         int inputX = SIDEBAR_W + PAD;
-        int inputW = panelRight() - SIDEBAR_W - PAD * 2 - 18;
+        int inputW = panelRight() - SIDEBAR_W - PAD * 2 - 36;
         int inputY = height - BAR_H + (BAR_H - INPUT_H) / 2;
 
         inputField = new GuiTextField(0, mc.fontRenderer, inputX, inputY + 3, inputW, INPUT_H);
@@ -194,6 +197,7 @@ public class ChatScreen extends GuiScreen {
         drawInputBar(mouseX, mouseY);
         drawContextMenu(mouseX, mouseY);
         drawAvatarContextMenu(mouseX, mouseY);
+        drawEmojiPicker(mouseX - slideX, mouseY);
 
         if (creatingGroup) drawCreateGroupDialog(mouseX, mouseY);
 
@@ -423,13 +427,12 @@ public class ChatScreen extends GuiScreen {
 
     private int getMsgHeight(ChatMessage msg) {
         int wrapW = textWrapWidth();
+        String text = EmojiRegistry.replaceShortcodes(msg.content().getFormattedText());
         if (msg.isSystem()) {
-            List<String> lines = mc.fontRenderer.listFormattedStringToWidth(
-                    msg.content().getFormattedText(), wrapW);
+            List<String> lines = mc.fontRenderer.listFormattedStringToWidth(text, wrapW);
             return lines.size() * mc.fontRenderer.FONT_HEIGHT + 4;
         }
-        List<String> lines = mc.fontRenderer.listFormattedStringToWidth(
-                msg.content().getFormattedText(), wrapW);
+        List<String> lines = mc.fontRenderer.listFormattedStringToWidth(text, wrapW);
         return lines.size() * mc.fontRenderer.FONT_HEIGHT + BUBBLE_PAD_Y * 2 + NAME_H;
     }
 
@@ -452,10 +455,10 @@ public class ChatScreen extends GuiScreen {
             return;
         }
 
-        // 统一换行宽度
+        // 统一换行宽度（短码 → 占位符，使换行计算感知表情宽度）
         int wrapW = textWrapWidth();
-        List<String> lines = mc.fontRenderer.listFormattedStringToWidth(
-                msg.content().getFormattedText(), wrapW);
+        String renderedText = EmojiRegistry.replaceShortcodes(msg.content().getFormattedText());
+        List<String> lines = mc.fontRenderer.listFormattedStringToWidth(renderedText, wrapW);
 
         // 最长行实际宽度
         int textW = 0;
@@ -481,13 +484,26 @@ public class ChatScreen extends GuiScreen {
             if (bubbleX + bubbleW > r - PAD) bubbleX = r - PAD - bubbleW;
         }
 
-        // 名字
+        // 名字 — 独立于气泡宽度，只在面板边缘处截断
         if (msg.senderName() != null && !msg.senderName().getUnformattedText().isEmpty()) {
             String name = msg.senderName().getUnformattedText();
-            String displayName = mc.fontRenderer.trimStringToWidth(name, bubbleW - BUBBLE_PAD_X);
-            int nameX = own ? bubbleX + bubbleW - mc.fontRenderer.getStringWidth(displayName) - BUBBLE_PAD_X
-                            : bubbleX + BUBBLE_PAD_X;
-            mc.fontRenderer.drawStringWithShadow(displayName, nameX, baseY, ChatColors.NAME_TEXT);
+            int nameW = mc.fontRenderer.getStringWidth(name);
+            int nameX;
+            if (own) {
+                // 右对齐：名字右端贴气泡右缘，长名向左延伸
+                nameX = bubbleX + bubbleW - BUBBLE_PAD_X - nameW;
+                if (nameX < SIDEBAR_W + PAD) {
+                    // 超出面板左边界 → 截断
+                    nameX = SIDEBAR_W + PAD;
+                    name = mc.fontRenderer.trimStringToWidth(name, bubbleX + bubbleW - BUBBLE_PAD_X - nameX);
+                }
+            } else {
+                // 左对齐：名字左端贴气泡左缘，长名向右延伸
+                nameX = bubbleX + BUBBLE_PAD_X;
+                int maxW = r - PAD - nameX;
+                if (nameW > maxW) name = mc.fontRenderer.trimStringToWidth(name, maxW);
+            }
+            mc.fontRenderer.drawStringWithShadow(name, nameX, baseY, ChatColors.NAME_TEXT);
         }
 
         int bubbleY = baseY + NAME_H;
@@ -496,11 +512,13 @@ public class ChatScreen extends GuiScreen {
         Gui.drawRect(bubbleX, bubbleY, bubbleX + bubbleW, bubbleY + bubbleH,
                 own ? ChatColors.OWN_BUBBLE : ChatColors.OTHER_BUBBLE);
 
-        // 气泡文字 — 每行都从 bubbleX + BUBBLE_PAD_X 开始
-        for (int li = 0; li < lines.size(); li++)
-            mc.fontRenderer.drawStringWithShadow(lines.get(li),
-                    bubbleX + BUBBLE_PAD_X, bubbleY + BUBBLE_PAD_Y + li * mc.fontRenderer.FONT_HEIGHT,
-                    ChatColors.BUBBLE_TEXT);
+        // 气泡文字 — FontRenderer 绘制文本（占位符留空），随后覆盖表情贴图
+        for (int li = 0; li < lines.size(); li++) {
+            int lineX = bubbleX + BUBBLE_PAD_X;
+            int lineY = bubbleY + BUBBLE_PAD_Y + li * mc.fontRenderer.FONT_HEIGHT;
+            mc.fontRenderer.drawStringWithShadow(lines.get(li), lineX, lineY, ChatColors.BUBBLE_TEXT);
+            renderEmojiOverlays(lines.get(li), lineX, lineY);
+        }
 
         // 头像
         drawPlayerHead(msg.senderUUID(), avatarX, baseY);
@@ -616,7 +634,8 @@ public class ChatScreen extends GuiScreen {
         Gui.drawRect(SIDEBAR_W, barTop, r, barTop + 1, ChatColors.DIVIDER);
 
         int inputX = SIDEBAR_W + PAD;
-        int inputW = r - SIDEBAR_W - PAD * 2 - 18;
+        // 为表情按钮和发送按钮留出空间
+        int inputW = r - SIDEBAR_W - PAD * 2 - 36;
         int inputY = barTop + (BAR_H - INPUT_H) / 2;
 
         // 输入框背景
@@ -634,7 +653,20 @@ public class ChatScreen extends GuiScreen {
         if (inputField.getText().isEmpty())
             mc.fontRenderer.drawStringWithShadow(getPlaceholder(), inputX + 2, inputY + 3, ChatColors.TEXT_SECONDARY);
 
+        // 更新输入框宽度（上面计算时已预留空间）
+        inputField.width = inputW;
         inputField.drawTextBox();
+
+        // 表情按钮
+        int emojiBtnX = inputX + inputW + 3;
+        int emojiBtnY = barTop + (BAR_H - 14) / 2;
+        boolean hoverEmoji = mx >= emojiBtnX - 2 && mx < emojiBtnX + 14 && my >= emojiBtnY - 2 && my < emojiBtnY + 14;
+        int emojiBg = showEmojiPicker ? ChatColors.ACCENT_DIM
+                : (hoverEmoji ? ChatColors.SIDEBAR_HOVER : 0);
+        if (emojiBg != 0)
+            Gui.drawRect(emojiBtnX - 2, emojiBtnY - 2, emojiBtnX + 14, emojiBtnY + 14, emojiBg);
+        mc.fontRenderer.drawStringWithShadow("☺", emojiBtnX, emojiBtnY + 2,
+                showEmojiPicker ? ChatColors.ACCENT : ChatColors.TEXT_SECONDARY);
 
         // 发送按钮
         int sendX = r - PAD - 14, sendY = barTop + (BAR_H - 12) / 2;
@@ -726,6 +758,40 @@ public class ChatScreen extends GuiScreen {
         avatarContextIndex = -1;
     }
 
+    /**
+     * 处理表情选择器的鼠标点击
+     * @return true 表示事件已消费
+     */
+    private boolean handleEmojiPickerClick(int mx, int my) {
+        int cols = EmojiRegistry.PICKER_COLS;
+        int rows = EmojiRegistry.PICKER_ROWS;
+        int cell = EmojiRegistry.PICKER_CELL;
+        int pad = 4;
+        int gridW = cols * cell + pad * 2;
+        int gridH = rows * cell + pad * 2;
+        int gridX = SIDEBAR_W + PAD;
+        int gridY = height - BAR_H - TOOLBAR_H - gridH - 4;
+
+        // 点击选择器外部 → 关闭
+        if (mx < gridX || mx >= gridX + gridW || my < gridY || my >= gridY + gridH) {
+            showEmojiPicker = false;
+            return false;
+        }
+
+        // 点击格子 → 插入短码
+        int col = (mx - gridX - pad) / cell;
+        int row = (my - gridY - pad) / cell;
+        if (row >= 0 && row < rows && col >= 0 && col < cols) {
+            int idx = row * cols + col;
+            if (idx < EmojiRegistry.COUNT) {
+                String sc = EmojiRegistry.getShortcodeByIndex(idx) + " ";
+                inputField.writeText(sc);
+            }
+        }
+        // 不关选择器，可以连续点击
+        return true;
+    }
+
     // ===== 创建群聊对话框 =====
 
     private void drawCreateGroupDialog(int mx, int my) {
@@ -776,6 +842,103 @@ public class ChatScreen extends GuiScreen {
         Gui.drawScaledCustomSizeModalRect(x, y, 40, 8, 8, 8, AVATAR, AVATAR, 64, 64);
     }
 
+    // ===== 表情渲染 =====
+
+    /** 在已渲染的文字行之上覆盖表情贴图 */
+    private void renderEmojiOverlays(String line, int lineX, int lineY) {
+        FontRenderer fr = mc.fontRenderer;
+        int emojiSize = EmojiRegistry.getEmojiSize();
+        // 表情垂直居中（相对于字体行高 FONT_HEIGHT）
+        int emojiY = lineY + (fr.FONT_HEIGHT - emojiSize) / 2;
+        // 高表情微调上移 1px，防止与上行文字间距不匀
+        if (emojiSize > fr.FONT_HEIGHT + 1) emojiY -= 1;
+
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            // 跳过格式码
+            if (c == '§' && i + 1 < line.length()) { i++; continue; }
+            if (!EmojiRegistry.isPlaceholder(c)) continue;
+
+            ResourceLocation tex = EmojiRegistry.getTexture(c);
+            if (tex == null) continue;
+
+            int emojiX = lineX + fr.getStringWidth(line.substring(0, i));
+            mc.getTextureManager().bindTexture(tex);
+            GlStateManager.enableBlend();
+            GlStateManager.color(1, 1, 1, 1);
+            Gui.drawScaledCustomSizeModalRect(
+                    emojiX, emojiY, 0, 0, 72, 72, emojiSize, emojiSize, 72, 72);
+        }
+    }
+
+    // ===== 表情选择器 =====
+
+    private void drawEmojiPicker(int mx, int my) {
+        if (!showEmojiPicker) return;
+
+        int cols = EmojiRegistry.PICKER_COLS;
+        int rows = EmojiRegistry.PICKER_ROWS;
+        int cell = EmojiRegistry.PICKER_CELL;
+        int pad = 4;
+        int gridW = cols * cell + pad * 2;
+        int gridH = rows * cell + pad * 2;
+
+        // 定位：输入栏上方
+        int gridX = SIDEBAR_W + PAD;
+        int gridY = height - BAR_H - TOOLBAR_H - gridH - 4;
+
+        // 背景
+        Gui.drawRect(gridX, gridY, gridX + gridW, gridY + gridH, ChatColors.CONTEXT_BG);
+        Gui.drawRect(gridX, gridY, gridX + gridW, gridY + 1, ChatColors.ACCENT);
+        Gui.drawRect(gridX, gridY + gridH - 1, gridX + gridW, gridY + gridH, ChatColors.ACCENT);
+        Gui.drawRect(gridX, gridY, gridX + 1, gridY + gridH, ChatColors.ACCENT);
+        Gui.drawRect(gridX + gridW - 1, gridY, gridX + gridW, gridY + gridH, ChatColors.ACCENT);
+
+        // 表情格子
+        int imgSize = EmojiRegistry.getEmojiSize();
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                int idx = row * cols + col;
+                if (idx >= EmojiRegistry.COUNT) break;
+
+                int cx = gridX + pad + col * cell;
+                int cy = gridY + pad + row * cell;
+
+                // Hover 高亮
+                boolean hover = mx >= cx && mx < cx + cell && my >= cy && my < cy + cell;
+                if (hover) Gui.drawRect(cx, cy, cx + cell, cy + cell, ChatColors.SIDEBAR_HOVER);
+
+                // 表情贴图
+                ResourceLocation tex = EmojiRegistry.getTextureByIndex(idx);
+                if (tex != null) {
+                    mc.getTextureManager().bindTexture(tex);
+                    GlStateManager.enableBlend();
+                    GlStateManager.color(1, 1, 1, 1);
+                    int inset = (cell - imgSize) / 2;
+                    Gui.drawScaledCustomSizeModalRect(
+                            cx + inset, cy + inset, 0, 0, 72, 72, imgSize, imgSize, 72, 72);
+                }
+            }
+        }
+
+        // 悬停时底部显示短码提示
+        int hoverCol = (mx - gridX - pad) / cell;
+        int hoverRow = (my - gridY - pad) / cell;
+        if (hoverRow >= 0 && hoverRow < rows && hoverCol >= 0 && hoverCol < cols
+                && mx >= gridX && mx < gridX + gridW && my >= gridY && my < gridY + gridH) {
+            int idx = hoverRow * cols + hoverCol;
+            if (idx < EmojiRegistry.COUNT) {
+                String tip = EmojiRegistry.getShortcodeByIndex(idx);
+                int tipW = mc.fontRenderer.getStringWidth(tip);
+                int tipX = gridX + (gridW - tipW) / 2;
+                int tipY = gridY + gridH + 2;
+                Gui.drawRect(tipX - 3, tipY - 1, tipX + tipW + 3, tipY + mc.fontRenderer.FONT_HEIGHT + 1,
+                        ChatColors.CONTEXT_BG);
+                mc.fontRenderer.drawStringWithShadow(tip, tipX, tipY, ChatColors.TEXT_SECONDARY);
+            }
+        }
+    }
+
     // ===== 输入处理 =====
 
     @Override
@@ -796,6 +959,7 @@ public class ChatScreen extends GuiScreen {
         }
 
         if (keyCode == Keyboard.KEY_ESCAPE) {
+            if (showEmojiPicker) { showEmojiPicker = false; return; }
             if (inputField.getText().isEmpty()) {
                 closing = true;
                 animStart = System.currentTimeMillis();
@@ -860,6 +1024,11 @@ public class ChatScreen extends GuiScreen {
             return;
         }
 
+        // 表情选择器点击
+        if (showEmojiPicker && btn == 0) {
+            if (handleEmojiPickerClick(mx, my)) return;
+        }
+
         // 头像右键菜单
         if (avatarContextIndex >= 0) {
             handleAvatarContextClick(mx, my);
@@ -910,10 +1079,24 @@ public class ChatScreen extends GuiScreen {
             handleToolbarClick(mx, my); return;
         }
 
+        // 表情按钮点击 (toggle)
+        if (btn == 0) {
+            int inputX = SIDEBAR_W + PAD;
+            int inputW = panelRight() - SIDEBAR_W - PAD * 2 - 36;
+            int emojiBtnX = inputX + inputW + 3;
+            int emojiBtnY = height - BAR_H + (BAR_H - 14) / 2;
+            if (mx >= emojiBtnX - 2 && mx < emojiBtnX + 14 && my >= emojiBtnY - 2 && my < emojiBtnY + 14) {
+                showEmojiPicker = !showEmojiPicker;
+                return;
+            }
+        }
+
         int sendX = panelRight() - PAD - 14, sendY = height - BAR_H + (BAR_H - 12) / 2;
         if (btn == 0 && mx >= sendX - 2 && mx < sendX + 14 && my >= sendY - 2 && my < sendY + 14) {
             sendMessage(); return;
         }
+        // 点击非表情按钮/选择器区域时关闭选择器
+        if (btn == 0 && showEmojiPicker) showEmojiPicker = false;
 
         int cx = panelRight() - 20, cy = 6;
         if (btn == 0 && mx >= cx && mx < cx + 14 && my >= cy && my < cy + 14) {
