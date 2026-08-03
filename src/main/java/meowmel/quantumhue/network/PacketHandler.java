@@ -4,6 +4,7 @@ package meowmel.quantumhue.network;
 import meowmel.quantumhue.chat.packets.ChatGroupPacket;
 import meowmel.quantumhue.chat.packets.ChatPrivatePacket;
 import meowmel.quantumhue.chat.packets.GroupManagePacket;
+import meowmel.quantumhue.chat.packets.TpRequestPacket;
 import meowmel.quantumhue.command.ShowWikiPacket;
 import meowmel.quantumhue.command.WikiReloadPacket;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -78,6 +79,17 @@ public class PacketHandler {
         instance.registerMessage(
                 GroupManagePacket.ClientHandler.class,
                 GroupManagePacket.class,
+                packetId++,
+                Side.CLIENT);
+        // Chat - TP Request
+        instance.registerMessage(
+                TpRequestPacket.ServerHandler.class,
+                TpRequestPacket.class,
+                packetId++,
+                Side.SERVER);
+        instance.registerMessage(
+                TpRequestPacket.ClientHandler.class,
+                TpRequestPacket.class,
                 packetId++,
                 Side.CLIENT);
     }

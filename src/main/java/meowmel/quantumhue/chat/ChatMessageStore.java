@@ -140,6 +140,12 @@ public class ChatMessageStore {
         return channelMessages.getOrDefault(activeChannel.getId(), Collections.emptyList());
     }
 
+    /** 清空当前频道全部消息 */
+    public static void clearActiveChannel() {
+        List<ChatMessage> msgs = channelMessages.get(activeChannel.getId());
+        if (msgs != null) msgs.clear();
+    }
+
     public static void setActiveChannel(String channelId) {
         for (ChatChannel ch : channels) {
             if (ch.getId().equals(channelId)) {

@@ -1,10 +1,12 @@
 package meowmel.quantumhue.chat;
 
+import meowmel.quantumhue.QuantumHueConfig;
 import meowmel.quantumhue.chat.ChatChannel.ChannelType;
 import meowmel.quantumhue.chat.ChatMessageStore.ChatMessage;
 import meowmel.quantumhue.chat.packets.ChatGroupPacket;
 import meowmel.quantumhue.chat.packets.ChatPrivatePacket;
 import meowmel.quantumhue.chat.packets.GroupManagePacket;
+import meowmel.quantumhue.chat.packets.TpRequestPacket;
 import meowmel.quantumhue.network.PacketHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -41,7 +43,7 @@ import java.util.*;
 public class ChatScreen extends GuiScreen {
 
     // ===== 布局常量 =====
-    private static final int SIDEBAR_W = 115;
+    private int sidebarW() { return QuantumHueConfig.chat.sidebarWidth; }
     private static final int HEADER_H = 28;
     private static final int BAR_H = 26;
     private static final int TOOLBAR_H = 26;
@@ -50,7 +52,7 @@ public class ChatScreen extends GuiScreen {
     private static final int BUBBLE_PAD_X = 6;
     private static final int BUBBLE_PAD_Y = 4;
     private static final int GAP = 4;
-    private static final int NAME_H = AVATAR; // 与头像同高，避免头像底部与气泡重叠
+    private static final int NAME_H = AVATAR;
     private static final int SCROLLBAR_W = 5;
     private static final int INPUT_H = 14;
     private static final int SIDEBAR_ITEM_H = 20;
@@ -88,16 +90,18 @@ public class ChatScreen extends GuiScreen {
     // 右键菜单
     private int contextMsgIndex = -1;
     private int contextX, contextY;
-    private static final int CTX_W = 70;
+    private static final int CTX_W = 80;
     private static final int CTX_ITEM_H = 16;
 
     // 头像右键菜单
     private int avatarContextIndex = -1;
     private int avatarContextX, avatarContextY;
-    private static final int AVATAR_CTX_W = 70;
+    private static final int AVATAR_CTX_W = 80;
 
     // 气泡位置追踪 (用于头像点击检测)
     private final List<int[]> bubbleRects = new ArrayList<>();
+    // 消息气泡矩形 (x, y, w, h, index) — 用于气泡右键命中检测
+    private final List<int[]> messageBubbleRects = new ArrayList<>();
 
     // 创建群聊
     private boolean creatingGroup;
@@ -120,8 +124,10 @@ public class ChatScreen extends GuiScreen {
     public void initGui() {
         Keyboard.enableRepeatEvents(true);
 
-        // 面板宽度：屏幕宽度的 65%，最小300，最大700
-        panelW = MathHelper.clamp(width * 65 / 100, 300, Math.min(700, width));
+        // 面板宽度：从 Config 读取
+        QuantumHueConfig.ChatConfig cfg = QuantumHueConfig.chat;
+        panelW = MathHelper.clamp(width * cfg.panelWidthPercent / 100,
+                cfg.panelMinWidth, Math.min(cfg.panelMaxWidth, width));
 
         historyPos = mc.ingameGUI.getChatGUI().getSentMessages().size();
         ChatMessageStore.setScreenOpen(true);
@@ -132,8 +138,8 @@ public class ChatScreen extends GuiScreen {
         channels = ChatMessageStore.getChannels();
         activeChannel = ChatMessageStore.getActiveChannel();
 
-        int inputX = SIDEBAR_W + PAD;
-        int inputW = panelRight() - SIDEBAR_W - PAD * 2 - 36;
+        int inputX = sidebarW() + PAD;
+        int inputW = panelRight() - sidebarW() - PAD * 2 - 36;
         int inputY = height - BAR_H + (BAR_H - INPUT_H) / 2;
 
         inputField = new GuiTextField(0, mc.fontRenderer, inputX, inputY + 3, inputW, INPUT_H);
@@ -211,18 +217,18 @@ public class ChatScreen extends GuiScreen {
     // ===== 侧边栏 =====
 
     private void drawSidebar(int mx, int my) {
-        Gui.drawRect(0, 0, SIDEBAR_W, height, ChatColors.SIDEBAR_BG);
-        Gui.drawRect(SIDEBAR_W - 1, 0, SIDEBAR_W, height, ChatColors.SIDEBAR_DIVIDER);
+        Gui.drawRect(0, 0, sidebarW(), height, ChatColors.SIDEBAR_BG);
+        Gui.drawRect(sidebarW() - 1, 0, sidebarW(), height, ChatColors.SIDEBAR_DIVIDER);
 
         // 标题
-        Gui.drawRect(0, 0, SIDEBAR_W, HEADER_H, ChatColors.HEADER_BG);
-        Gui.drawRect(0, HEADER_H - 1, SIDEBAR_W, HEADER_H, ChatColors.DIVIDER);
+        Gui.drawRect(0, 0, sidebarW(), HEADER_H, ChatColors.HEADER_BG);
+        Gui.drawRect(0, HEADER_H - 1, sidebarW(), HEADER_H, ChatColors.DIVIDER);
         mc.fontRenderer.drawStringWithShadow("§lChat",
-                (SIDEBAR_W - mc.fontRenderer.getStringWidth("Chat")) / 2, 10, ChatColors.ACCENT);
+                (sidebarW() - mc.fontRenderer.getStringWidth("Chat")) / 2, 10, ChatColors.ACCENT);
 
         int listTop = HEADER_H + 4;
         int listBot = height;
-        enableScissor(0, listTop, SIDEBAR_W, listBot, width, height);
+        enableScissor(0, listTop, sidebarW(), listBot, width, height);
 
         int y = listTop - (int) sidebarScroll;
         FontRenderer fr = mc.fontRenderer;
@@ -230,8 +236,8 @@ public class ChatScreen extends GuiScreen {
         // 世界频道
         {
             int bg = isActiveWorld() ? ChatColors.SIDEBAR_SEL
-                    : (mx >= 0 && mx < SIDEBAR_W && my >= y && my < y + SIDEBAR_ITEM_H ? ChatColors.SIDEBAR_HOVER : 0);
-            if (bg != 0) Gui.drawRect(0, y, SIDEBAR_W, y + SIDEBAR_ITEM_H, bg);
+                    : (mx >= 0 && mx < sidebarW() && my >= y && my < y + SIDEBAR_ITEM_H ? ChatColors.SIDEBAR_HOVER : 0);
+            if (bg != 0) Gui.drawRect(0, y, sidebarW(), y + SIDEBAR_ITEM_H, bg);
             fr.drawStringWithShadow("🌐 " + ChatChannel.world().getDisplayName(), 6, y + 4, ChatColors.TEXT_PRIMARY);
             y += SIDEBAR_ITEM_H;
         }
@@ -239,20 +245,20 @@ public class ChatScreen extends GuiScreen {
 
         // 私聊分类
         {
-            boolean catHover = mx >= 0 && mx < SIDEBAR_W && my >= y && my < y + SIDEBAR_CAT_H;
-            Gui.drawRect(0, y, SIDEBAR_W, y + SIDEBAR_CAT_H, catHover ? ChatColors.SIDEBAR_HOVER : ChatColors.SIDEBAR_CAT);
-            Gui.drawRect(0, y + SIDEBAR_CAT_H - 1, SIDEBAR_W, y + SIDEBAR_CAT_H, ChatColors.DIVIDER);
+            boolean catHover = mx >= 0 && mx < sidebarW() && my >= y && my < y + SIDEBAR_CAT_H;
+            Gui.drawRect(0, y, sidebarW(), y + SIDEBAR_CAT_H, catHover ? ChatColors.SIDEBAR_HOVER : ChatColors.SIDEBAR_CAT);
+            Gui.drawRect(0, y + SIDEBAR_CAT_H - 1, sidebarW(), y + SIDEBAR_CAT_H, ChatColors.DIVIDER);
             fr.drawStringWithShadow((privateExpanded ? "▼" : "▶") + " 私聊", 6, y + 5, ChatColors.TEXT_SECONDARY);
             y += SIDEBAR_CAT_H;
 
             if (privateExpanded) {
                 for (ChatChannel ch : channels) {
                     if (!ch.isPrivate()) continue;
-                    boolean sel = ch == activeChannel, hov = mx >= 0 && mx < SIDEBAR_W && my >= y && my < y + SIDEBAR_ITEM_H;
+                    boolean sel = ch == activeChannel, hov = mx >= 0 && mx < sidebarW() && my >= y && my < y + SIDEBAR_ITEM_H;
                     if (sel) {
-                        Gui.drawRect(0, y, SIDEBAR_W, y + SIDEBAR_ITEM_H, ChatColors.SIDEBAR_SEL);
+                        Gui.drawRect(0, y, sidebarW(), y + SIDEBAR_ITEM_H, ChatColors.SIDEBAR_SEL);
                         Gui.drawRect(0, y, 2, y + SIDEBAR_ITEM_H, ChatColors.ACCENT);
-                    } else if (hov) Gui.drawRect(0, y, SIDEBAR_W, y + SIDEBAR_ITEM_H, ChatColors.SIDEBAR_HOVER);
+                    } else if (hov) Gui.drawRect(0, y, sidebarW(), y + SIDEBAR_ITEM_H, ChatColors.SIDEBAR_HOVER);
                     if (ch.getUnreadCount() > 0 && !sel)
                         Gui.drawRect(4, y + 7, 8, y + 11, ChatColors.RED_DOT);
                     fr.drawStringWithShadow(ch.getDisplayName(), 14, y + 4,
@@ -265,20 +271,20 @@ public class ChatScreen extends GuiScreen {
 
         // 群聊分类
         {
-            boolean catHover = mx >= 0 && mx < SIDEBAR_W && my >= y && my < y + SIDEBAR_CAT_H;
-            Gui.drawRect(0, y, SIDEBAR_W, y + SIDEBAR_CAT_H, catHover ? ChatColors.SIDEBAR_HOVER : ChatColors.SIDEBAR_CAT);
-            Gui.drawRect(0, y + SIDEBAR_CAT_H - 1, SIDEBAR_W, y + SIDEBAR_CAT_H, ChatColors.DIVIDER);
+            boolean catHover = mx >= 0 && mx < sidebarW() && my >= y && my < y + SIDEBAR_CAT_H;
+            Gui.drawRect(0, y, sidebarW(), y + SIDEBAR_CAT_H, catHover ? ChatColors.SIDEBAR_HOVER : ChatColors.SIDEBAR_CAT);
+            Gui.drawRect(0, y + SIDEBAR_CAT_H - 1, sidebarW(), y + SIDEBAR_CAT_H, ChatColors.DIVIDER);
             fr.drawStringWithShadow((groupExpanded ? "▼" : "▶") + " 群聊", 6, y + 5, ChatColors.TEXT_SECONDARY);
             y += SIDEBAR_CAT_H;
 
             if (groupExpanded) {
                 for (ChatChannel ch : channels) {
                     if (!ch.isGroup()) continue;
-                    boolean sel = ch == activeChannel, hov = mx >= 0 && mx < SIDEBAR_W && my >= y && my < y + SIDEBAR_ITEM_H;
+                    boolean sel = ch == activeChannel, hov = mx >= 0 && mx < sidebarW() && my >= y && my < y + SIDEBAR_ITEM_H;
                     if (sel) {
-                        Gui.drawRect(0, y, SIDEBAR_W, y + SIDEBAR_ITEM_H, ChatColors.SIDEBAR_SEL);
+                        Gui.drawRect(0, y, sidebarW(), y + SIDEBAR_ITEM_H, ChatColors.SIDEBAR_SEL);
                         Gui.drawRect(0, y, 2, y + SIDEBAR_ITEM_H, ChatColors.ACCENT);
-                    } else if (hov) Gui.drawRect(0, y, SIDEBAR_W, y + SIDEBAR_ITEM_H, ChatColors.SIDEBAR_HOVER);
+                    } else if (hov) Gui.drawRect(0, y, sidebarW(), y + SIDEBAR_ITEM_H, ChatColors.SIDEBAR_HOVER);
                     if (ch.getUnreadCount() > 0 && !sel)
                         Gui.drawRect(4, y + 7, 8, y + 11, ChatColors.RED_DOT);
                     fr.drawStringWithShadow(ch.getDisplayName(), 14, y + 4,
@@ -291,9 +297,9 @@ public class ChatScreen extends GuiScreen {
 
         // [+ 创建群聊]
         {
-            boolean hov = mx >= 0 && mx < SIDEBAR_W && my >= y && my < y + SIDEBAR_ITEM_H;
+            boolean hov = mx >= 0 && mx < sidebarW() && my >= y && my < y + SIDEBAR_ITEM_H;
             int bg = hov ? ChatColors.SIDEBAR_HOVER : 0;
-            if (bg != 0) Gui.drawRect(2, y, SIDEBAR_W - 2, y + SIDEBAR_ITEM_H, bg);
+            if (bg != 0) Gui.drawRect(2, y, sidebarW() - 2, y + SIDEBAR_ITEM_H, bg);
             fr.drawStringWithShadow("§7[+ 创建群聊]", 8, y + 4, hov ? ChatColors.TEXT_PRIMARY : ChatColors.TEXT_SECONDARY);
             y += SIDEBAR_ITEM_H;
         }
@@ -309,7 +315,7 @@ public class ChatScreen extends GuiScreen {
             thumbH = Math.min(thumbH, trackH);
             float sf = sidebarScroll / sidebarMaxScroll;
             int thumbY = listTop + (int) (sf * (trackH - thumbH));
-            int barX = SIDEBAR_W - 4;
+            int barX = sidebarW() - 4;
             Gui.drawRect(barX, listTop, barX + 3, height, ChatColors.SCROLLBAR_BG);
             Gui.drawRect(barX, thumbY, barX + 3, thumbY + thumbH, ChatColors.SCROLLBAR_FG);
         }
@@ -320,14 +326,29 @@ public class ChatScreen extends GuiScreen {
     // ===== 页眉 =====
 
     private void drawHeader(int mx, int my) {
-        Gui.drawRect(SIDEBAR_W, 0, panelRight(), HEADER_H, ChatColors.HEADER_BG);
-        Gui.drawRect(SIDEBAR_W, HEADER_H - 1, panelRight(), HEADER_H, ChatColors.DIVIDER);
+        Gui.drawRect(sidebarW(), 0, panelRight(), HEADER_H, ChatColors.HEADER_BG);
+        Gui.drawRect(sidebarW(), HEADER_H - 1, panelRight(), HEADER_H, ChatColors.DIVIDER);
 
         String title = activeChannel != null ? activeChannel.getDisplayName() : "聊天";
         if (activeChannel != null && activeChannel.isGroup())
             title = "👥 " + title + " (" + activeChannel.getMemberNames().size() + ")";
-        mc.fontRenderer.drawStringWithShadow(title, SIDEBAR_W + PAD,
+        mc.fontRenderer.drawStringWithShadow(title, sidebarW() + PAD,
                 (HEADER_H - 8) / 2, ChatColors.TEXT_HEADER);
+
+        // 时间显示（实时时钟）
+        String timeStr = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+        int timeW = mc.fontRenderer.getStringWidth(timeStr);
+        int timeX = panelRight() - 58 - timeW - 12; // 清空按钮左侧
+        mc.fontRenderer.drawStringWithShadow(timeStr, timeX, (HEADER_H - 8) / 2, ChatColors.TIME_TEXT);
+
+        // 清空按钮
+        String clearLabel = "清空";
+        int clearW = mc.fontRenderer.getStringWidth(clearLabel);
+        int clearX = panelRight() - 58, clearY = 6;
+        boolean hoverClear = mx >= clearX - 2 && mx < clearX + clearW + 2 && my >= clearY && my < clearY + 14;
+        if (hoverClear) Gui.drawRect(clearX - 2, clearY, clearX + clearW + 2, clearY + 14, ChatColors.SIDEBAR_HOVER);
+        mc.fontRenderer.drawStringWithShadow(clearLabel, clearX, clearY + 3,
+                hoverClear ? ChatColors.TEXT_PRIMARY : ChatColors.TEXT_SECONDARY);
 
         // 关闭按钮
         int cx = panelRight() - 20, cy = 6;
@@ -340,16 +361,17 @@ public class ChatScreen extends GuiScreen {
 
     private void drawMessages(int mx, int my) {
         bubbleRects.clear();
+        messageBubbleRects.clear();
         List<ChatMessage> messages = ChatMessageStore.getActiveMessages();
         int msgTop = HEADER_H + 2;
         int msgBot = height - BAR_H - TOOLBAR_H - 6;
-        int contentW = panelRight() - SIDEBAR_W;
+        int contentW = panelRight() - sidebarW();
 
         if (messages.isEmpty()) {
             String hint = "暂无消息";
             int hw = mc.fontRenderer.getStringWidth(hint);
             mc.fontRenderer.drawStringWithShadow(hint,
-                    SIDEBAR_W + (contentW - hw) / 2,
+                    sidebarW() + (contentW - hw) / 2,
                     msgBot / 2, ChatColors.TEXT_SECONDARY);
             return;
         }
@@ -373,7 +395,7 @@ public class ChatScreen extends GuiScreen {
         scrollTarget = MathHelper.clamp(scrollTarget, 0, maxScroll);
         scrollOffset = MathHelper.clamp(scrollOffset, 0, maxScroll);
 
-        enableScissor(SIDEBAR_W, msgTop, panelRight(), msgBot, width, height);
+        enableScissor(sidebarW(), msgTop, panelRight(), msgBot, width, height);
         int contentY = msgTop - (int) scrollOffset;
         lastTimeKey = null;
 
@@ -422,7 +444,7 @@ public class ChatScreen extends GuiScreen {
     /** 气泡文本统一换行宽度 (getMsgHeight 和 drawBubble 共用) */
     private int textWrapWidth() {
         // 气泡可用区: 面板宽度 - 侧边栏 - 两侧padding - 头像 - 头像与气泡间距 - 气泡内边距
-        return panelRight() - SIDEBAR_W - PAD * 2 - AVATAR - GAP - BUBBLE_PAD_X * 2;
+        return panelRight() - sidebarW() - PAD * 2 - AVATAR - GAP - BUBBLE_PAD_X * 2;
     }
 
     private int getMsgHeight(ChatMessage msg) {
@@ -438,7 +460,7 @@ public class ChatScreen extends GuiScreen {
 
     private void drawBubble(ChatMessage msg, int baseY, int index) {
         int r = panelRight();
-        int contentW = r - SIDEBAR_W;
+        int contentW = r - sidebarW();
         boolean own = msg.isOwn();
 
         if (msg.isSystem()) {
@@ -449,7 +471,7 @@ public class ChatScreen extends GuiScreen {
             for (String line : lines) {
                 int lw = mc.fontRenderer.getStringWidth(line);
                 mc.fontRenderer.drawStringWithShadow(line,
-                        SIDEBAR_W + (contentW - lw) / 2, yy, ChatColors.TEXT_SECONDARY);
+                        sidebarW() + (contentW - lw) / 2, yy, ChatColors.TEXT_SECONDARY);
                 yy += mc.fontRenderer.FONT_HEIGHT;
             }
             return;
@@ -475,9 +497,9 @@ public class ChatScreen extends GuiScreen {
             // 气泡右缘贴头像左边-4, 左缘 = 右缘 - bubbleW
             bubbleX = avatarX - GAP - bubbleW;
             // 不超出左边界
-            if (bubbleX < SIDEBAR_W + PAD) bubbleX = SIDEBAR_W + PAD;
+            if (bubbleX < sidebarW() + PAD) bubbleX = sidebarW() + PAD;
         } else {
-            avatarX = SIDEBAR_W + PAD;
+            avatarX = sidebarW() + PAD;
             // 气泡左缘在头像右边+4
             bubbleX = avatarX + AVATAR + GAP;
             // 不超出右边界
@@ -492,9 +514,9 @@ public class ChatScreen extends GuiScreen {
             if (own) {
                 // 右对齐：名字右端贴气泡右缘，长名向左延伸
                 nameX = bubbleX + bubbleW - BUBBLE_PAD_X - nameW;
-                if (nameX < SIDEBAR_W + PAD) {
+                if (nameX < sidebarW() + PAD) {
                     // 超出面板左边界 → 截断
-                    nameX = SIDEBAR_W + PAD;
+                    nameX = sidebarW() + PAD;
                     name = mc.fontRenderer.trimStringToWidth(name, bubbleX + bubbleW - BUBBLE_PAD_X - nameX);
                 }
             } else {
@@ -523,6 +545,8 @@ public class ChatScreen extends GuiScreen {
         // 头像
         drawPlayerHead(msg.senderUUID(), avatarX, baseY);
         bubbleRects.add(new int[]{avatarX, baseY, AVATAR, AVATAR, index});
+        // 记录气泡矩形供右键命中检测
+        messageBubbleRects.add(new int[]{bubbleX, bubbleY, bubbleW, bubbleH, index});
 
         // 防刷屏计数
         if (msg.duplicateCount() > 1) {
@@ -537,7 +561,7 @@ public class ChatScreen extends GuiScreen {
     private void drawTimeSeparator(LocalTime time, int y) {
         String text = time.format(TIME_FMT);
         int tw = mc.fontRenderer.getStringWidth(text);
-        int tx = SIDEBAR_W + (panelRight() - SIDEBAR_W - tw) / 2;
+        int tx = sidebarW() + (panelRight() - sidebarW() - tw) / 2;
         Gui.drawRect(tx - 6, y + 2, tx + tw + 6, y + TIME_SEP_H - 2, 0x44161630);
         mc.fontRenderer.drawStringWithShadow(text, tx, y + 3, ChatColors.TIME_TEXT);
     }
@@ -552,11 +576,11 @@ public class ChatScreen extends GuiScreen {
 
     private void drawToolbar(int mx, int my) {
         int toolTop = height - BAR_H - TOOLBAR_H, r = panelRight();
-        Gui.drawRect(SIDEBAR_W, toolTop, r, toolTop + TOOLBAR_H, ChatColors.BAR_BG);
-        Gui.drawRect(SIDEBAR_W, toolTop, r, toolTop + 1, ChatColors.DIVIDER);
+        Gui.drawRect(sidebarW(), toolTop, r, toolTop + TOOLBAR_H, ChatColors.BAR_BG);
+        Gui.drawRect(sidebarW(), toolTop, r, toolTop + 1, ChatColors.DIVIDER);
 
         int y = toolTop + (TOOLBAR_H - mc.fontRenderer.FONT_HEIGHT) / 2;
-        int x = SIDEBAR_W + PAD;
+        int x = sidebarW() + PAD;
         int gap = 6;
 
         int coordW = mc.fontRenderer.getStringWidth(LABEL_COORD) + TOOLBAR_BTN_PAD;
@@ -583,7 +607,7 @@ public class ChatScreen extends GuiScreen {
         int toolTop = height - BAR_H - TOOLBAR_H;
         if (my < toolTop || my >= toolTop + TOOLBAR_H) return;
 
-        int x = SIDEBAR_W + PAD;
+        int x = sidebarW() + PAD;
         int gap = 6;
         int coordW = mc.fontRenderer.getStringWidth(LABEL_COORD) + TOOLBAR_BTN_PAD;
         int itemW = mc.fontRenderer.getStringWidth(LABEL_ITEM) + TOOLBAR_BTN_PAD;
@@ -630,12 +654,12 @@ public class ChatScreen extends GuiScreen {
 
     private void drawInputBar(int mx, int my) {
         int barTop = height - BAR_H, r = panelRight();
-        Gui.drawRect(SIDEBAR_W, barTop, r, height, ChatColors.BAR_BG);
-        Gui.drawRect(SIDEBAR_W, barTop, r, barTop + 1, ChatColors.DIVIDER);
+        Gui.drawRect(sidebarW(), barTop, r, height, ChatColors.BAR_BG);
+        Gui.drawRect(sidebarW(), barTop, r, barTop + 1, ChatColors.DIVIDER);
 
-        int inputX = SIDEBAR_W + PAD;
+        int inputX = sidebarW() + PAD;
         // 为表情按钮和发送按钮留出空间
-        int inputW = r - SIDEBAR_W - PAD * 2 - 36;
+        int inputW = r - sidebarW() - PAD * 2 - 36;
         int inputY = barTop + (BAR_H - INPUT_H) / 2;
 
         // 输入框背景
@@ -681,12 +705,13 @@ public class ChatScreen extends GuiScreen {
         return "群聊 " + activeChannel.getDisplayName() + "...";
     }
 
-    // ===== 右键菜单 =====
+    // ===== 消息右键菜单 =====
 
     private void drawContextMenu(int mx, int my) {
         if (contextMsgIndex < 0) return;
         int pRight = panelRight();
-        int menuH = CTX_ITEM_H + 2;
+        int itemCount = 2; // 复制文字 + 引用回复
+        int menuH = itemCount * CTX_ITEM_H + 2;
         int menuX = Math.min(contextX, pRight - CTX_W - 2);
         int menuY = contextY - menuH;
         if (menuY < HEADER_H) menuY = contextY + 4;
@@ -695,17 +720,54 @@ public class ChatScreen extends GuiScreen {
         Gui.drawRect(menuX, menuY, menuX + CTX_W, menuY + 1, ChatColors.DIVIDER);
         Gui.drawRect(menuX, menuY + menuH - 1, menuX + CTX_W, menuY + menuH, ChatColors.DIVIDER);
 
-        boolean hover = mx >= menuX && mx < menuX + CTX_W && my >= menuY && my < menuY + CTX_ITEM_H;
-        if (hover) Gui.drawRect(menuX + 1, menuY + 1, menuX + CTX_W - 1, menuY + CTX_ITEM_H, ChatColors.CONTEXT_HOVER);
-        mc.fontRenderer.drawStringWithShadow("复制消息", menuX + 6, menuY + 3, ChatColors.TEXT_PRIMARY);
+        // "复制文字"
+        boolean hover1 = mx >= menuX && mx < menuX + CTX_W && my >= menuY && my < menuY + CTX_ITEM_H;
+        if (hover1) Gui.drawRect(menuX + 1, menuY + 1, menuX + CTX_W - 1, menuY + CTX_ITEM_H, ChatColors.CONTEXT_HOVER);
+        mc.fontRenderer.drawStringWithShadow("复制文字", menuX + 6, menuY + 3, ChatColors.TEXT_PRIMARY);
+
+        // 分隔 + "引用回复"
+        Gui.drawRect(menuX + 4, menuY + CTX_ITEM_H, menuX + CTX_W - 4, menuY + CTX_ITEM_H + 1, ChatColors.DIVIDER);
+        boolean hover2 = mx >= menuX && mx < menuX + CTX_W && my >= menuY + CTX_ITEM_H + 1 && my < menuY + menuH;
+        if (hover2) Gui.drawRect(menuX + 1, menuY + CTX_ITEM_H + 1, menuX + CTX_W - 1, menuY + menuH - 1, ChatColors.CONTEXT_HOVER);
+        mc.fontRenderer.drawStringWithShadow("引用回复", menuX + 6, menuY + CTX_ITEM_H + 3, ChatColors.TEXT_PRIMARY);
+    }
+
+    private void handleContextMenuClick(int mx, int my) {
+        int itemCount = 2;
+        int menuH = itemCount * CTX_ITEM_H + 2;
+        int pRight = panelRight();
+        int menuX = Math.min(contextX, pRight - CTX_W - 2);
+        int menuY = contextY - menuH;
+        if (menuY < HEADER_H) menuY = contextY + 4;
+
+        List<ChatMessage> msgs = ChatMessageStore.getActiveMessages();
+        ChatMessage msg = (contextMsgIndex >= 0 && contextMsgIndex < msgs.size())
+                ? msgs.get(contextMsgIndex) : null;
+
+        if (mx >= menuX && mx < menuX + CTX_W) {
+            if (my >= menuY && my < menuY + CTX_ITEM_H) {
+                // 复制文字
+                if (msg != null) setClipboardString(msg.content().getUnformattedText());
+            } else if (my >= menuY + CTX_ITEM_H + 1 && my < menuY + menuH) {
+                // 引用回复
+                if (msg != null) {
+                    String sender = msg.rawPlayerName() != null ? msg.rawPlayerName()
+                            : msg.senderName().getUnformattedText();
+                    String quote = "> @" + sender + ": " + msg.content().getUnformattedText() + "\n";
+                    inputField.writeText(quote);
+                }
+            }
+        }
+        contextMsgIndex = -1;
     }
 
     // ===== 头像右键菜单 =====
 
     private void drawAvatarContextMenu(int mx, int my) {
         if (avatarContextIndex < 0) return;
+        // @提及 + 发起私聊 (+ 邀请进群 if group) + 请求传送
+        int itemCount = activeChannel != null && activeChannel.isGroup() ? 4 : 3;
         int itemH = CTX_ITEM_H;
-        int itemCount = activeChannel != null && activeChannel.isGroup() ? 2 : 1;
         int menuH = itemCount * itemH + 2;
         int pRight = panelRight();
         int menuX = Math.min(avatarContextX, pRight - AVATAR_CTX_W - 2);
@@ -716,22 +778,39 @@ public class ChatScreen extends GuiScreen {
         Gui.drawRect(menuX, menuY, menuX + AVATAR_CTX_W, menuY + 1, ChatColors.DIVIDER);
         Gui.drawRect(menuX, menuY + menuH - 1, menuX + AVATAR_CTX_W, menuY + menuH, ChatColors.DIVIDER);
 
+        int yOff = 0;
+        // "@提及"
+        drawAvatarMenuItem(menuX, menuY + yOff, itemH, mx, my, "@提及");
+        yOff += itemH;
         // "发起私聊"
-        boolean hover1 = mx >= menuX && mx < menuX + AVATAR_CTX_W && my >= menuY && my < menuY + itemH;
-        if (hover1) Gui.drawRect(menuX + 1, menuY + 1, menuX + AVATAR_CTX_W - 1, menuY + itemH, ChatColors.CONTEXT_HOVER);
-        mc.fontRenderer.drawStringWithShadow("发起私聊", menuX + 6, menuY + 3, ChatColors.TEXT_PRIMARY);
-
-        if (itemCount > 1) {
-            Gui.drawRect(menuX + 4, menuY + itemH, menuX + AVATAR_CTX_W - 4, menuY + itemH + 1, ChatColors.DIVIDER);
-            boolean hover2 = mx >= menuX && mx < menuX + AVATAR_CTX_W && my >= menuY + itemH + 1 && my < menuY + menuH;
-            if (hover2) Gui.drawRect(menuX + 1, menuY + itemH + 1, menuX + AVATAR_CTX_W - 1, menuY + menuH - 1, ChatColors.CONTEXT_HOVER);
-            mc.fontRenderer.drawStringWithShadow("邀请进群", menuX + 6, menuY + itemH + 3, ChatColors.TEXT_PRIMARY);
+        drawDivider(menuX, menuY + yOff);
+        drawAvatarMenuItem(menuX, menuY + yOff + 1, itemH, mx, my, "发起私聊");
+        yOff += itemH + 1;
+        // "邀请进群" (群聊时)
+        if (itemCount >= 4) {
+            drawDivider(menuX, menuY + yOff);
+            drawAvatarMenuItem(menuX, menuY + yOff + 1, itemH, mx, my, "邀请进群");
+            yOff += itemH + 1;
         }
+        // "请求传送"
+        drawDivider(menuX, menuY + yOff);
+        drawAvatarMenuItem(menuX, menuY + yOff + 1, itemH, mx, my, "请求传送");
+    }
+
+    private void drawAvatarMenuItem(int menuX, int y, int itemH, int mx, int my, String label) {
+        boolean hover = mx >= menuX && mx < menuX + AVATAR_CTX_W && my >= y && my < y + itemH;
+        if (hover) Gui.drawRect(menuX + 1, y, menuX + AVATAR_CTX_W - 1, y + itemH, ChatColors.CONTEXT_HOVER);
+        mc.fontRenderer.drawStringWithShadow(label, menuX + 6, y + 3, ChatColors.TEXT_PRIMARY);
+    }
+
+    private void drawDivider(int menuX, int y) {
+        Gui.drawRect(menuX + 4, y, menuX + AVATAR_CTX_W - 4, y + 1, ChatColors.DIVIDER);
     }
 
     private void handleAvatarContextClick(int mx, int my) {
         int itemH = CTX_ITEM_H;
-        int itemCount = activeChannel != null && activeChannel.isGroup() ? 2 : 1;
+        boolean isGroup = activeChannel != null && activeChannel.isGroup();
+        int itemCount = isGroup ? 4 : 3;
         int menuH = itemCount * itemH + 2;
         int pRight = panelRight();
         int menuX = Math.min(avatarContextX, pRight - AVATAR_CTX_W - 2);
@@ -744,17 +823,38 @@ public class ChatScreen extends GuiScreen {
         if (msg == null) { avatarContextIndex = -1; return; }
         String name = msg.rawPlayerName();
 
-        if (mx >= menuX && mx < menuX + AVATAR_CTX_W && my >= menuY && my < menuY + itemH) {
-            // 发起私聊
+        if (mx < menuX || mx >= menuX + AVATAR_CTX_W) { avatarContextIndex = -1; return; }
+
+        // 计算点击的是哪一项
+        int relY = my - menuY;
+        int yOff = 0;
+        // 0: @提及
+        if (relY >= yOff && relY < yOff + itemH) {
+            inputField.writeText("@" + name + " ");
+            avatarContextIndex = -1; return;
+        }
+        yOff += itemH + 1; // +1 for divider
+        // 1: 发起私聊
+        if (relY >= yOff && relY < yOff + itemH) {
             UUID partnerUuid = msg.senderUUID();
             ChatChannel priv = ChatMessageStore.findOrCreatePrivateChannel(name, partnerUuid);
             switchToChannel(priv.getId());
-        } else if (itemCount > 1 && mx >= menuX && mx < menuX + AVATAR_CTX_W
-                && my >= menuY + itemH + 1 && my < menuY + menuH) {
-            // 邀请进群
-            PacketHandler.sendToServer(GroupManagePacket.invite(
-                    activeChannel.getGroupId(), name));
+            avatarContextIndex = -1; return;
         }
+        yOff += itemH + 1;
+        // 2: 邀请进群 (if group)
+        if (isGroup && relY >= yOff && relY < yOff + itemH) {
+            PacketHandler.sendToServer(GroupManagePacket.invite(activeChannel.getGroupId(), name));
+            avatarContextIndex = -1; return;
+        }
+        if (isGroup) yOff += itemH + 1;
+        // 3 (or 2): 请求传送
+        if (relY >= yOff && relY < yOff + itemH) {
+            PacketHandler.sendToServer(new TpRequestPacket(name,
+                    mc.player.getName(), mc.player.getUniqueID()));
+            avatarContextIndex = -1; return;
+        }
+
         avatarContextIndex = -1;
     }
 
@@ -769,7 +869,7 @@ public class ChatScreen extends GuiScreen {
         int pad = 4;
         int gridW = cols * cell + pad * 2;
         int gridH = rows * cell + pad * 2;
-        int gridX = SIDEBAR_W + PAD;
+        int gridX = sidebarW() + PAD;
         int gridY = height - BAR_H - TOOLBAR_H - gridH - 4;
 
         // 点击选择器外部 → 关闭
@@ -884,7 +984,7 @@ public class ChatScreen extends GuiScreen {
         int gridH = rows * cell + pad * 2;
 
         // 定位：输入栏上方
-        int gridX = SIDEBAR_W + PAD;
+        int gridX = sidebarW() + PAD;
         int gridY = height - BAR_H - TOOLBAR_H - gridH - 4;
 
         // 背景
@@ -987,7 +1087,7 @@ public class ChatScreen extends GuiScreen {
             int my = height - Mouse.getEventY() * height / mc.displayHeight - 1;
             if (mx > panelRight()) return; // 面板外忽略
 
-            if (mx < SIDEBAR_W)
+            if (mx < sidebarW())
                 sidebarScrollTarget = MathHelper.clamp(sidebarScrollTarget - dw * 0.35f, 0, sidebarMaxScroll);
             else {
                 scrollToBottom = false;
@@ -1036,16 +1136,7 @@ public class ChatScreen extends GuiScreen {
         }
 
         if (contextMsgIndex >= 0) {
-            int menuH = CTX_ITEM_H + 2;
-            int menuX = Math.min(contextX, panelRight() - CTX_W - 2);
-            int menuY = contextY - menuH;
-            if (menuY < HEADER_H) menuY = contextY + 4;
-            if (mx >= menuX && mx < menuX + CTX_W && my >= menuY && my < menuY + CTX_ITEM_H) {
-                List<ChatMessage> msgs = ChatMessageStore.getActiveMessages();
-                if (contextMsgIndex >= 0 && contextMsgIndex < msgs.size())
-                    setClipboardString(msgs.get(contextMsgIndex).content().getUnformattedText());
-            }
-            contextMsgIndex = -1;
+            handleContextMenuClick(mx, my);
             return;
         }
 
@@ -1065,14 +1156,21 @@ public class ChatScreen extends GuiScreen {
             }
         }
 
-        if (btn == 1 && mx > SIDEBAR_W && my > HEADER_H && my < height - BAR_H - TOOLBAR_H) {
+        // 右键消息区域 → 查找命中的气泡
+        if (btn == 1 && mx > sidebarW() && my > HEADER_H && my < height - BAR_H - TOOLBAR_H) {
+            for (int[] r : messageBubbleRects) {
+                if (mx >= r[0] && mx < r[0] + r[2] && my >= r[1] && my < r[1] + r[3]) {
+                    contextMsgIndex = r[4];
+                    contextX = mx;
+                    contextY = my;
+                    return;
+                }
+            }
             contextMsgIndex = -1;
-            contextX = mx;
-            contextY = my;
             return;
         }
 
-        if (btn == 0 && mx < SIDEBAR_W) { handleSidebarClick(mx, my); return; }
+        if (btn == 0 && mx < sidebarW()) { handleSidebarClick(mx, my); return; }
 
         // 工具栏点击
         if (btn == 0 && my >= height - BAR_H - TOOLBAR_H && my < height - BAR_H) {
@@ -1081,8 +1179,8 @@ public class ChatScreen extends GuiScreen {
 
         // 表情按钮点击 (toggle)
         if (btn == 0) {
-            int inputX = SIDEBAR_W + PAD;
-            int inputW = panelRight() - SIDEBAR_W - PAD * 2 - 36;
+            int inputX = sidebarW() + PAD;
+            int inputW = panelRight() - sidebarW() - PAD * 2 - 36;
             int emojiBtnX = inputX + inputW + 3;
             int emojiBtnY = height - BAR_H + (BAR_H - 14) / 2;
             if (mx >= emojiBtnX - 2 && mx < emojiBtnX + 14 && my >= emojiBtnY - 2 && my < emojiBtnY + 14) {
@@ -1097,6 +1195,16 @@ public class ChatScreen extends GuiScreen {
         }
         // 点击非表情按钮/选择器区域时关闭选择器
         if (btn == 0 && showEmojiPicker) showEmojiPicker = false;
+
+        // 清空按钮
+        String clearLabel = "清空";
+        int clearW = mc.fontRenderer.getStringWidth(clearLabel);
+        int clearX = panelRight() - 58, clearY = 6;
+        if (btn == 0 && mx >= clearX - 2 && mx < clearX + clearW + 2 && my >= clearY && my < clearY + 14) {
+            ChatMessageStore.clearActiveChannel();
+            scrollOffset = 0; scrollTarget = 0; maxScroll = 0;
+            return;
+        }
 
         int cx = panelRight() - 20, cy = 6;
         if (btn == 0 && mx >= cx && mx < cx + 14 && my >= cy && my < cy + 14) {

@@ -325,6 +325,55 @@ public class QuantumHueConfig {
         public float lineWidth = 2.0f;
     }
 
+    @Config.Name("Chat")
+    public static ChatConfig chat = new ChatConfig();
+
+    public static class ChatConfig {
+        @Config.Name("Panel Width %")
+        @Config.Comment({ "聊天面板占屏幕宽度的百分比", "范围: 30 ~ 90" })
+        @Config.RangeInt(min = 30, max = 90)
+        public int panelWidthPercent = 65;
+
+        @Config.Name("Panel Max Width")
+        @Config.Comment({ "面板最大宽度（像素）", "范围: 200 ~ 1920" })
+        @Config.RangeInt(min = 200, max = 1920)
+        public int panelMaxWidth = 700;
+
+        @Config.Name("Panel Min Width")
+        @Config.Comment({ "面板最小宽度（像素）", "范围: 200 ~ 1000" })
+        @Config.RangeInt(min = 200, max = 1000)
+        public int panelMinWidth = 300;
+
+        @Config.Name("Sidebar Width")
+        @Config.Comment({ "侧边栏宽度（像素）", "范围: 80 ~ 250" })
+        @Config.RangeInt(min = 80, max = 250)
+        public int sidebarWidth = 115;
+
+        @Config.Name("Accent Color")
+        @Config.Comment({ "主题强调色 (RRGGBB 十六进制)", "用于高亮、边框、名字等", "默认: 6688CC (蓝)" })
+        public String accentColor = "6688CC";
+
+        @Config.Name("Background Color")
+        @Config.Comment({ "面板底色 (RRGGBB 十六进制)", "默认: 0E0E16 (深蓝黑)" })
+        public String bgColor = "0E0E16";
+
+        @Config.Name("Own Bubble Color")
+        @Config.Comment({ "自己消息气泡颜色 (RRGGBB 十六进制)", "默认: 181830" })
+        public String ownBubbleColor = "181830";
+
+        @Config.Name("Other Bubble Color")
+        @Config.Comment({ "他人消息气泡颜色 (RRGGBB 十六进制)", "默认: 0E0E22" })
+        public String otherBubbleColor = "0E0E22";
+
+        @Config.Name("Text Light")
+        @Config.Comment({ "主文字颜色 (RRGGBB 十六进制)", "默认: DDDDDD" })
+        public String textLight = "DDDDDD";
+
+        @Config.Name("Text Dim")
+        @Config.Comment({ "次要文字颜色 (RRGGBB 十六进制)", "默认: 999999" })
+        public String textDim = "999999";
+    }
+
     public static class EquipmentComparison {
         @Config.Name("Enabled")
         @Config.Comment({

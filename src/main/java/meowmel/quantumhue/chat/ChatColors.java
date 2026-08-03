@@ -1,62 +1,117 @@
 package meowmel.quantumhue.chat;
 
+import meowmel.quantumhue.QuantumHueConfig;
+
 /**
- * 聊天系统颜色常量 — 匹配 Wiki 深色主题 + 蓝色强调风格
+ * 聊天系统颜色 — 从 Config 读取主色，衍生色自动计算
+ *
+ * 通过 {@link #reload()} 刷新（Config 变更后调用）。
+ * 配色围绕 7 个主色参数，其余 ~25 个颜色由混合/明暗计算得出。
  */
 public final class ChatColors {
 
     private ChatColors() {}
 
+    // ===== 缓存（由 reload() 计算） =====
+
     // 底色
-    public static final int PANEL_BG       = 0xFF0E0E16;
-    public static final int SIDEBAR_BG     = 0xFF121220;
-    public static final int HEADER_BG      = 0xFF101018;
-    public static final int INPUT_BG       = 0xFF0C0C18;
-    public static final int BAR_BG         = 0xFF101018;
-
+    public static int PANEL_BG, SIDEBAR_BG, HEADER_BG, INPUT_BG, BAR_BG;
     // 分割线
-    public static final int DIVIDER        = 0xFF2A2A44;
-    public static final int SIDEBAR_DIVIDER = 0xFF2A2A44;
-
-    // 强调色
-    public static final int ACCENT         = 0xFF6688CC;
-    public static final int ACCENT_DIM     = 0xFF3A5088;
-
+    public static int DIVIDER, SIDEBAR_DIVIDER;
+    // 强调
+    public static int ACCENT, ACCENT_DIM;
     // 文字
-    public static final int TEXT_PRIMARY   = 0xFFDDDDDD;
-    public static final int TEXT_SECONDARY = 0xFF999999;
-    public static final int TEXT_HEADER    = 0xFF88AADD;
-
+    public static int TEXT_PRIMARY, TEXT_SECONDARY, TEXT_HEADER;
     // 侧边栏
-    public static final int SIDEBAR_HOVER  = 0xFF1C1C34;
-    public static final int SIDEBAR_SEL    = 0xFF24244A;
-    public static final int SIDEBAR_CAT    = 0xFF161628;
-
-    // 气泡 (自己 / 他人)
-    public static final int OWN_BUBBLE     = 0xFF181830;
-    public static final int OTHER_BUBBLE   = 0xFF0E0E22;
-    public static final int BUBBLE_TEXT    = 0xFFDDDDDD;
-    public static final int NAME_TEXT      = 0xFF88AADD;
-    public static final int TIME_TEXT      = 0xFF556688;
-
+    public static int SIDEBAR_HOVER, SIDEBAR_SEL, SIDEBAR_CAT;
+    // 气泡
+    public static int OWN_BUBBLE, OTHER_BUBBLE, BUBBLE_TEXT, NAME_TEXT, TIME_TEXT;
     // 通知
-    public static final int NOTIF_BG       = 0xDD161630;
-    public static final int NOTIF_BORDER   = 0xFF6688CC;
-    public static final int NOTIF_TEXT     = 0xFF6688CC;
-    public static final int RED_DOT        = 0xFFFF4444;
-
+    public static int NOTIF_BG, NOTIF_BORDER, NOTIF_TEXT, RED_DOT;
     // 滚动条
-    public static final int SCROLLBAR_BG   = 0xFF111122;
-    public static final int SCROLLBAR_FG   = 0xFF444466;
-
+    public static int SCROLLBAR_BG, SCROLLBAR_FG;
     // 输入区
-    public static final int INPUT_BORDER   = 0xFF333355;
-    public static final int SEND_HOVER     = 0xFF1C1C34;
-
+    public static int INPUT_BORDER, SEND_HOVER;
     // 右键菜单
-    public static final int CONTEXT_BG     = 0xDD0E0E16;
-    public static final int CONTEXT_HOVER  = 0xFF1C1C34;
+    public static int CONTEXT_BG, CONTEXT_HOVER;
+    // 刷屏计数
+    public static int DUPLICATE_TAG;
 
-    // 防刷屏计数
-    public static final int DUPLICATE_TAG  = 0xFF7799CC;
+    static { reload(); }
+
+    /** 从 Config 重算全部颜色 */
+    public static void reload() {
+        QuantumHueConfig.ChatConfig cfg = QuantumHueConfig.chat;
+
+        int accent  = parse(cfg.accentColor);
+        int bg      = parse(cfg.bgColor);
+        int ownBub  = parse(cfg.ownBubbleColor);
+        int otherBub= parse(cfg.otherBubbleColor);
+        int txtL    = parse(cfg.textLight);
+        int txtD    = parse(cfg.textDim);
+
+        PANEL_BG       = bg;
+        SIDEBAR_BG     = lighten(bg, 0.08f);
+        HEADER_BG      = bg;
+        INPUT_BG       = darken(bg, 0.05f);
+        BAR_BG         = bg;
+
+        DIVIDER        = mix(accent, bg, 0.25f);
+        SIDEBAR_DIVIDER = DIVIDER;
+
+        ACCENT         = accent;
+        ACCENT_DIM     = darken(accent, 0.30f);
+
+        TEXT_PRIMARY   = txtL;
+        TEXT_SECONDARY = txtD;
+        TEXT_HEADER    = mix(accent, txtL, 0.50f);
+
+        SIDEBAR_HOVER  = lighten(bg, 0.20f);
+        SIDEBAR_SEL    = mix(accent, bg, 0.25f);
+        SIDEBAR_CAT    = lighten(bg, 0.05f);
+
+        OWN_BUBBLE     = ownBub;
+        OTHER_BUBBLE   = otherBub;
+        BUBBLE_TEXT    = txtL;
+        NAME_TEXT      = mix(accent, txtL, 0.40f);
+        TIME_TEXT      = mix(accent, txtL, 0.25f);
+
+        NOTIF_BG       = ownBub;
+        NOTIF_BORDER   = accent;
+        NOTIF_TEXT     = accent;
+
+        RED_DOT        = 0xFFFF4444;
+
+        SCROLLBAR_BG   = darken(SIDEBAR_BG, 0.10f);
+        SCROLLBAR_FG   = lighten(SIDEBAR_BG, 0.60f);
+
+        INPUT_BORDER   = mix(accent, bg, 0.12f);
+        SEND_HOVER     = SIDEBAR_HOVER;
+
+        CONTEXT_BG     = lighten(bg, 0.05f);
+        CONTEXT_HOVER  = SIDEBAR_HOVER;
+
+        DUPLICATE_TAG  = lighten(accent, 0.10f);
+    }
+
+    // ===== 颜色工具 =====
+
+    private static int parse(String hex) {
+        try { return 0xFF000000 | Integer.parseInt(hex.trim(), 16); }
+        catch (Exception e) { return 0xFF000000; }
+    }
+
+    private static int darken(int c, float a) { return mix(c, 0xFF000000, a); }
+    private static int lighten(int c, float a) { return mix(c, 0xFFFFFFFF, a); }
+
+    /** 按 ratio 混合两个 RGB 颜色 (0=纯a, 1=纯b)，Alpha 保持 FF */
+    private static int mix(int a, int b, float ratio) {
+        float inv = 1f - ratio;
+        int r = clamp((int)(((a >> 16) & 0xFF) * inv + ((b >> 16) & 0xFF) * ratio));
+        int g = clamp((int)(((a >> 8)  & 0xFF) * inv + ((b >> 8)  & 0xFF) * ratio));
+        int bl= clamp((int)(( a        & 0xFF) * inv + ( b        & 0xFF) * ratio));
+        return 0xFF000000 | (r << 16) | (g << 8) | bl;
+    }
+
+    private static int clamp(int v) { return v < 0 ? 0 : Math.min(v, 255); }
 }

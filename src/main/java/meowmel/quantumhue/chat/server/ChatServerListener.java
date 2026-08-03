@@ -6,9 +6,11 @@ import meowmel.quantumhue.QuantumHue;
 import meowmel.quantumhue.chat.packets.ChatGroupPacket;
 import meowmel.quantumhue.chat.packets.ChatPrivatePacket;
 import meowmel.quantumhue.chat.packets.GroupManagePacket;
+import meowmel.quantumhue.chat.packets.TpRequestPacket;
 import meowmel.quantumhue.network.PacketHandler;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
+import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -272,6 +274,18 @@ public class ChatServerListener {
                 List<String> names = getMemberNames(group);
                 PacketHandler.sendTo(GroupManagePacket.createSync(group.id, group.name, names), player);
             }
+        }
+    }
+
+    // ===== TP 请求接受检测 =====
+
+    @SubscribeEvent
+    public void onServerChat(ServerChatEvent event) {
+        if (event.getPlayer().world.isRemote) return;
+        String msg = event.getMessage().trim().toLowerCase();
+        if (msg.equals("tpaccept") || msg.equals("tp accept")) {
+            boolean handled = TpRequestPacket.TpManager.acceptTp(event.getPlayer().getUniqueID());
+            if (handled) event.setCanceled(true); // 不广播 tpaccept 到公屏
         }
     }
 }
