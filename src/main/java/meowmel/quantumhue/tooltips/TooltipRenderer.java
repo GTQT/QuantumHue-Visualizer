@@ -19,6 +19,8 @@ import java.util.List;
 
 public class TooltipRenderer {
 
+    // ==================== 背景绘制 ====================
+
     public void drawTooltipBackground(TooltipLayout layout, TooltipColors colors, TooltipContent content) {
         Gui.drawRect(layout.x - 2, layout.y - 2,
                 layout.x + layout.width + 2,
@@ -30,39 +32,17 @@ public class TooltipRenderer {
                 layout.y + layout.height + 1,
                 colors.background);
 
-        // 内部填充：与外框同色的淡透明层
         drawInnerBorderFill(layout, colors);
-
-        // 页眉渐变：物品名字区域从左到右渐变色背景
         drawHeaderGradient(layout, colors, content);
-
         drawBorder(layout, colors);
 
         if (content.hasModName() && layout.separatorY > layout.y && layout.separatorY < layout.y + layout.height) {
             drawSeparator(layout, colors);
         }
-    }
 
-    private void drawBorder(TooltipLayout layout, TooltipColors colors) {
-        Gui.drawRect(layout.x - 1, layout.y - 1, layout.x + layout.width + 1, layout.y, colors.borderStart);
-        Gui.drawRect(layout.x - 1, layout.y + layout.height, layout.x + layout.width + 1, layout.y + layout.height + 1, colors.borderEnd);
-        Gui.drawRect(layout.x - 1, layout.y, layout.x, layout.y + layout.height, colors.borderStart);
-        Gui.drawRect(layout.x + layout.width, layout.y, layout.x + layout.width + 1, layout.y + layout.height, colors.borderEnd);
-    }
-
-    /**
-     * 绘制页眉分隔线——两端渐变变尖（参考 obscure-tooltips HeaderComponent）。
-     * 左半段从透明渐变到边框色，右半段从边框色渐变回透明。
-     */
-    private void drawSeparator(TooltipLayout layout, TooltipColors colors) {
-        int left = layout.x + 8;
-        int right = layout.x + layout.width - 8;
-        int mid = (left + right) / 2;
-        int y = layout.separatorY;
-        int transparent = colors.borderStart & 0x00FFFFFF; // 同色但 alpha=0
-
-        drawHorizontalGradient(left, y, mid, y + 1, transparent, colors.borderStart);
-        drawHorizontalGradient(mid, y, right, y + 1, colors.borderStart, transparent);
+        if (content.needsPagination) {
+            drawPaginationIndicator(layout, content);
+        }
     }
 
     public void drawSimpleTooltipBackground(TooltipLayout layout, TooltipColors colors) {
@@ -76,10 +56,17 @@ public class TooltipRenderer {
                 layout.y + layout.height + 1,
                 colors.background);
 
-        // 内部填充：与外框同色的淡透明层
         drawInnerBorderFill(layout, colors);
-
         drawSimpleBorder(layout, colors);
+    }
+
+    // ==================== 边框 ====================
+
+    private void drawBorder(TooltipLayout layout, TooltipColors colors) {
+        Gui.drawRect(layout.x - 1, layout.y - 1, layout.x + layout.width + 1, layout.y, colors.borderStart);
+        Gui.drawRect(layout.x - 1, layout.y + layout.height, layout.x + layout.width + 1, layout.y + layout.height + 1, colors.borderEnd);
+        Gui.drawRect(layout.x - 1, layout.y, layout.x, layout.y + layout.height, colors.borderStart);
+        Gui.drawRect(layout.x + layout.width, layout.y, layout.x + layout.width + 1, layout.y + layout.height, colors.borderEnd);
     }
 
     private void drawSimpleBorder(TooltipLayout layout, TooltipColors colors) {
@@ -88,6 +75,38 @@ public class TooltipRenderer {
         Gui.drawRect(layout.x - 1, layout.y, layout.x, layout.y + layout.height, colors.borderStart);
         Gui.drawRect(layout.x + layout.width, layout.y, layout.x + layout.width + 1, layout.y + layout.height, colors.borderEnd);
     }
+
+    // ==================== 分隔线（两端渐变变尖） ====================
+
+    private void drawSeparator(TooltipLayout layout, TooltipColors colors) {
+        int left = layout.x + 8;
+        int right = layout.x + layout.width - 8;
+        int mid = (left + right) / 2;
+        int y = layout.separatorY;
+        int transparent = colors.borderStart & 0x00FFFFFF;
+
+        drawHorizontalGradient(left, y, mid, y + 1, transparent, colors.borderStart);
+        drawHorizontalGradient(mid, y, right, y + 1, colors.borderStart, transparent);
+    }
+
+    // ==================== 分页指示器 ====================
+
+    private void drawPaginationIndicator(TooltipLayout layout, TooltipContent content) {
+        int pageIndicatorY = layout.y + layout.height - 14;
+        String pageText = (content.currentPage + 1) + "/" + content.totalPages;
+        int pageTextWidth = Minecraft.getMinecraft().fontRenderer.getStringWidth(pageText);
+        int pageTextX = layout.x + layout.width - pageTextWidth - 5;
+
+        Gui.drawRect(pageTextX - 2, pageIndicatorY - 1,
+                pageTextX + pageTextWidth + 2, pageIndicatorY + 9,
+                0x80000000);
+
+        Minecraft.getMinecraft().fontRenderer.drawStringWithShadow(
+                pageText, pageTextX, pageIndicatorY, 0xFFFFFFFF
+        );
+    }
+
+    // ==================== 物品图标 ====================
 
     public void drawItemIcon(ItemStack stack, int x, int y) {
         drawItemIcon(stack, x, y, 1.0f);
@@ -119,63 +138,70 @@ public class TooltipRenderer {
         GlStateManager.popMatrix();
     }
 
-    public void drawTooltipText(TooltipContent content, TooltipLayout layout, FontRenderer font, float scrollOffset) {
+    // ==================== 文本渲染（组件化） ====================
+
+    public void drawTooltipText(TooltipContent content, TooltipLayout layout, FontRenderer font) {
         int textPadding = TooltipConstants.TEXT_PADDING;
         int lineHeight = TooltipConstants.LINE_HEIGHT;
         int iconTextX = layout.x + textPadding + TooltipConstants.ICON_SIZE;
-        int currentY = layout.y + textPadding - (int) scrollOffset;
+        int currentY = layout.y + textPadding;
 
+        // 物品名
         int itemNameColor = TooltipColorHelper.getItemNameColor(content.itemName);
         font.drawStringWithShadow(" " + content.itemName, iconTextX, currentY, itemNameColor);
         currentY += lineHeight;
 
+        // 模组名
         if (content.modName != null) {
             font.drawStringWithShadow(TextFormatting.YELLOW + " " + content.modName, iconTextX, currentY, 0xFFFFFF);
             currentY += lineHeight;
         }
 
-        currentY += lineHeight;
+        currentY += lineHeight; // 空行
 
+        // 根据组件类型渲染每一行
         int leftAlignedX = layout.x + textPadding;
-        for (String line : content.wrappedLines) {
-            font.drawStringWithShadow(line, leftAlignedX, currentY, 0xFFFFFF);
-            currentY += lineHeight;
-        }
+        List<TooltipLine> lines = content.buildComponentLines();
 
-        if (ThaumcraftIntegration.isThaumcraftAvailable() && content.shouldShowAspects()) {
-            renderThaumcraftAspects(content, layout, font, scrollOffset);
-        }
-
-        if (content.shouldShowFoodInfo()) {
-            AppleSkinRenderer.renderFoodInfo(
-                    content.foodInfo,
-                    layout.x + 4,
-                    currentY,
-                    layout.width - 8
-            );
-        }
-    }
-
-    private void renderThaumcraftAspects(TooltipContent content, TooltipLayout layout, FontRenderer font, float scrollOffset) {
-        int renderHeight = -1;
-        for (int i = 0; i < content.wrappedLines.size() - 1; i++) {
-            String currentLine = content.wrappedLines.get(i);
-            String nextLine = content.wrappedLines.get(i + 1);
-
-            if (currentLine.contains("    ") && nextLine.contains("    ")) {
-                renderHeight = layout.y + TooltipConstants.TEXT_PADDING +
-                        (content.wrappedLines.indexOf(currentLine) + 3) * TooltipConstants.LINE_HEIGHT
-                        - (int) scrollOffset;
+        // 找到连续 ASPECT_SPACER 区域的起始行索引
+        int aspectRenderY = -1;
+        for (int i = 0; i < lines.size() - 1; i++) {
+            if (lines.get(i).type == TooltipLine.Type.ASPECT_SPACER &&
+                lines.get(i + 1).type == TooltipLine.Type.ASPECT_SPACER) {
+                aspectRenderY = layout.y + textPadding + (i + 3) * lineHeight;
                 break;
             }
         }
 
-        if (renderHeight != -1) {
-            ThaumcraftRenderer.renderAspectIcons(
-                    content.aspects,
-                    layout.x + 4,
-                    renderHeight
-            );
+        for (TooltipLine line : lines) {
+            switch (line.type) {
+                case TEXT:
+                    font.drawStringWithShadow(line.text, leftAlignedX, currentY, 0xFFFFFF);
+                    break;
+                case ASPECT_SPACER:
+                    // 占位行：仍渲染原文字以保证和原版一致（要素图标覆盖在上面）
+                    font.drawStringWithShadow(line.text, leftAlignedX, currentY, 0xFFFFFF);
+                    break;
+                default:
+                    break;
+            }
+            currentY += lineHeight;
+        }
+
+        // Thaumcraft 要素图标
+        if (ThaumcraftIntegration.isThaumcraftAvailable() && content.shouldShowAspects() && aspectRenderY != -1) {
+            ThaumcraftRenderer.renderAspectIcons(content.aspects, layout.x + 4, aspectRenderY);
+        }
+
+        // 分页提示
+        if (content.needsPagination) {
+            drawPaginationHint(content, leftAlignedX, currentY, font);
+            currentY += lineHeight;
+        }
+
+        // AppleCore 食物信息
+        if (content.shouldShowFoodInfo()) {
+            AppleSkinRenderer.renderFoodInfo(content.foodInfo, layout.x + 4, currentY, layout.width - 8);
         }
     }
 
@@ -190,9 +216,23 @@ public class TooltipRenderer {
         }
     }
 
-    /**
-     * 绘制内部填充：使用边框颜色但极低透明度，覆盖在背景之上
-     */
+    private void drawPaginationHint(TooltipContent content, int x, int y, FontRenderer font) {
+        String nextPageHint;
+        if (content.currentPage < content.totalPages - 1) {
+            nextPageHint = TextFormatting.AQUA + "[Ctrl+C 下一页]";
+        } else {
+            nextPageHint = TextFormatting.AQUA + "[Ctrl+Z 上一页]";
+        }
+
+        if (content.currentPage > 0 && content.currentPage < content.totalPages - 1) {
+            nextPageHint = TextFormatting.AQUA + "[-]";
+        }
+
+        font.drawStringWithShadow(nextPageHint, x, y, TooltipConstants.PAGINATION_HINT_COLOR);
+    }
+
+    // ==================== 背景效果 ====================
+
     private void drawInnerBorderFill(TooltipLayout layout, TooltipColors colors) {
         if (!QuantumHueConfig.tooltip_background.enabled) return;
 
@@ -202,29 +242,20 @@ public class TooltipRenderer {
         Gui.drawRect(layout.x, layout.y, layout.x + layout.width, layout.y + layout.height, fillColor);
     }
 
-    /**
-     * 绘制页眉渐变：物品名字区域从左到右渐隐的背景色块
-     */
     private void drawHeaderGradient(TooltipLayout layout, TooltipColors colors, TooltipContent content) {
         if (!QuantumHueConfig.tooltip_background.enabled) return;
 
-        // 计算页眉区域底部（物品名 + 模组名区域，到分隔线为止）
         int headerBottom = layout.separatorY;
         if (headerBottom <= layout.y) return;
 
         int borderColor = colors.borderStart;
-        // 左侧：使用边框原始透明度，上限提高到更深
         int leftAlpha = Math.min(0x80, Math.max(0x20, ((borderColor >> 24) & 0xFF)));
         int leftColor = (borderColor & 0x00FFFFFF) | (leftAlpha << 24);
-        // 右侧：完全透明
         int rightColor = leftColor & 0x00FFFFFF;
 
         drawHorizontalGradient(layout.x, layout.y, layout.x + layout.width, headerBottom, leftColor, rightColor);
     }
 
-    /**
-     * 绘制水平渐变矩形（从左到右由 startColor 渐变为 endColor）
-     */
     private void drawHorizontalGradient(int left, int top, int right, int bottom, int startColor, int endColor) {
         float a1 = (float)(startColor >> 24 & 255) / 255.0F;
         float r1 = (float)(startColor >> 16 & 255) / 255.0F;
@@ -249,13 +280,9 @@ public class TooltipRenderer {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
         buffer.begin(7, DefaultVertexFormats.POSITION_COLOR);
-        // 右上 (endColor)
         buffer.pos(right, top, 0.0D).color(r2, g2, b2, a2).endVertex();
-        // 左上 (startColor)
         buffer.pos(left, top, 0.0D).color(r1, g1, b1, a1).endVertex();
-        // 左下 (startColor)
         buffer.pos(left, bottom, 0.0D).color(r1, g1, b1, a1).endVertex();
-        // 右下 (endColor)
         buffer.pos(right, bottom, 0.0D).color(r2, g2, b2, a2).endVertex();
         tessellator.draw();
 

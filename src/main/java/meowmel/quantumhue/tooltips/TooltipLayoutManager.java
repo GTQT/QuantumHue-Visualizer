@@ -14,7 +14,7 @@ public class TooltipLayoutManager {
         int mouseX = event.getX();
         int mouseY = event.getY();
 
-        int leftWidth = calculateMaxWidth(content.wrappedLines, font);
+        int leftWidth = calculateMaxWidth(content.currentPageLines, font);
         leftWidth = Math.min(leftWidth, TooltipConstants.TOOLTIP_MAX_WIDTH);
 
         int rightWidth = calculateRightWidth(content, font);
@@ -25,26 +25,16 @@ public class TooltipLayoutManager {
         int lineHeight = TooltipConstants.LINE_HEIGHT;
 
         int totalWidth = Math.max(leftWidth, rightWidth) + textPadding * 2;
-
-        // 计算全部内容高度（不受分页限制）
-        int fullContentHeight = calculateFullContentHeight(content, lineHeight, textPadding);
-        content.totalContentHeight = fullContentHeight;
-
-        // 限制 tooltip 可见区域高度
-        int maxVisibleHeight = (int) (screenHeight * TooltipConstants.MAX_SCREEN_HEIGHT_RATIO);
-        int visibleHeight = Math.min(fullContentHeight, maxVisibleHeight);
-
-        // 判断是否需要滚动
-        content.needsScroll = fullContentHeight > maxVisibleHeight;
+        int totalHeight = calculateTotalHeight(content, lineHeight, textPadding);
 
         int x = calculateXPosition(mouseX, totalWidth, screenWidth, borderPadding);
-        int y = calculateYPosition(mouseY, visibleHeight, screenHeight, borderPadding);
+        int y = calculateYPosition(mouseY, totalHeight, screenHeight, borderPadding);
 
         int separatorY = y + textPadding + (content.modName != null ? 2 : 1) * lineHeight;
         int iconX = x + textPadding;
         int iconY = y + textPadding;
 
-        return new TooltipLayout(x, y, totalWidth, visibleHeight, separatorY, iconX, iconY);
+        return new TooltipLayout(x, y, totalWidth, totalHeight, separatorY, iconX, iconY);
     }
 
     public TooltipLayout calculateSimpleLayout(List<String> wrappedLines, RenderTooltipEvent.Pre event) {
@@ -86,12 +76,13 @@ public class TooltipLayoutManager {
         return rightWidth;
     }
 
-    private int calculateFullContentHeight(TooltipContent content, int lineHeight, int textPadding) {
-        int lineCount = 1;                                              // 物品名
-        if (content.modName != null) lineCount++;                       // 模组名
-        lineCount++;                                                     // 空行
-        lineCount += content.wrappedLines.size();                       // 正文行
-        if (content.showFoodInfo) lineCount += 2;                       // 食物信息
+    private int calculateTotalHeight(TooltipContent content, int lineHeight, int textPadding) {
+        int lineCount = 1;
+        if (content.modName != null) lineCount++;
+        lineCount++;
+        lineCount += content.currentPageLines.size();
+        if (content.needsPagination) lineCount++;
+        if (content.showFoodInfo) lineCount += 2;
 
         int baseHeight = lineCount * lineHeight;
         int iconHeight = TooltipConstants.ICON_SIZE;
