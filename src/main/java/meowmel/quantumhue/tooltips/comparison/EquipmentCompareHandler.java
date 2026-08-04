@@ -164,8 +164,7 @@ public class EquipmentCompareHandler {
                 TooltipContent content = contentExtractor.extractTooltipContent(rawLines, equippedStack);
                 List<String> wrappedLines = TooltipUtils.wrapTooltipText(
                         content.remainingLines, font, TooltipConstants.TOOLTIP_MAX_WIDTH);
-                content.currentPageLines = wrappedLines;
-                content.needsPagination = false;
+                content.wrappedLines = wrappedLines;
 
                 // 获取颜色
                 TooltipColors colors = TooltipColorHelper.getTooltipColors(equippedStack);
@@ -200,7 +199,7 @@ public class EquipmentCompareHandler {
                 // 绘制Tooltip
                 tooltipRenderer.drawTooltipBackground(layout, colors, content);
                 tooltipRenderer.drawItemIcon(equippedStack, layout.iconX, layout.iconY);
-                tooltipRenderer.drawTooltipText(content, layout, font);
+                tooltipRenderer.drawTooltipText(content, layout, font, 0);
 
                 GLStateHelper.restoreGLState();
                 GlStateManager.popMatrix();

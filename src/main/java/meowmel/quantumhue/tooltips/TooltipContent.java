@@ -10,11 +10,15 @@ public class TooltipContent {
     public final String itemName;
     public final String modName;
     public final List<String> remainingLines;
-    public List<String> currentPageLines = new ArrayList<>();
-    public boolean needsPagination = false;
-    int totalPages = 1;
-    int currentPage = 0;
-    int maxLinesPerPage = 0;
+
+    /** 全部换行后的文本行（不再分页截取，由滚轮滚动处理溢出） */
+    public List<String> wrappedLines = new ArrayList<>();
+
+    /** 是否需要滚轮滚动（内容高度超过可见区域） */
+    public boolean needsScroll = false;
+
+    /** 全部内容的像素高度（含文本 + 要素 + 食物信息等额外区域） */
+    public int totalContentHeight = 0;
 
     // Thaumcraft要素支持
     AspectList aspects = null;

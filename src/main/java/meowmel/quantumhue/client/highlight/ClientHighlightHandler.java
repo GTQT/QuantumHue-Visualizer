@@ -23,9 +23,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.input.Mouse;
-
-import java.util.Iterator;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -40,12 +37,21 @@ public class ClientHighlightHandler {
     // 当前活跃的高亮标记列表
     private static final CopyOnWriteArrayList<ActiveHighlight> activeHighlights = new CopyOnWriteArrayList<>();
 
-    // ========== 输入检测：鼠标中键 ==========
+    // ========== 输入检测：双击鼠标中键 ==========
+
+    private static long lastMiddleClickTime = 0;
+    private static final long DOUBLE_CLICK_THRESHOLD_MS = 500;
 
     @SubscribeEvent
     public void onMouseEvent(MouseEvent event) {
         if (event.getButton() == 2 && event.isButtonstate()) {
-            handleMiddleClick();
+            long now = System.currentTimeMillis();
+            if (now - lastMiddleClickTime < DOUBLE_CLICK_THRESHOLD_MS) {
+                handleMiddleClick();
+                lastMiddleClickTime = 0; // 重置，防止连续触发
+            } else {
+                lastMiddleClickTime = now;
+            }
         }
     }
 
@@ -54,9 +60,7 @@ public class ClientHighlightHandler {
      */
     @SubscribeEvent
     public void onMouseInput(InputEvent.MouseInputEvent event) {
-        if (Mouse.getEventButton() == 2 && Mouse.getEventButtonState()) {
-            // 防止重复处理（已经通过 MouseEvent 处理了）
-        }
+        // 双击检测由 MouseEvent 统一处理
     }
 
     private static final double MAX_TRACE_DISTANCE = 200.0;

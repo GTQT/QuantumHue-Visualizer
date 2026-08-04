@@ -39,17 +39,7 @@ public class TooltipRenderer {
         drawBorder(layout, colors);
 
         if (content.hasModName() && layout.separatorY > layout.y && layout.separatorY < layout.y + layout.height) {
-            Gui.drawRect(
-                    layout.x + 1,
-                    layout.separatorY,
-                    layout.x + layout.width - 1,
-                    layout.separatorY + 1,
-                    colors.borderStart
-            );
-        }
-
-        if (content.needsPagination) {
-            drawPaginationIndicator(layout, content);
+            drawSeparator(layout, colors);
         }
     }
 
@@ -60,19 +50,19 @@ public class TooltipRenderer {
         Gui.drawRect(layout.x + layout.width, layout.y, layout.x + layout.width + 1, layout.y + layout.height, colors.borderEnd);
     }
 
-    private void drawPaginationIndicator(TooltipLayout layout, TooltipContent content) {
-        int pageIndicatorY = layout.y + layout.height - 14;
-        String pageText = (content.currentPage + 1) + "/" + content.totalPages;
-        int pageTextWidth = Minecraft.getMinecraft().fontRenderer.getStringWidth(pageText);
-        int pageTextX = layout.x + layout.width - pageTextWidth - 5;
+    /**
+     * 绘制页眉分隔线——两端渐变变尖（参考 obscure-tooltips HeaderComponent）。
+     * 左半段从透明渐变到边框色，右半段从边框色渐变回透明。
+     */
+    private void drawSeparator(TooltipLayout layout, TooltipColors colors) {
+        int left = layout.x + 8;
+        int right = layout.x + layout.width - 8;
+        int mid = (left + right) / 2;
+        int y = layout.separatorY;
+        int transparent = colors.borderStart & 0x00FFFFFF; // 同色但 alpha=0
 
-        Gui.drawRect(pageTextX - 2, pageIndicatorY - 1,
-                pageTextX + pageTextWidth + 2, pageIndicatorY + 9,
-                0x80000000);
-
-        Minecraft.getMinecraft().fontRenderer.drawStringWithShadow(
-                pageText, pageTextX, pageIndicatorY, 0xFFFFFFFF
-        );
+        drawHorizontalGradient(left, y, mid, y + 1, transparent, colors.borderStart);
+        drawHorizontalGradient(mid, y, right, y + 1, colors.borderStart, transparent);
     }
 
     public void drawSimpleTooltipBackground(TooltipLayout layout, TooltipColors colors) {
@@ -129,11 +119,11 @@ public class TooltipRenderer {
         GlStateManager.popMatrix();
     }
 
-    public void drawTooltipText(TooltipContent content, TooltipLayout layout, FontRenderer font) {
+    public void drawTooltipText(TooltipContent content, TooltipLayout layout, FontRenderer font, float scrollOffset) {
         int textPadding = TooltipConstants.TEXT_PADDING;
         int lineHeight = TooltipConstants.LINE_HEIGHT;
         int iconTextX = layout.x + textPadding + TooltipConstants.ICON_SIZE;
-        int currentY = layout.y + textPadding;
+        int currentY = layout.y + textPadding - (int) scrollOffset;
 
         int itemNameColor = TooltipColorHelper.getItemNameColor(content.itemName);
         font.drawStringWithShadow(" " + content.itemName, iconTextX, currentY, itemNameColor);
@@ -147,18 +137,13 @@ public class TooltipRenderer {
         currentY += lineHeight;
 
         int leftAlignedX = layout.x + textPadding;
-        for (String line : content.currentPageLines) {
+        for (String line : content.wrappedLines) {
             font.drawStringWithShadow(line, leftAlignedX, currentY, 0xFFFFFF);
             currentY += lineHeight;
         }
 
         if (ThaumcraftIntegration.isThaumcraftAvailable() && content.shouldShowAspects()) {
-            renderThaumcraftAspects(content, layout, font);
-        }
-
-        if (content.needsPagination) {
-            drawPaginationHint(content, leftAlignedX, currentY, font);
-            currentY += lineHeight;
+            renderThaumcraftAspects(content, layout, font, scrollOffset);
         }
 
         if (content.shouldShowFoodInfo()) {
@@ -171,15 +156,16 @@ public class TooltipRenderer {
         }
     }
 
-    private void renderThaumcraftAspects(TooltipContent content, TooltipLayout layout, FontRenderer font) {
+    private void renderThaumcraftAspects(TooltipContent content, TooltipLayout layout, FontRenderer font, float scrollOffset) {
         int renderHeight = -1;
-        for (int i = 0; i < content.currentPageLines.size() - 1; i++) {
-            String currentLine = content.currentPageLines.get(i);
-            String nextLine = content.currentPageLines.get(i + 1);
+        for (int i = 0; i < content.wrappedLines.size() - 1; i++) {
+            String currentLine = content.wrappedLines.get(i);
+            String nextLine = content.wrappedLines.get(i + 1);
 
             if (currentLine.contains("    ") && nextLine.contains("    ")) {
                 renderHeight = layout.y + TooltipConstants.TEXT_PADDING +
-                        (content.currentPageLines.indexOf(currentLine) + 3) * TooltipConstants.LINE_HEIGHT;
+                        (content.wrappedLines.indexOf(currentLine) + 3) * TooltipConstants.LINE_HEIGHT
+                        - (int) scrollOffset;
                 break;
             }
         }
@@ -191,21 +177,6 @@ public class TooltipRenderer {
                     renderHeight
             );
         }
-    }
-
-    private void drawPaginationHint(TooltipContent content, int x, int y, FontRenderer font) {
-        String nextPageHint;
-        if (content.currentPage < content.totalPages - 1) {
-            nextPageHint = TextFormatting.AQUA + "[Ctrl+C 下一页]";
-        } else {
-            nextPageHint = TextFormatting.AQUA + "[Ctrl+Z 上一页]";
-        }
-
-        if (content.currentPage > 0 && content.currentPage < content.totalPages - 1) {
-            nextPageHint = TextFormatting.AQUA + "[-]";
-        }
-
-        font.drawStringWithShadow(nextPageHint, x, y, TooltipConstants.PAGINATION_HINT_COLOR);
     }
 
     public void drawSimpleTooltipText(List<String> wrappedLines, TooltipLayout layout, FontRenderer font) {
