@@ -12,3 +12,63 @@ quantumhue.chat.input_placeholder=Type a message...
 quantumhue.chat.group_name_placeholder=Enter group name...
 quantumhue.chat.no_messages=No messages yet
 quantumhue.chat.go_bottom=Latest
+
+# Tab names
+quantumhue.createworld.tab.game=Game
+quantumhue.createworld.tab.world=World
+quantumhue.createworld.tab.more=More
+
+# Buttons
+quantumhue.createworld.button.gameRuleEditor=Game Rules
+
+# Labels
+quantumhue.createworld.selectWorld.mapFeatures=Generate Structures
+quantumhue.createworld.selectWorld.bonusItems=Bonus Chest
+
+# Placeholder
+quantumhue.createworld.placeholder.worldName=Please type your world names here.
+
+# Tooltips
+quantumhue.createworld.hover.gameMode=Game Mode
+quantumhue.createworld.hover.generateStructures=Villages, dungeons etc.
+quantumhue.createworld.hover.worldType=Select the world generating type.
+quantumhue.createworld.hover.allowCheats=Use commands like /gamemode, /xp
+quantumhue.createworld.hover.bonusChest=Generate a chest containing basic survival items.
+quantumhue.createworld.hover.customize=Custom the world details.
+quantumhue.createworld.hover.difficulty=Set the difficulty of the world
+quantumhue.createworld.hover.gameRuleEditor=Edit your game rules.
+quantumhue.createworld.hover.worldName.empty=Please enter world name
+quantumhue.createworld.hover.worldName.filled=Create world with name: %s
+
+# Gamerule editor
+quantumhue.createworld.gamerules.title=Edit your Game Rules
+quantumhue.createworld.gamerules.notification.changed=The following game rules have been changed:
+quantumhue.createworld.gamerules.notification.noChanges=No rules were changed.
+quantumhue.createworld.customize.custom.default=Default:
+
+# Gamerule categories
+quantumhue.gamerule.category.world=World
+quantumhue.gamerule.category.mobs=Mobs
+quantumhue.gamerule.category.player=Player
+quantumhue.gamerule.category.chat=Chat
+quantumhue.gamerule.category.uncategorized=Other
+
+# Gamerule names and descriptions
+quantumhue.gamerule.doFireTick.name=Fire Tick
+quantumhue.gamerule.doFireTick.tooltip.description=Controls whether fire spreads and naturally extinguishes
+quantumhue.gamerule.mobGriefing.name=Mob Griefing
+quantumhue.gamerule.mobGriefing.tooltip.description=Controls whether mobs can destroy blocks
+quantumhue.gamerule.keepInventory.name=Keep Inventory
+quantumhue.gamerule.keepInventory.tooltip.description=Keep inventory after death
+quantumhue.gamerule.doMobSpawning.name=Mob Spawning
+quantumhue.gamerule.doMobSpawning.tooltip.description=Natural mob spawning
+quantumhue.gamerule.doMobLoot.name=Mob Loot
+quantumhue.gamerule.doMobLoot.tooltip.description=Mobs drop loot
+quantumhue.gamerule.doTileDrops.name=Tile Drops
+quantumhue.gamerule.doTileDrops.tooltip.description=Blocks drop items when destroyed
+quantumhue.gamerule.commandBlockOutput.name=Command Block Output
+quantumhue.gamerule.commandBlockOutput.tooltip.description=Command blocks output to chat
+quantumhue.gamerule.naturalRegeneration.name=Natural Regeneration
+quantumhue.gamerule.naturalRegeneration.tooltip.description=Natural health regeneration
+quantumhue.gamerule.doDaylightCycle.name=Daylight Cycle
+quantumhue.gamerule.doDaylightCycle.tooltip.description=Day/night cycle

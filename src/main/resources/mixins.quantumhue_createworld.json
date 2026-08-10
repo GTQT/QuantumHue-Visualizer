@@ -1,0 +1,16 @@
+{
+  "package": "meowmel.quantumhue.createworld.mixin",
+  "required": true,
+  "refmap": "mixins.quantumhue.refmap.json",
+  "target": "@env(DEFAULT)",
+  "minVersion": "0.8.5",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [],
+  "server": [],
+  "client": [
+    "IGuiCreateWorldAccess",
+    "MixinModernCreateWorld",
+    "MixinGuiSelectWorld",
+    "MixinIntegratedServer"
+  ]
+}

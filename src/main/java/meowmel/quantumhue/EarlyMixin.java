@@ -24,6 +24,7 @@ public class EarlyMixin implements IEarlyMixinLoader, IFMLLoadingPlugin {
         configs.add("mixins.quantumhue.json");
         configs.add("mixins.quantumhue_splash.json");
         configs.add("mixins.quantumhue_chat.json");
+        configs.add("mixins.quantumhue_createworld.json");
 
         return configs;
     }

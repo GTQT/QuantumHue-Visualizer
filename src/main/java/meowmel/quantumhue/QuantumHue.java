@@ -7,6 +7,8 @@ import meowmel.quantumhue.chat.server.ChatServerListener;
 import meowmel.quantumhue.blur.SimpleBlurHandler;
 import meowmel.quantumhue.client.highlight.ClientHighlightHandler;
 import meowmel.quantumhue.command.CommandWiki;
+import meowmel.quantumhue.createworld.CreateWorldUIClient;
+import meowmel.quantumhue.createworld.command.CommandGameRuleEditor;
 import meowmel.quantumhue.igi.IGI;
 import meowmel.quantumhue.igi.IGIInit;
 import meowmel.quantumhue.igi.HudRenderer;
@@ -58,11 +60,13 @@ public class QuantumHue {
         PacketHandler.init();
         EquipmentCompareHandler.registerKeyBinding();
         MinecraftForge.EVENT_BUS.register(new ModernSplashEvents());
+        CreateWorldUIClient.registerTabs();
     }
 
     @Mod.EventHandler
     public void serverStart(FMLServerStartingEvent event) {
         event.registerServerCommand(new CommandWiki());
+        event.registerServerCommand(new CommandGameRuleEditor());
     }
 
 

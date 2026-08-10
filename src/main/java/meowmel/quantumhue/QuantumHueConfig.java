@@ -460,4 +460,78 @@ public class QuantumHueConfig {
         @Config.RangeInt(min = 0x00000000, max = 0xFFFFFFFF)
         public int badgeBorderEndColor = 0xFF4b4b4b;
     }
+
+    /**
+     * 创建世界界面现代化（移植自 CreateWorldUI）
+     */
+    @Config.Name("Create World UI")
+    public static CreateWorld createWorld = new CreateWorld();
+
+    public static class CreateWorld {
+
+        @Config.Name("Modern White Tab Text")
+        @Config.Comment({
+                "顶部标签页文字使用白色",
+                "需要 vintagefix + 现代纹理资源包(modernity/mc-new-textures)才生效",
+                "false: 悬停/选中时文字为黄色"
+        })
+        public boolean topTabCharatorModernWhite = false;
+
+        @Config.Name("Enable Gamerule Editor")
+        @Config.Comment({
+                "启用游戏规则编辑器",
+                "在创建世界界面的\"更多\"标签页中显示入口按钮"
+        })
+        public boolean gameruleEdit = true;
+
+        @Config.Name("In-Game Gamerule Editor")
+        @Config.Comment({
+                "启用游戏内游戏规则编辑器",
+                "允许使用 /gameruleEditor 命令在游戏内打开编辑器"
+        })
+        public boolean igGameruleEdit = false;
+
+        @Config.Name("Enable Other More Tab Button")
+        @Config.Comment({
+                "显示未使用的现代功能按钮",
+                "在\"更多\"标签页中显示实验性功能和数据包占位按钮"
+        })
+        public boolean enableOtherMoreTabButton = false;
+
+        @Config.Name("Show World Name Placeholder")
+        @Config.Comment({
+                "世界名称输入框为空时显示占位提示文字"
+        })
+        public boolean showWorldNamePlaceHolder = false;
+
+        @Config.Name("Disable Create Button When World Name Is Blank")
+        @Config.Comment({
+                "世界名称为空时禁用创建按钮"
+        })
+        public boolean disableCreateButtonWhenWNIsBlank = false;
+
+        @Config.Name("Enable Difficulty Lock Button")
+        @Config.Comment({
+                "在难度选择旁显示难度锁定按钮"
+        })
+        public boolean enableLock = false;
+
+        @Config.Name("Enable Reload Button")
+        @Config.Comment({
+                "在游戏规则编辑器中显示重置按钮"
+        })
+        public boolean enableResetButton = false;
+
+        @Config.Name("Highlight Changed Rules in Chat")
+        @Config.Comment({
+                "聊天栏通知中修改的规则名用黄色高亮显示"
+        })
+        public boolean changedRulesInChatHighLighted = false;
+
+        @Config.Name("Highlight Modified Rules in GUI")
+        @Config.Comment({
+                "游戏规则编辑器中修改过的规则名用黄色高亮显示"
+        })
+        public boolean highlightModifiedRulesInGUI = true;
+    }
 }
