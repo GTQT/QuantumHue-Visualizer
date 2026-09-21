@@ -38,9 +38,16 @@ public class ClientHelper {
      * The {@link GuiMainMenu} instance used for panorama rendering.
      */
     public static @Nonnull GuiMainMenu MENU_INSTANCE = new GuiMainMenu();
-    // Cache last resolution to avoid rebuilding every frame
-    private static int lastScaledWidth = 0;
-    private static int lastScaledHeight = 0;
+    /**
+     * Whether {@link #MENU_INSTANCE} has already been initialized once.
+     * <p>
+     * {@link GuiScreen#setWorldAndResolution} ends with a call to {@code initGui()}, and
+     * {@code GuiMainMenu#initGui()} allocates a brand-new {@code DynamicTexture(256, 256)} plus a
+     * unique {@code dynamic/background_N} key every single time. Neither is ever released, so
+     * calling it per-frame (or per resolution change) leaks ~262KB each time and eventually OOMs.
+     * We therefore run the full init exactly once and only update the size fields afterwards.
+     */
+    private static boolean menuInited = false;
 
     private static final ResourceLocation MENU_BACKGROUND = new ResourceLocation(Tags.MOD_ID, "textures/gui/menu_background.png");
     private static final ResourceLocation MENU_LIST_BACKGROUND = new ResourceLocation(Tags.MOD_ID, "textures/gui/menu_list_background.png");
@@ -77,11 +84,15 @@ public class ClientHelper {
         int scaledWidth = sr.getScaledWidth();
         int scaledHeight = sr.getScaledHeight();
 
-        // Only call setWorldAndResolution when resolution changes, avoid triggering initGui every frame
-        if (scaledWidth != lastScaledWidth || scaledHeight != lastScaledHeight) {
+        if (!menuInited) {
+            // Full init exactly once: this is the only call that triggers initGui() and thus
+            // registers a DynamicTexture. Doing it every frame/resolution change leaks memory.
             MENU_INSTANCE.setWorldAndResolution(mc, scaledWidth, scaledHeight);
-            lastScaledWidth = scaledWidth;
-            lastScaledHeight = scaledHeight;
+            menuInited = true;
+        } else {
+            // Afterwards just keep the size in sync; initGui() is never re-run so nothing leaks.
+            MENU_INSTANCE.width = scaledWidth;
+            MENU_INSTANCE.height = scaledHeight;
         }
 
         boolean alpha = GL11.glIsEnabled(GL11.GL_ALPHA_TEST);
