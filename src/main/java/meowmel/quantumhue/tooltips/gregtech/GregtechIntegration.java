@@ -24,37 +24,65 @@ public class GregtechIntegration {
     };
 
     public static int getColor(ItemStack stack) {
-        if (stack.getItem() instanceof IGTTool tool){
-            return 0xFF000000 | (tool.getToolMaterial(stack).getMaterialRGB() & 0x00FFFFFF);
+        if (stack == null || stack.isEmpty()) return -1;
+
+        try {
+            if (stack.getItem() instanceof IGTTool tool) {
+                Material toolMat = tool.getToolMaterial(stack);
+                if (toolMat != null) {
+                    return 0xFF000000 | (toolMat.getMaterialRGB() & 0x00FFFFFF);
+                }
+            }
+
+            if (stack.getItem() instanceof MetaItem<?> item) {
+                int tier = item.getTier(stack);
+                if (tier > 0) {
+                    return tier < TIER_COLORS.length ? TIER_COLORS[tier] : TIER_COLORS[0];
+                }
+            }
+
+            Material material = extractMaterial(stack);
+            if (material != null) {
+                return 0xFF000000 | (material.getMaterialRGB() & 0x00FFFFFF);
+            }
+
+            MetaTileEntity mte = GTUtility.getMetaTileEntity(stack);
+            if (mte instanceof ITieredMetaTileEntity t) {
+                int tier = t.getTier();
+                return tier >= 0 && tier < TIER_COLORS.length ? TIER_COLORS[tier] : TIER_COLORS[0];
+            }
+
+            Block block = Block.getBlockFromItem(stack.getItem());
+            if (block instanceof BlockMaterialBase bmb) {
+                Material mat = bmb.getGtMaterial(stack);
+                if (mat != null) {
+                    return 0xFF000000 | (mat.getMaterialRGB() & 0x00FFFFFF);
+                }
+            }
+
+            if (block instanceof BlockMaterialPipe<?, ?, ?> bmb) {
+                Material mat = bmb.getItemMaterial(stack);
+                if (mat != null) {
+                    return 0xFF000000 | (mat.getMaterialRGB() & 0x00FFFFFF);
+                }
+            }
+        } catch (Throwable t) {
+            // 兜底：任何第三方模组/GT 内部异常都不应该让 tooltip 崩掉
+            return -1;
         }
-        if (stack.getItem() instanceof MetaItem<?> item) {
-            int tier = item.getTier(stack);
-            if(tier > 0) return tier < TIER_COLORS.length ? TIER_COLORS[tier] : TIER_COLORS[0];
-        }
-        Material material = extractMaterial(stack);
-        if (material != null) {
-            return 0xFF000000 | (material.getMaterialRGB() & 0x00FFFFFF);
-        }
-        MetaTileEntity mte = GTUtility.getMetaTileEntity(stack);
-        if(mte instanceof ITieredMetaTileEntity t){
-            int tier = t.getTier();
-            return tier >= 0 && tier < TIER_COLORS.length ? TIER_COLORS[tier] : TIER_COLORS[0];
-        }
-        Block block = Block.getBlockFromItem(stack.getItem());
-        if(block instanceof BlockMaterialBase bmb){
-            return 0xFF000000 | (bmb.getGtMaterial(stack).getMaterialRGB() & 0x00FFFFFF);
-        }
-        if(block instanceof BlockMaterialPipe<?,?,?> bmb){
-            return 0xFF000000 | (bmb.getItemMaterial(stack).getMaterialRGB() & 0x00FFFFFF);
-        }
+
         return -1;
     }
 
     private static Material extractMaterial(ItemStack stack) {
-        Material mat = MetaPrefixItem.tryGetMaterial(stack);
-        if (mat != null) return mat;
-        UnificationEntry entry = OreDictUnifier.getUnificationEntry(stack);
-        if (entry != null && entry.material != null) return entry.material;
+        try {
+            Material mat = MetaPrefixItem.tryGetMaterial(stack);
+            if (mat != null) return mat;
+            UnificationEntry entry = OreDictUnifier.getUnificationEntry(stack);
+            if (entry != null && entry.material != null) return entry.material;
+        } catch (Throwable t) {
+            // ignore
+        }
         return null;
     }
 }
