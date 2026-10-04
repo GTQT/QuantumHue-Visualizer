@@ -90,6 +90,20 @@ public class CustomSplash
     public static boolean isDisplayVSyncForced = false;
     public static boolean displayStartupTimeOnMainMenu = true;
     public static boolean enableTimer = true;
+
+    // ---- QuantumHue sci-fi splash ------------------------------------------------------------
+    // This build ships as part of the GTQT pack, so the branded HUD is simply the default; no mod
+    // detection is involved.  `sciFiSplash` is the escape hatch back to the inherited layout.
+    private static boolean scifiSplash = true;
+    private static boolean scifiIntro = true;
+    private static float scifiIntroSeconds = 18f;
+    private static long introStartNanos = 0L;
+    private static GlSplashPainter painter;
+    private static final SplashTimeline TIMELINE = new SplashTimeline();
+    private static final SplashScene.State SCENE = new SplashScene.State();
+    private static final SplashScene.Bar[] SCENE_BARS = {
+            new SplashScene.Bar(), new SplashScene.Bar(), new SplashScene.Bar()
+    };
     private static final int TIMING_FRAME_COUNT = 200;
     private static final int TIMING_FRAME_THRESHOLD = TIMING_FRAME_COUNT * 5 * 1000000; // 5 ms per frame, scaled to nanos
 
@@ -124,6 +138,13 @@ public class CustomSplash
         showMemory = config.getBoolean("showMemory", categoryGeneral, true, "If show realtime heap memory");
         showTotalMemoryLine = config.getBoolean("showTotalMemoryLine", categoryGeneral, false, "If show total JVM allocated memory");
         enableTimer = config.getBoolean("enableTimer", categoryGeneral, true, "If enable launch timer");
+
+        scifiSplash = config.getBoolean("sciFiSplash", categoryGeneral, true,
+                "Draw the QuantumHue sci-fi loading HUD instead of the classic splash layout");
+        scifiIntro = config.getBoolean("sciFiIntro", categoryGeneral, true,
+                "Play the emblem intro animation before the loading HUD appears");
+        scifiIntroSeconds = config.getInt("sciFiIntroSeconds", categoryGeneral, 18, 2, 120,
+                "Length of the emblem intro animation in seconds");
 
         logoOffset =         config.getInt("logoOffset", categoryGeneral, 0, -10000, 10000, "Forge logo offset");
 
@@ -236,11 +257,22 @@ public class CustomSplash
             {
                 setGL();
                 fontTexture = new Texture(fontLoc, null);
-                logoTexture = new Texture(logoLoc, null, true);
-                forgeTexture = new Texture(forgeLoc, forgeFallbackLoc);
                 glEnable(GL_TEXTURE_2D);
                 fontRenderer = new SplashFontRenderer();
                 glDisable(GL_TEXTURE_2D);
+                if (scifiSplash) {
+                    painter = new GlSplashPainter(fontRenderer);
+                    // Load once, up front.  If any of the three textures is missing the painter
+                    // degrades to drawing the HUD without them, which must not be able to fall
+                    // back into the classic branch -- logoTexture/forgeTexture are not created in
+                    // this mode.
+                    painter.load();
+                } else {
+                    // the classic layout is the only thing that needs these two
+                    logoTexture = new Texture(logoLoc, null, true);
+                    forgeTexture = new Texture(forgeLoc, forgeFallbackLoc);
+                }
+                introStartNanos = scifiIntro ? System.nanoTime() : 0L;
                 while(!done)
                 {
                     framecount++;
@@ -267,6 +299,10 @@ public class CustomSplash
                     glOrtho(320 - w/2, 320 + w/2, 240 + h/2, 240 - h/2, -1, 1);
                     glMatrixMode(GL_MODELVIEW);
                     glLoadIdentity();
+
+                    if (scifiSplash && painter != null) {
+                        drawScifiFrame(w, h, first, penult, last);
+                    } else {
 
                     // mojang logo
                     setColor(logoColor);
@@ -356,6 +392,8 @@ public class CustomSplash
                         glDisable(GL_TEXTURE_2D);
                     }
 
+                    }
+
                     // We use mutex to indicate safely to the main thread that we're taking the display global lock
                     // So the main thread can skip processing messages while we're updating.
                     // There are system setups where this call can pause for a while, because the GL implementation
@@ -398,6 +436,59 @@ public class CustomSplash
                     }
                 }
                 clearGL();
+            }
+
+            /**
+             * Paints the whole frame with {@link SplashScene}.  The scene owns the loading readouts
+             * too, so nothing from the classic layout is drawn on top.
+             */
+            private void drawScifiFrame(int w, int h, ProgressBar first, ProgressBar penult, ProgressBar last)
+            {
+                ProgressBar[] live = { first, penult, last };
+                int slots = 0;
+                for (ProgressBar bar : live)
+                {
+                    if (bar == null) continue;
+                    SplashScene.Bar target = SCENE_BARS[slots++];
+                    target.title = bar.getTitle();
+                    target.message = bar.getMessage();
+                    target.step = bar.getStep();
+                    target.steps = Math.max(1, bar.getSteps());
+                }
+                SCENE.bar0 = slots > 0 ? SCENE_BARS[0] : null;
+                SCENE.bar1 = slots > 1 ? SCENE_BARS[1] : null;
+                SCENE.bar2 = slots > 2 ? SCENE_BARS[2] : null;
+
+                int maxMemory = bytesToMb(Runtime.getRuntime().maxMemory());
+                int usedMemory = bytesToMb(Runtime.getRuntime().totalMemory()) - bytesToMb(Runtime.getRuntime().freeMemory());
+
+                SCENE.width = w;
+                SCENE.height = h;
+                SCENE.intro = TIMELINE.frame(introElapsedSeconds(), scifiIntroSeconds);
+                SCENE.uiAlpha = SCENE.intro.ui;
+                SCENE.showMemory = showMemory;
+                SCENE.memUsedMb = usedMemory;
+                SCENE.memMaxMb = maxMemory;
+                SCENE.showTimer = enableTimer;
+                SCENE.startupSeconds = currentStartupSeconds();
+                SCENE.estimateSeconds = expectedTime / 1000f;
+
+                SplashScene.draw(painter, SCENE);
+            }
+
+            private float introElapsedSeconds()
+            {
+                long start = introStartNanos;
+                // intro disabled, or this frame arrived before the thread started: show the HUD
+                if (start == 0L) return scifiIntroSeconds + 1f;
+                return (System.nanoTime() - start) / 1_000_000_000f;
+            }
+
+            private float currentStartupSeconds()
+            {
+                long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
+                if (ModernSplashEvents.doneTime > 0) uptime = ModernSplashEvents.doneTime;
+                return uptime / 1000f;
             }
 
             private String getString(){
@@ -673,8 +764,9 @@ public class CustomSplash
             d.releaseContext();
             Display.getDrawable().makeCurrent();
             fontTexture.delete();
-            logoTexture.delete();
-            forgeTexture.delete();
+            if (logoTexture != null) logoTexture.delete();
+            if (forgeTexture != null) forgeTexture.delete();
+            if (painter != null) painter.dispose();
         }
         catch (Exception e)
         {
@@ -938,7 +1030,7 @@ public class CustomSplash
         }
     }
 
-    private static InputStream open(ResourceLocation loc, @Nullable ResourceLocation fallback, boolean allowResourcePack) throws IOException
+    static InputStream open(ResourceLocation loc, @Nullable ResourceLocation fallback, boolean allowResourcePack) throws IOException
     {
         if (mcPack == null) {
             mcPack = Minecraft.getMinecraft().defaultResourcePack;

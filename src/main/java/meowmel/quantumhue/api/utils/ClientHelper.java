@@ -2,7 +2,6 @@ package meowmel.quantumhue.api.utils;
 
 import com.meowmel.quantumhue.Tags;
 import meowmel.quantumhue.QuantumHue;
-import meowmel.quantumhue.mixininterface.IGuiMainMenuMixin;
 import meowmel.quantumhue.mixins.GuiMainMenuAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
@@ -100,7 +99,6 @@ public class ClientHelper {
         GlStateManager.disableAlpha();
         GlStateManager.disableDepth();
 
-        ((IGuiMainMenuMixin) MENU_INSTANCE).clearMyBackground$tickPanoramaTimer(mc.getTickLength());
         ((GuiMainMenuAccessor) MENU_INSTANCE).invokeRenderSkybox(0, 0, mc.getTickLength());
 
         if (alpha) GlStateManager.enableAlpha();

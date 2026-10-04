@@ -1,5 +1,7 @@
 package meowmel.quantumhue.modernsplash;
 
+import meowmel.quantumhue.menu.GtqtMainMenu;
+import meowmel.quantumhue.menu.GtqtMenuChrome;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraftforge.client.event.GuiOpenEvent;
@@ -26,6 +28,14 @@ public class ModernSplashEvents {
 
     @SubscribeEvent
     public void onGuiOpen(GuiOpenEvent event) {
+        // Take the title screen over by presenting our own screen, rather than mixing into vanilla's
+        // drawing.  Everything on it — background, layout, widget style — is ours, so there is
+        // nothing to suppress, cover or remap, and no mixin on Gui is needed at all.
+        if (event.getGui() instanceof GuiMainMenu && !(event.getGui() instanceof GtqtMainMenu)
+                && GtqtMenuChrome.enabled()) {
+            event.setGui(new GtqtMainMenu());
+        }
+
         if (!triggered && CustomSplash.enableTimer && event.getGui() instanceof GuiMainMenu) {
             triggered = true;
 

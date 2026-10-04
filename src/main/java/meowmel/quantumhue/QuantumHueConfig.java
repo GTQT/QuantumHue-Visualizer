@@ -534,4 +534,28 @@ public class QuantumHueConfig {
         })
         public boolean highlightModifiedRulesInGUI = true;
     }
+
+    /**
+     * 主菜单（标题画面）科幻化接管
+     */
+    @Config.Name("Main Menu")
+    public static MainMenu mainMenu = new MainMenu();
+
+    public static class MainMenu {
+
+        @Config.Name("Enabled")
+        @Config.Comment({
+                "接管主菜单：不透明自绘背景（网格 + PCB 走线）盖掉全景天空盒与 Minecraft 标题图，",
+                "按钮改为右侧仪器台布局，左上角放 GTQT 齿轮 + 字标",
+                "false: 完全保持原版主菜单"
+        })
+        public boolean enabled = true;
+
+        @Config.Name("Dyson Sphere")
+        @Config.Comment("背景左侧画三维戴森球（球心在屏幕左边缘，直径等于屏幕高度）")
+        public boolean emblem = true;
+
+        // 网格曾经是主菜单独有的一层开关。背景统一之后网格属于共享背景（Backdrop），
+        // 与加载画面/其它界面用的是同一条绘制路径，按屏幕单独开关已经没有意义，故移除。
+    }
 }
