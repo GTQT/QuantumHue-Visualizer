@@ -99,7 +99,7 @@ public final class GtqtMenuChrome {
 
     /** The painter owns the blend setup; this is the shorthand the button path uses. */
     private static void blendMode(boolean additive) {
-        GlStatePainter.INSTANCE.blendMode(additive);
+        GlStatePainter.get(Minecraft.getMinecraft()).blendMode(additive);
     }
 
     /** Draws a texture sub-rectangle with explicit UVs. */
@@ -151,7 +151,7 @@ public final class GtqtMenuChrome {
         // narrowed where it is used: in float, the ulp at a multi-hour uptime is milliseconds, which
         // is enough to make the swarm's spin quantise to visible steps.
         double secs = Minecraft.getSystemTime() / 1000.0;
-        GlStatePainter p = GlStatePainter.INSTANCE;
+        GlStatePainter p = GlStatePainter.get(mc);
 
         prepare();
 

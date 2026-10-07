@@ -50,6 +50,21 @@ public final class SplashTheme {
     public static final String BRAND = "GTQT";
     public static final String BRAND_FULL = "GREG TECH : QUANTUM TRANSITION";
     public static final String BOOT_LABEL = "BOOT SEQUENCE";
+    /** HUD label for the screen shown while a world is loading. */
+    public static final String WORLD_LABEL = "LOADING WORLD";
+    /** HUD caption under the crossing readout. */
+    public static final String ORBIT_LABEL = "ORBITAL TRANSFER";
+    /**
+     * The two lines the world-loading screen shows, in place of vanilla's "Loading world" and
+     * "Building terrain".
+     *
+     * <p>These are the only CJK strings in the mod.  The note above about Latin-only HUD text was
+     * written for the boot splash, and it is stale: everything here goes through
+     * {@code FontRenderer}, the same instance that draws the localised main-menu buttons and
+     * vanilla's own localised loading strings.  If those render Chinese, so do these.
+     */
+    public static final String WORLD_TITLE = "正在连接戴森网络";
+    public static final String WORLD_STAGE = "正在初始化";
     public static final String MEM_LABEL = "HEAP";
 
     // ---------------------------------------------------------------- layer strengths

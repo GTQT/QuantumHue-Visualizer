@@ -558,4 +558,21 @@ public class QuantumHueConfig {
         // 网格曾经是主菜单独有的一层开关。背景统一之后网格属于共享背景（Backdrop），
         // 与加载画面/其它界面用的是同一条绘制路径，按屏幕单独开关已经没有意义，故移除。
     }
+
+    /**
+     * 进入世界（读取存档）时的界面
+     */
+    @Config.Name("World Loading")
+    public static WorldLoading worldLoading = new WorldLoading();
+
+    public static class WorldLoading {
+
+        @Config.Name("Enabled")
+        @Config.Comment({
+                "接管读取存档、进入世界时的界面：原版的泥土平铺底 + 两行文字 + 双色进度条",
+                "替换为共享背景（网格 + PCB 走线）与自绘 HUD",
+                "false: 保持原版泥土底"
+        })
+        public boolean enabled = true;
+    }
 }

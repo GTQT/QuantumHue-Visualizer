@@ -1,6 +1,9 @@
 package meowmel.quantumhue.menu;
 
 import meowmel.quantumhue.modernsplash.SplashPainter;
+import meowmel.quantumhue.modernsplash.SplashTimeline;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
@@ -21,16 +24,37 @@ import org.lwjgl.opengl.GL11;
  * through {@code GlStateManager}.
  *
  * <h3>Scope</h3>
- * Only the four primitives {@code Backdrop} needs are implemented.  The rest are the splash's
- * foreground vocabulary — sprites, glow, arcs, the transform stack, bitmap text — and are not
- * reachable from a background, so they fail loudly rather than silently drawing nothing.
+ * The background primitives plus bitmap text — enough to draw a HUD through the same MC-free
+ * composition the splash uses.  The rest are the splash's foreground vocabulary — sprites, glow,
+ * arcs, the transform stack — and are not reachable from a menu or a loading HUD, so they fail
+ * loudly rather than silently drawing nothing.
  */
 public final class GlStatePainter implements SplashPainter {
 
-    /** Shared instance: the painter is stateless, the buffers live in the caller. */
-    public static final GlStatePainter INSTANCE = new GlStatePainter();
+    /** Line height of the vanilla bitmap font, before scaling. */
+    private static final float FONT_HEIGHT = 9f;
 
-    private GlStatePainter() {}
+    private static GlStatePainter cached;
+
+    private final FontRenderer font;
+
+    private GlStatePainter(FontRenderer font) {
+        this.font = font;
+    }
+
+    /**
+     * The painter for this client, bound to its font.
+     *
+     * <p>Cached because the painter is otherwise stateless while the callers are per-frame; it is
+     * rebuilt only if the client's {@code FontRenderer} is ever replaced.
+     */
+    public static GlStatePainter get(Minecraft mc) {
+        FontRenderer f = mc == null ? null : mc.fontRenderer;
+        if (cached == null || cached.font != f) {
+            cached = new GlStatePainter(f);
+        }
+        return cached;
+    }
 
     // ---------------------------------------------------------------- used
 
@@ -145,12 +169,83 @@ public final class GlStatePainter implements SplashPainter {
                 GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
     }
 
+    /**
+     * Additive radial falloff, built as a triangle fan.
+     *
+     * <p>{@code GL_TRIANGLE_FAN} is a legitimate draw mode for the Tessellator — it is passed
+     * straight through to {@code glDrawArrays} — which is what lets the same HUD glow the boot
+     * splash uses also be reachable from a GUI frame without raw GL calls.
+     */
+    @Override
+    public void glow(float cx, float cy, float radius, float r, float g, float b, float a, int segments) {
+        if (a <= 0.002f || radius <= 0f) {
+            return;
+        }
+        int n = Math.max(6, segments);
+        noAlphaTest();
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA,
+                GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE,
+                GlStateManager.DestFactor.ZERO);
+        GlStateManager.disableTexture2D();
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+        buffer.begin(GL11.GL_TRIANGLE_FAN, DefaultVertexFormats.POSITION_COLOR);
+        buffer.pos(cx, cy, 0.0D).color(r, g, b, a).endVertex();
+        for (int i = 0; i <= n; i++) {
+            double angle = i * 2.0 * Math.PI / n;
+            buffer.pos(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius, 0.0D)
+                    .color(r, g, b, 0f).endVertex();
+        }
+        tessellator.draw();
+
+        GlStateManager.enableTexture2D();
+        GlStateManager.color(1f, 1f, 1f, 1f);
+    }
+
+    // ---------------------------------------------------------------- text
+
+    @Override
+    public void text(String s, float x, float y, float scale, float r, float g, float b, float a) {
+        if (s == null || s.isEmpty() || a <= 0.004f) {
+            return;
+        }
+        if (font == null) {
+            throw new IllegalStateException("GlStatePainter has no FontRenderer; text is unavailable");
+        }
+        int ai = Math.round(SplashTimeline.clamp01(a) * 255f);
+        int ri = Math.round(SplashTimeline.clamp01(r) * 255f);
+        int gi = Math.round(SplashTimeline.clamp01(g) * 255f);
+        int bi = Math.round(SplashTimeline.clamp01(b) * 255f);
+        // FontRenderer only honours the alpha byte when one is actually set, so it is always set.
+        int color = (ai << 24) | (ri << 16) | (gi << 8) | bi;
+
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(x, y, 0f);
+        GlStateManager.scale(scale, scale, 1f);
+        GlStateManager.enableTexture2D();
+        font.drawString(s, 0, 0, color);
+        GlStateManager.popMatrix();
+        GlStateManager.color(1f, 1f, 1f, 1f);
+    }
+
+    @Override
+    public float textWidth(String s, float scale) {
+        return s == null || font == null ? 0f : font.getStringWidth(s) * scale;
+    }
+
+    @Override
+    public float textHeight(float scale) {
+        return FONT_HEIGHT * scale;
+    }
+
     // ---------------------------------------------------------------- unused
 
     private static UnsupportedOperationException unused(String method) {
         return new UnsupportedOperationException(
-                "GlStatePainter only implements the background primitives; " + method
-                        + "() is splash foreground and has no business on a menu screen");
+                "GlStatePainter only implements the background primitives and bitmap text; " + method
+                        + "() is splash foreground and has no business on a menu or loading screen");
     }
 
     @Override
@@ -158,11 +253,6 @@ public final class GlStatePainter implements SplashPainter {
                        float u0, float v0, float u1, float v1,
                        float r, float g, float b, float a) {
         throw unused("sprite");
-    }
-
-    @Override
-    public void glow(float cx, float cy, float radius, float r, float g, float b, float a, int segments) {
-        throw unused("glow");
     }
 
     @Override
@@ -194,20 +284,5 @@ public final class GlStatePainter implements SplashPainter {
     @Override
     public void scale(float sx, float sy) {
         throw unused("scale");
-    }
-
-    @Override
-    public void text(String s, float x, float y, float scale, float r, float g, float b, float a) {
-        throw unused("text");
-    }
-
-    @Override
-    public float textWidth(String s, float scale) {
-        throw unused("textWidth");
-    }
-
-    @Override
-    public float textHeight(float scale) {
-        throw unused("textHeight");
     }
 }

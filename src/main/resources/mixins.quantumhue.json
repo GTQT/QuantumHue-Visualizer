@@ -17,6 +17,7 @@
     "GuiScrollingListMixin",
     "GuiSlotMixin",
     "GuiWorldSelectionMixin",
+    "LoadingScreenRendererMixin",
     "MixinGuiScrollingList",
     "MixinMinecraft",
     "MixinGuiSlot"

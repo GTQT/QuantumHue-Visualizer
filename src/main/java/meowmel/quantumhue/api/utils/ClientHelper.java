@@ -134,9 +134,8 @@ public class ClientHelper {
     }
     private static boolean shouldModifyBG(@Nullable GuiScreen screen) {
         if (!QuantumHue.GAME_LOADING_DONE || screen == null) return false;
-        if (Loader.isModLoaded("fluxloading") &&
-                (screen instanceof GuiScreenWorking || screen instanceof GuiDownloadTerrain)
-        ) return false;
+        // The fluxloading exclusion that used to sit here is gone along with the mod itself: the
+        // world-loading screens are ours now, via LoadingScreenRendererMixin and GtqtMenuChrome.
         if (Loader.isModLoaded("catalogue") &&
                 (screen instanceof GuiModList)
         ) return false;
