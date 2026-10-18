@@ -560,6 +560,54 @@ public class QuantumHueConfig {
     }
 
     /**
+     * ESC 暂停界面科幻化接管
+     */
+    @Config.Name("Pause Menu")
+    public static PauseMenu pauseMenu = new PauseMenu();
+
+    public static class PauseMenu {
+
+        @Config.Name("Enabled")
+        @Config.Comment({
+                "接管 ESC 暂停界面：中心圆盘 + 戴森球（取代等高线地图），左侧四张主卡，",
+                "右侧弧形排列的磁贴，圆盘底部弧形「返回游戏」，左下电源键与玩家档案卡",
+                "按钮动作、存档退出、选项返回链仍走原版逻辑；只换绘制与命中判定",
+                "false: 完全保持原版暂停菜单（含模糊与黑纱）"
+        })
+        public boolean enabled = true;
+
+        @Config.Name("Animation")
+        @Config.Comment({
+                "开场/收场动画：圆盘展开 → 卡片依次飞入 → 磁贴沿弧浮现 → 档案卡弹入",
+                "关闭后界面立即定格出现（低配机、录屏或对动效敏感时使用）"
+        })
+        public boolean animation = true;
+
+        @Config.Name("Parallax")
+        @Config.Comment({
+                "鼠标视差：面板随指针位置轻微倾斜（指针按下时自动归位）",
+                "窄窗口（紧凑布局）下自动停用"
+        })
+        public boolean parallax = true;
+
+        @Config.Name("Vanilla Shortcuts")
+        @Config.Comment({
+                "在右侧磁贴列追加原版子界面的快捷入口（都已存在，只是原本藏在「选项」里两跳）：",
+                "视频设置 / 按键 / 声音 / 聊天 / 语言 / 资源包 / 皮肤定制 / Snooper",
+                "点进去按「完成」会回到本界面；false 则只显示原版暂停菜单本来就有的按钮"
+        })
+        public boolean vanillaShortcuts = true;
+
+        @Config.Name("Debug Tiles")
+        @Config.Comment({
+                "调试用：在右侧磁贴列追加 N 个空磁贴（无动作、无标签含义），",
+                "用于在包里还没有那么多按钮时检查滚轮与排布；正式使用请设为 0"
+        })
+        @Config.RangeInt(min = 0, max = 12)
+        public int placeholderTiles = 0;
+    }
+
+    /**
      * 进入世界（读取存档）时的界面
      */
     @Config.Name("World Loading")

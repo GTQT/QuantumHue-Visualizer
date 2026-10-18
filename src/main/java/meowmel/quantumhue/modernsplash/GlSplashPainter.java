@@ -306,6 +306,21 @@ public final class GlSplashPainter implements SplashPainter {
         }
     }
 
+    /**
+     * Unsupported here on purpose: the splash owns the whole frame and nothing on it scrolls, so a
+     * clip could only hide a mistake.  The GUI backend, which is where the pause menu lives, is the
+     * one that implements it.
+     */
+    @Override
+    public void clip(float x, float y, float w, float h) {
+        throw new UnsupportedOperationException("the splash never clips");
+    }
+
+    @Override
+    public void unclip() {
+        throw new UnsupportedOperationException("the splash never clips");
+    }
+
     @Override
     public void arc(float cx, float cy, float radius, float fromDeg, float toDeg,
                     float r, float g, float b, float a, float width) {

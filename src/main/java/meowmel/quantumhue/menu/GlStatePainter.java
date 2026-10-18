@@ -1,5 +1,6 @@
 package meowmel.quantumhue.menu;
 
+import meowmel.quantumhue.api.utils.ClientHelper;
 import meowmel.quantumhue.modernsplash.SplashPainter;
 import meowmel.quantumhue.modernsplash.SplashTimeline;
 import net.minecraft.client.Minecraft;
@@ -35,6 +36,11 @@ public final class GlStatePainter implements SplashPainter {
     private static final float FONT_HEIGHT = 9f;
 
     private static GlStatePainter cached;
+
+    /** Scissor state saved by {@link #clip} so {@link #unclip} can put the host's back. */
+    private static boolean savedScissor;
+    private static final java.nio.IntBuffer savedBox =
+            org.lwjgl.BufferUtils.createIntBuffer(16);
 
     private final FontRenderer font;
 
@@ -77,6 +83,12 @@ public final class GlStatePainter implements SplashPainter {
         }
         noAlphaTest();
         blendMode(false);
+        // The pause screen is drawn while the world renderer's state is still live: culling and
+        // depth testing are not ours to assume away.  Lines survive both (they are never culled and
+        // the overlay has no depth), which is exactly why a fill could vanish while the outline of
+        // the same plate stayed visible.
+        GlStateManager.disableCull();
+        GlStateManager.disableDepth();
         GlStateManager.disableTexture2D();
         GlStateManager.color(r, g, b, a);
         Tessellator tessellator = Tessellator.getInstance();
@@ -98,6 +110,12 @@ public final class GlStatePainter implements SplashPainter {
         }
         noAlphaTest();
         blendMode(false);
+        // The pause screen is drawn while the world renderer's state is still live: culling and
+        // depth testing are not ours to assume away.  Lines survive both (they are never culled and
+        // the overlay has no depth), which is exactly why a fill could vanish while the outline of
+        // the same plate stayed visible.
+        GlStateManager.disableCull();
+        GlStateManager.disableDepth();
         GlStateManager.disableTexture2D();
         GlStateManager.color(r, g, b, a);
         GlStateManager.glLineWidth(Math.max(1f, width));
@@ -120,6 +138,12 @@ public final class GlStatePainter implements SplashPainter {
         // Gui.drawRect() ends with disableBlend(), so blending cannot be assumed to be on here.
         noAlphaTest();
         blendMode(false);
+        // The pause screen is drawn while the world renderer's state is still live: culling and
+        // depth testing are not ours to assume away.  Lines survive both (they are never culled and
+        // the overlay has no depth), which is exactly why a fill could vanish while the outline of
+        // the same plate stayed visible.
+        GlStateManager.disableCull();
+        GlStateManager.disableDepth();
         GlStateManager.disableTexture2D();
         GlStateManager.color(r, g, b, a);
         GlStateManager.glLineWidth(Math.max(1f, width));
@@ -144,6 +168,12 @@ public final class GlStatePainter implements SplashPainter {
         }
         noAlphaTest();
         blendMode(false);
+        // The pause screen is drawn while the world renderer's state is still live: culling and
+        // depth testing are not ours to assume away.  Lines survive both (they are never culled and
+        // the overlay has no depth), which is exactly why a fill could vanish while the outline of
+        // the same plate stayed visible.
+        GlStateManager.disableCull();
+        GlStateManager.disableDepth();
         GlStateManager.disableTexture2D();
         GlStateManager.color(r, g, b, a);
         Tessellator tessellator = Tessellator.getInstance();
@@ -167,6 +197,31 @@ public final class GlStatePainter implements SplashPainter {
                 GlStateManager.SourceFactor.SRC_ALPHA,
                 additive ? GlStateManager.DestFactor.ONE : GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
                 GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+    }
+
+    /**
+     * Scissor, in GUI coordinates.
+     *
+     * <p>{@code GlStateManager} does not cache the scissor box, so touching it directly cannot
+     * desynchronise the cache the way a raw {@code glEnable(GL_TEXTURE_2D)} would.  The previous
+     * box and enable state are saved because vanilla's container screens clip too, and a nested
+     * {@link #unclip} must not leave their clip switched off.
+     */
+    @Override
+    public void clip(float x, float y, float w, float h) {
+        savedScissor = GL11.glIsEnabled(GL11.GL_SCISSOR_TEST);
+        savedBox.clear();
+        GL11.glGetInteger(GL11.GL_SCISSOR_BOX, savedBox);
+        ClientHelper.scissor(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+    }
+
+    @Override
+    public void unclip() {
+        if (savedScissor) {
+            GL11.glScissor(savedBox.get(0), savedBox.get(1), savedBox.get(2), savedBox.get(3));
+        } else {
+            GL11.glDisable(GL11.GL_SCISSOR_TEST);
+        }
     }
 
     /**

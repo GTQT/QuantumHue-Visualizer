@@ -311,6 +311,26 @@ public final class SplashPreview {
             // the swarm's energy arcs -- everything else matches.
         }
 
+        private java.awt.Shape savedClip;
+
+        @Override
+        public void clip(float x, float y, float w, float h) {
+            apply();
+            savedClip = gc.getClip();
+            java.awt.Shape previous = gc.getClip();
+            gc.clip(new Rectangle2D.Float(x, y, w, h));
+            if (previous == null) {
+                savedClip = null;
+            }
+        }
+
+        @Override
+        public void unclip() {
+            apply();
+            gc.setClip(savedClip);
+            savedClip = null;
+        }
+
         @Override
         public void arc(float cx, float cy, float radius, float fromDeg, float toDeg,
                         float r, float g, float b, float a, float width) {

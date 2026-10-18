@@ -48,6 +48,19 @@ public interface SplashPainter {
     /** {@code true} switches to additive blending (energy, glows); {@code false} restores alpha. */
     void blendMode(boolean additive);
 
+    /**
+     * Restricts every subsequent draw to a rectangle, in the painter's own coordinates.
+     *
+     * <p>Only the pause menu's tile column uses it: when there are more tiles than the band can
+     * show, the list scrolls, and a half-scrolled tile must be cut at the band's edge rather than
+     * spill over the world readout above it.  Implementations must nest with {@link #unclip()} and
+     * must restore whatever the host had set up.
+     */
+    void clip(float x, float y, float w, float h);
+
+    /** Lifts the clip installed by {@link #clip}. */
+    void unclip();
+
     /** Circular arc in degrees, 0 = +x, increasing clockwise on screen. */
     void arc(float cx, float cy, float radius, float fromDeg, float toDeg,
              float r, float g, float b, float a, float width);

@@ -13,6 +13,7 @@ import meowmel.quantumhue.igi.IGI;
 import meowmel.quantumhue.igi.IGIInit;
 import meowmel.quantumhue.igi.HudRenderer;
 import meowmel.quantumhue.igi.ThaumcraftAuraUpdater;
+import meowmel.quantumhue.menu.PauseMenuEvents;
 import meowmel.quantumhue.modernsplash.ModernSplashEvents;
 import meowmel.quantumhue.network.PacketHandler;
 import meowmel.quantumhue.tooltips.AdvancedTooltipHandler;
@@ -79,6 +80,9 @@ public class QuantumHue {
 
     @Mod.EventHandler
     public void onInit(FMLInitializationEvent event) {
+        if (event.getSide().isClient()) {
+            MinecraftForge.EVENT_BUS.register(new PauseMenuEvents());
+        }
         MinecraftForge.EVENT_BUS.register(new SimpleBlurHandler());
         MinecraftForge.EVENT_BUS.register(new AdvancedTooltipHandler());
         MinecraftForge.EVENT_BUS.register(EquipmentCompareHandler.class);
