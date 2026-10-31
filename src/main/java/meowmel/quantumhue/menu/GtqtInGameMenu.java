@@ -206,11 +206,9 @@ public class GtqtInGameMenu extends GuiIngameMenu {
                     String.format(java.util.Locale.ROOT, "PLACEHOLDER %02d", i + 1),
                     PauseAction.OTHER, true, null));
         }
+        // 商店与公告页现在由本模组自己提供（{@code meowmel.quantumhue.page}），不再需要探测
+        // GTQT Core；两块磁贴永远可用，且点击后直接打开本模组的界面。
         int extras = placeholders;
-        // The market and the announcement are always drawn: they anchor the two upper corners, and
-        // a board with two holes in it would be worse than two plates that cannot be clicked.  When
-        // GTQT Core is missing they are simply disabled, which the scene already renders as a dimmed
-        // plate that never takes a hover.
         // The three links come before the vanilla shortcuts so they land inside the four rows the
         // band can show without scrolling: they are the pack's own destinations and are far more
         // likely to be used than "Skin Customisation".
@@ -224,17 +222,13 @@ public class GtqtInGameMenu extends GuiIngameMenu {
             extras++;
         }
         for (PauseShortcut shortcut : PauseShortcut.values()) {
-            boolean available = shortcut != PauseShortcut.SHOP || GtqtShortcuts.hasShop();
-            if (shortcut == PauseShortcut.NEWS) {
-                available = GtqtShortcuts.hasNews();
-            }
             boolean wanted = shortcut == PauseShortcut.SHOP || shortcut == PauseShortcut.NEWS
                     || (shortcut != PauseShortcut.QUIT && PauseMenuChrome.vanillaShortcuts());
             if (!wanted) {
                 continue;
             }
             entries.add(new PauseEntry(entries.size(), -2000 - shortcut.ordinal(),
-                    shortcut.label(), shortcut.action(), available, shortcut));
+                    shortcut.label(), shortcut.action(), true, shortcut));
             extras++;
         }
         // The power plate is the mod's own: closing the game has no vanilla button, and the slot

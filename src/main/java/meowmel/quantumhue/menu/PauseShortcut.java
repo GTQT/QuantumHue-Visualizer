@@ -1,5 +1,7 @@
 package meowmel.quantumhue.menu;
 
+import meowmel.quantumhue.page.GuiAnnouncement;
+import meowmel.quantumhue.page.GuiShop;
 import meowmel.quantumhue.pause.PauseAction;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiControls;
@@ -38,8 +40,8 @@ public enum PauseShortcut {
     SKIN(PauseAction.SKIN, "options.skinCustomisation"),
     SNOOPER(PauseAction.DEBUG, "options.snooper.view"),
 
-    // GTQT Core, when it is installed.  Labels are spelled out rather than taken from I18n: these
-    // are that pack's own destinations and have no vanilla translation key.
+    // GTQT 的商店与公告页现在已经搬进本模组，不再需要跨模组反射。标签直接写死：这两个页面属于
+    // 本模组自己的入口，没有对应的原版翻译键。
     SHOP(PauseAction.SHOP, null),
     NEWS(PauseAction.NEWS, null),
     /** Not a screen: shuts the client down.  Handled before {@link #create} is consulted. */
@@ -89,9 +91,9 @@ public enum PauseShortcut {
             case QUIT:
                 return null;
             case SHOP:
-                return GtqtShortcuts.shop(mc);
+                return new GuiShop(mc.player);
             case NEWS:
-                return GtqtShortcuts.announcement(mc);
+                return new GuiAnnouncement();
             case SNOOPER:
             default:
                 return new GuiSnooper(parent, mc.gameSettings);

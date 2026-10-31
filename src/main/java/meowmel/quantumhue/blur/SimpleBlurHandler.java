@@ -1,6 +1,7 @@
 package meowmel.quantumhue.blur;
 
 import meowmel.quantumhue.QuantumHueConfig;
+import meowmel.quantumhue.page.PageScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.achievement.GuiStats;
@@ -55,6 +56,8 @@ public class SimpleBlurHandler {
         allowedGuis.add(GuiScreenAdvancements.class);
         allowedGuis.add(GuiShareToLan.class);
         allowedGuis.add(GuiStats.class);
+        // 商店 / 公告页是自绘整屏界面，和暂停菜单一样需要背景模糊
+        allowedGuis.add(PageScreen.class);
     }
 
     /**

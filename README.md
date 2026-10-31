@@ -22,12 +22,6 @@
 - **命令分支保护**：命令输入走原版逻辑，不受自定义 UI 影响
 - 聊天历史持久化（按世界/服务器分离存储）
 
-#### 📚 内置 Wiki 系统
-- Markdown 渲染引擎，支持表格、列表、内联资源
-- **LaTeX 公式渲染**（纹理缓存）
-- 多方块结构蓝图 3D 预览
-- `/wiki` 命令快速打开
-
 #### 📊 IGI 游戏内信息 HUD
 - JSON 全配置化布局，支持 25+ 种信息元素
 - FPS / TPS / 坐标 / 生物群系 / 光照 / 神秘时代 Vis/Flux 等
@@ -95,7 +89,7 @@
 |------|---------|
 | Thaumcraft (神秘时代) | Tooltip 要素渲染、IGI Vis/Flux 显示 |
 | The One Probe | TOP 面板自定义配色 |
-| GregTech | Tooltip 增强、多方块 Wiki 页面 |
+| GregTech | Tooltip 增强 |
 | AppleSkin | Tooltip 饱食度/饱和度预览 |
 
 ---

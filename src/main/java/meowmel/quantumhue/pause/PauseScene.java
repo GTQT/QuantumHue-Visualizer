@@ -834,7 +834,7 @@ public final class PauseScene {
     }
 
     /**
-     * The two corner plates — GTQT Core's market and announcement.
+     * The two corner plates — the market and the announcement.
      *
      * <p>They are deliberately a <b>different card family</b> from the navigation column: a wide
      * banner instead of a tall card, a gold two-pixel frame instead of a violet hairline, a header
@@ -842,66 +842,51 @@ public final class PauseScene {
      * shape the reference gives its news strip, and the point of it is hierarchy: these two are
      * places to go, not rows in a list.
      *
-     * <p>When GTQT Core is missing they are still drawn — the composition needs the two corners —
-     * but dimmed, with {@code NOT INSTALLED} where the provenance normally sits, and they never
-     * take a hover.
+     * <p>Both destinations ship with this mod, so there is no missing-plugin state to draw: the
+     * plates are always live and always take a hover.
      */
     private static void drawCornerCard(SplashPainter p, State s, PauseLayout.Slot slot, Box visual,
                                        Projector.Plane plane, float alpha, float hover, float press) {
-        boolean enabled = slot.entry.enabled;
-        float a = alpha * (enabled ? 1f : 0.62f);
-        if (!enabled) {
-            hover = 0f;
-        }
         float scale = s.layout.scale;
 
         cardQuad(slot, visual, BOARD);
         projectQuad(s, BOARD, QUAD, plane);
-        p.quads(QUAD, 1, VOID[0], VOID[1], VOID[2], (0.88f + 0.08f * hover) * a);
+        p.quads(QUAD, 1, VOID[0], VOID[1], VOID[2], (0.88f + 0.08f * hover) * alpha);
         if (hover > 0.02f) {
-            p.quads(QUAD, 1, GOLD[0], GOLD[1], GOLD[2], 0.07f * hover * a);
+            p.quads(QUAD, 1, GOLD[0], GOLD[1], GOLD[2], 0.07f * hover * alpha);
         }
-        frame(p, QUAD, GOLD, (enabled ? 0.75f : 0.45f) * (1f + hover) * a, lw(s, 2.2f));
+        frame(p, QUAD, GOLD, 0.75f * (1f + hover) * alpha, lw(s, 2.2f));
         if (hover > 0.05f) {
-            cornerTicks(p, s, QUAD, hover, a);
+            cornerTicks(p, s, QUAD, hover, alpha);
         }
 
         Box rail = new Box(visual.x + 14f, visual.bottom() - 12f, visual.w - 28f, 2f);
         layoutQuad(s.projector, rail, plane, QUAD);
-        p.quads(QUAD, 1, GOLD[0], GOLD[1], GOLD[2], 0.30f * a);
+        p.quads(QUAD, 1, GOLD[0], GOLD[1], GOLD[2], 0.30f * alpha);
 
         // the header tab, the one element that says what this plate is before the label is read
         Box tab = new Box(visual.x + 14f, visual.y - 16f, 124f, 26f);
         layoutQuad(s.projector, tab, plane, QUAD);
-        p.quads(QUAD, 1, VOID[0], VOID[1], VOID[2], 0.96f * a);
-        frame(p, QUAD, GOLD, 0.9f * a, lw(s, 1.3f));
+        p.quads(QUAD, 1, VOID[0], VOID[1], VOID[2], 0.96f * alpha);
+        frame(p, QUAD, GOLD, 0.9f * alpha, lw(s, 1.3f));
         project(s, tab.x + 9f, tab.y + 8f, plane, HELPER, 0);
         p.text(slot.order == 0 ? "MARKET" : "NEWS", HELPER[0], HELPER[1], 12f * scale / 9f,
-                GOLD[0], GOLD[1], GOLD[2], a);
+                GOLD[0], GOLD[1], GOLD[2], alpha);
 
         project(s, visual.x + 36f, visual.cy(), plane, HELPER, 0);
         icon(p, slot.entry.action, HELPER[0], HELPER[1], 38f * scale,
-                hover > 0.4f ? GOLD : TEXT, (enabled ? 0.9f : 0.55f) * a);
+                hover > 0.4f ? GOLD : TEXT, 0.9f * alpha);
 
-        String note = enabled ? "GTQT CORE" : "NOT INSTALLED";
-        float noteScale = 12f * scale / 9f;
-        float noteWidth = p.textWidth(note, noteScale) / scale;
-
-        // The label is centred in whatever room the icon and the provenance leave behind, so one
-        // routine reads correctly on the narrow market banner and the wide announcement one.
+        // The label is centred in whatever room the icon leaves behind, so one routine reads
+        // correctly on the narrow market banner and the wide announcement one.
         float from = visual.x + 72f;
-        float to = visual.right() - 20f - noteWidth;
+        float to = visual.right() - 20f;
         float labelScale = Math.min(28f, visual.h * 0.30f);
         float labelWidth = p.textWidth(slot.entry.label, labelScale * scale / 9f) / scale;
         float labelX = from + Math.max(0f, (to - from - labelWidth) * 0.5f);
         project(s, labelX, visual.cy() - labelScale * 0.5f * scale, plane, HELPER, 0);
         textFit(p, s, slot.entry.label, HELPER[0], HELPER[1], Math.max(80f, to - from), labelScale,
-                TEXT, a);
-
-        project(s, visual.right() - 20f - noteWidth, visual.cy() - 6f * scale, plane, HELPER, 0);
-        p.text(note, HELPER[0], HELPER[1], noteScale,
-                enabled ? TEXT_DIM[0] : GOLD[0], enabled ? TEXT_DIM[1] : GOLD[1],
-                enabled ? TEXT_DIM[2] : GOLD[2], (enabled ? 0.8f : 0.9f) * a);
+                TEXT, alpha);
     }
     private static void drawPower(SplashPainter p, State s, PauseLayout.Slot slot, Box visual,
                                   Projector.Plane plane, float alpha, float hover, float press) {
