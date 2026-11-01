@@ -75,6 +75,9 @@ QuantumHuePageApi.addShopCategory("building", "建筑方块", "minecraft:stone")
 QuantumHuePageApi.addShopItem("building", "minecraft:stone", 0, "", 64, 16, -1);
 // 别的模组也能往同一个 building 分类里补货，不用管谁先加载
 QuantumHuePageApi.addShopItem("building", "minecraft:planks", 0, "", 64, 16, -1);
+// 嫌 item+meta 麻烦？直接丢一个 ItemStack：注册名/meta/每份数量都从堆栈里取
+ItemStack torch = new ItemStack(Blocks.TORCH, 64);
+QuantumHuePageApi.addShopItem("utility", torch, 8, -1);
 // 系统订单池：收购池（从玩家手里回收）与出售池（向玩家投放）
 QuantumHuePageApi.addMarketBuyPool(new ShopConfig.PoolEntry("minecraft:cobblestone", 0, 16, 64, 1));
 QuantumHuePageApi.addMarketSellPool(new ShopConfig.PoolEntry("minecraft:torch", 0, 16, 64, 1));

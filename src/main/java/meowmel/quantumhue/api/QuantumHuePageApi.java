@@ -3,6 +3,8 @@ package meowmel.quantumhue.api;
 import meowmel.quantumhue.config.PageConfigs;
 import meowmel.quantumhue.market.ShopConfig;
 import meowmel.quantumhue.notice.VersionConfig;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 
 /**
  * QuantumHue 页面系统的对外开放 API：整合包 / 前置模组用它注册商店内容与整合包版本。
@@ -74,6 +76,31 @@ public final class QuantumHuePageApi {
      */
     public static void addShopItem(String categoryId, String item, int meta, String name, int count, long price, int stock) {
         PageConfigs.addItem(categoryId, new ShopConfig.Item(item, meta, name, count, price, stock));
+    }
+
+    /**
+     * 直接用 {@link ItemStack} 往指定分类添加一件商品：注册名、meta、每份数量都从堆栈里取，
+     * 显示名留空（用物品自身名字）。加载阶段同样只记录，游戏加载完成时统一构建。
+     *
+     * <p>调用时物品需已完成注册（在 {@code init} 或更晚阶段调用即可）；若要在 {@code preInit}
+     * 就加入尚未注册的物品，请改用上面的 item+meta 字符串重载。
+     */
+    public static void addShopItem(String categoryId, ItemStack stack, long price, int stock) {
+        addShopItem(categoryId, stack, "", price, stock);
+    }
+
+    /** 同上，额外指定显示名覆盖（留空用物品自身名字）。 */
+    public static void addShopItem(String categoryId, ItemStack stack, String displayName, long price, int stock) {
+        if (stack == null || stack.getItem() == null) {
+            return;
+        }
+        ResourceLocation key = stack.getItem().getRegistryName();
+        if (key == null) {
+            return; // 物品尚未注册：与字符串重载二选一，避免落进一条空 item
+        }
+        ShopConfig.Item item = new ShopConfig.Item(key.toString(), stack.getItemDamage(),
+                displayName == null ? "" : displayName, stack.getCount(), price, stock);
+        PageConfigs.addItem(categoryId, item);
     }
 
     /** 添加一条系统收购订单池条目（系统从玩家手里回收的物品）：加载阶段只记录。 */
