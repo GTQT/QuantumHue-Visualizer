@@ -93,7 +93,7 @@ public final class PageConfigs {
     /**
      * 注册整合包版本号：只改版本号，{@code null} 按空串处理（表示版本未知）。
      *
-     * <p>装了 GTQTCore 时当前版本以它的 {@code VERSION} 为准，这里注册的值只是兜底。
+     * <p>这是整合包版本的唯一写入来路；读取统一走 {@link #version()}，不再反射探测其它模组。
      */
     public static synchronized void setPackVersion(String versionString) {
         VersionConfig current = new VersionConfig();

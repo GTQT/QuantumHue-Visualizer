@@ -147,7 +147,7 @@ public class ShopEvents {
         }
         // 没配整合包版本就不存在“新旧”，发一句“已是最新版”反而误导
         if (!VersionState.hasCurrentVersion()) {
-            QuantumHue.LOGGER.debug("[Notice] 取不到整合包版本（GTQTCore 与 API 注册配置都没有），跳过登录版本提示");
+            QuantumHue.LOGGER.debug("[Notice] 取不到整合包版本（注册的版本配置为空），跳过登录版本提示");
             return;
         }
         VersionState.whenSettled(() -> {

@@ -49,7 +49,7 @@ remote/
 未注册时的默认状态：
 
 - 商店是**空目录**（没有分类、没有订单池，系统不投放订单）；
-- 整合包版本兜底为内置的 `1.0.0`（装了 `GTQTCore` 时仍以它的 `VERSION` 为准）。
+- 整合包版本未注册时为内置的 `1.0.0`；`GTQTCore` 会主动把自己的 `VERSION` 经 API 注册进来。
 
 公告的远程地址、超时、镜像与本机代理端口**只有一份**：`config/quantumhue.cfg` 的 `Notice` 段；
 邮件参数只内置在 `MailConfig` 里。两者都没有 `notice.json` / `mail.json`，旧版本留下的
@@ -96,10 +96,10 @@ QuantumHuePageApi.registerShopConfig(shop);
 QuantumHuePageApi.registerPackVersion("1.9.0");   // 传空串表示版本未知
 ```
 
-- **它只是兜底**：装了 `GTQTCore` 时，当前版本直接反射读取 `meowmel.gtqtcore.GTQTCore.VERSION`，注册值被忽略；只有没装核心模组时才用这里注册的值；
+- **只有一个来源**：这里经 API 注册的值。`GTQTCore` 不再被反射读取，而是主动调用 `registerPackVersion(meowmel.gtqtcore.GTQTCore.VERSION)` 把自己的版本注册进来；
 - 只用于「当前版本」的显示与比较：公告页顶部、更新日志页头部、登录时的更新提示；
 - 这里填的是**整合包**版本，不是模组 jar 的版本；未注册时兜底为内置的 `1.0.0`，也不会回退到模组版本；
-- 版本为空串（显式注册了空值且没装 `GTQTCore`）时：页面显示「版本 未配置」，不做新旧比较，登录也不发更新提示；
+- 版本为空串（显式注册了空值）时：页面显示「版本 未配置」，不做新旧比较，登录也不发更新提示；
 - 改完需要重新预取才会按新版本过滤更新日志：`/quantumhue refresh`。
 
 ### theme.json

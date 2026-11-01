@@ -170,7 +170,7 @@ public final class PageBootstrap {
             entries = new ArrayList<>();
         }
 
-        // 当前版本 = 整合包版本：装了 GTQTCore 取它的 VERSION，否则取经 API 注册的版本配置；都没有就不过滤
+        // 当前版本 = 整合包版本：取经 API 注册的版本配置（未注册时为内置默认）；为空就不过滤
         String local = PackVersion.current();
         List<RemoteIndex.Entry> candidates = new ArrayList<>();
         String highest = "";

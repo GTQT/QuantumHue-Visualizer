@@ -11,8 +11,8 @@ import meowmel.quantumhue.notice.VersionConfig;
  * 文件，运营内容完全从这里进。建议在各自的 {@code FMLPreInitializationEvent}（或更早）里
  * 整份注册；注册是整棵替换，后注册的覆盖先注册的。
  *
- * <p>商店默认是空目录（没有分类、没有订单池）；版本未注册时为内置的 {@code 1.0.0}，
- * 且装了 GTQTCore 时当前版本以它的 {@code VERSION} 为准，这里的注册值只是兜底。
+ * <p>商店默认是空目录（没有分类、没有订单池）；版本只有一个来源，就是这里注册的值（未注册时为内置的 {@code 1.0.0}）；
+ * 核心模组（如 GTQTCore）会主动把自己的 {@code VERSION} 经 {@link #registerPackVersion(String)} 注册进来。
  *
  * <p>示例：
  * <pre>{@code
@@ -58,7 +58,7 @@ public final class QuantumHuePageApi {
         PageConfigs.setPackVersion(config == null ? VersionConfig.DEFAULT_VERSION : config.resolved());
     }
 
-    /** 当前生效的整合包版本配置（GTQTCore 存在与否不影响这里读到的是兜底值）。 */
+    /** 当前生效的整合包版本配置（完全来自 {@link #registerPackVersion(String)} 的注册值，未注册时为内置默认）。 */
     public static VersionConfig getVersionConfig() {
         return PageConfigs.version();
     }

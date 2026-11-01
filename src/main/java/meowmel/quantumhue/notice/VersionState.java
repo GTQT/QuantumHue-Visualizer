@@ -50,8 +50,8 @@ public final class VersionState {
     /**
      * 公告页与聊天栏使用的“当前版本”，即整合包版本。
      *
-     * <p>装了 GTQTCore 时取它的 {@code VERSION} 字段，没装才取经 API 注册的版本配置（内置兜底 {@code 1.0.0}）；
-     * 两处都没有就是空串，不回退到模组版本。
+     * <p>整合包版本取经 API 注册的配置（{@link PackVersion#current()}，未注册时为内置默认 {@code 1.0.0}），
+     * 不再反射读 GTQTCore；注册为空串时就是空串，不回退到模组版本。
      */
     public static String currentVersion() {
         return PackVersion.current();
