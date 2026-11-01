@@ -1,59 +1,40 @@
 package meowmel.quantumhue.config;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.meowmel.quantumhue.Tags;
 import meowmel.quantumhue.mail.MailConfig;
 import meowmel.quantumhue.mail.MailService;
 import meowmel.quantumhue.market.ShopConfig;
-import meowmel.quantumhue.notice.NoticeConfig;
 import meowmel.quantumhue.notice.RemoteTextFetcher;
 import meowmel.quantumhue.notice.VersionConfig;
 import meowmel.quantumhue.notice.VersionState;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 /**
- * {@code config/quantumhue/*.json} 的加载入口。
+ * 商店与整合包版本的内存配置仓库。
  *
- * <p>商店和公告的运营内容都从这里读：商品分类、每类商品、系统订单池、公告页签、远程地址。
- * 首次运行会把带默认值的完整文件写到磁盘上，玩家照着改即可；之后的读取不会覆盖
- * 玩家文件（读失败也只是回退到内存默认值并打日志）。
+ * <p>配置内容不再来自本地 json 文件：商店运营参数与整合包版本号完全由外部通过
+ * {@code meowmel.quantumhue.api.QuantumHuePageApi} 对外开放 API 注册进来
+ * （入口在调用 {@link #init(File)} 之前或之后注册都可以，取值永远是懒读最新）。
+ * 未注册时商店为空目录；唯一保留的代码默认值是 {@link VersionConfig} 的版本号 {@code 1.0.0}。
  *
- * <p>{@code version.json} 只存当前<b>整合包</b>版本号，与模组自身的版本无关，也没有代码默认值。
+ * <p>注册进来的商店配置会做一轮结构校验：补齐缺失的分类/商品 id、把数值夹到合法区间，
+ * 因此 API 侧只需要填业务内容，不必担心越界值。
  *
- * <p>公告地址、页签、邮件目录这些运营参数全部内置在 jar 里（{@link NoticeConfig} / {@link MailConfig}），
- * 不读 {@code notice.json} / {@code mail.json}，所以不会被玩家改本地文件影响。
+ * <p>公告的远程地址、超时、镜像、本机代理端口不在这里，只有一份：{@code quantumhue.cfg} 的
+ * {@code Notice} 段（{@code QuantumHueConfig.notice}），使用方直接读它；
+ * 页签固定为更新日志/公告/社群服务/邮件，不可配置。邮件参数仍内置在 {@link MailConfig}。
  *
- * <p>两侧都会加载：客户端用公告与界面文案，服务端用商品目录、订单池与邮件端点。
+ * <p>两侧都会加载：客户端用货币名等展示参数，服务端用商品目录、订单池与邮件端点。
  */
 public final class PageConfigs {
 
-    private static final Logger LOGGER = LogManager.getLogger("QuantumHue-Pages");
-
-    private static final Gson GSON = new GsonBuilder()
-            .setPrettyPrinting()
-            .disableHtmlEscaping()
-            .create();
-
     private static volatile File directory;
     private static volatile ShopConfig shop = new ShopConfig();
-    /** 内置参数：不读磁盘，恒为 {@link NoticeConfig} 里的默认值。 */
-    private static volatile NoticeConfig notice = new NoticeConfig();
     private static volatile VersionConfig version = new VersionConfig();
     /** 内置参数：不读磁盘，恒为 {@link MailConfig} 里的默认值。 */
     private static volatile MailConfig mail = new MailConfig();
@@ -62,23 +43,23 @@ public final class PageConfigs {
 
     private PageConfigs() {}
 
-    /** 由 {@code FMLPreInitializationEvent} 调用；重复调用只会重新加载。 */
+    /**
+     * 由 {@code FMLPreInitializationEvent} 调用。
+     *
+     * <p>不再读取任何 json，这里只记录配置目录位置（供 {@code theme.json} 等客户端文件定位）。
+     */
     public static void init(File configDir) {
         if (configDir != null) {
             directory = new File(configDir, Tags.MOD_ID);
         }
-        load();
     }
 
+    /** 当前生效的商店配置；外部未注册时为空目录。 */
     public static ShopConfig shop() {
         return shop;
     }
 
-    public static NoticeConfig notice() {
-        return notice;
-    }
-
-    /** 当前整合包版本（{@code version.json}）。 */
+    /** 当前整合包版本；外部未注册时为内置默认 {@code 1.0.0}。 */
     public static VersionConfig version() {
         return version;
     }
@@ -97,93 +78,38 @@ public final class PageConfigs {
         return directory;
     }
 
+    // ================================================================ API 注册入口
+
     /**
-     * 把带默认值（并已补齐分类/商品 id）的配置写到磁盘。
+     * 注册商店配置：整份替换当前生效的配置，{@code null} 视为回退到空目录。
      *
-     * <p>正式流程由 {@link #init(File)} 在文件缺失时自动调用；这里公开出来是为了在不开游戏的情况下
-     * 也能生成一份可读的模板（开发工具 {@code tools} 与文档使用）。
+     * <p>供 {@code meowmel.quantumhue.api.QuantumHuePageApi} 调用；注册时会做一轮结构校验。
      */
-    public static void writeDefaultFiles(File configDir) {
-        if (configDir == null) {
-            return;
-        }
-        File dir = new File(configDir, Tags.MOD_ID);
-        if (!dir.exists() && !dir.mkdirs()) {
-            LOGGER.warn("[Pages] 无法创建配置目录 {}", dir.getAbsolutePath());
-            return;
-        }
-        ShopConfig shopDefaults = new ShopConfig();
-        VersionConfig versionDefaults = new VersionConfig();
-        normalize(shopDefaults);
-        normalize(versionDefaults);
-        write(new File(dir, "shop.json"), shopDefaults);
-        write(new File(dir, "version.json"), versionDefaults);
+    public static synchronized void setShop(ShopConfig config) {
+        shop = config == null ? new ShopConfig() : config;
+        normalize(shop);
     }
 
-    /** 重新读盘；同时丢弃远程响应与版本视图，玩家改完配置后重新预取即可生效。 */
+    /**
+     * 注册整合包版本号：只改版本号，{@code null} 按空串处理（表示版本未知）。
+     *
+     * <p>装了 GTQTCore 时当前版本以它的 {@code VERSION} 为准，这里注册的值只是兜底。
+     */
+    public static synchronized void setPackVersion(String versionString) {
+        VersionConfig current = new VersionConfig();
+        current.version = versionString;
+        normalize(current);
+        version = current;
+    }
+
+    // ================================================================ 刷新
+
+    /** 丢弃远程响应与版本视图；配置已不走磁盘，这里不再重读任何文件。 */
     public static synchronized void reload() {
         RemoteTextFetcher.invalidateAll();
         VersionState.reset();
         MailService.invalidate();
-        load();
         reloadEpoch++;
-    }
-
-    /**
-     * 只重读磁盘文件，不清远程缓存。
-     *
-     * <p>界面每次打开都会调用它：玩家改完 {@code shop.json} 再打开商店就能看到新价格，
-     * 而不必执行命令；同时不会把已经拉到的远程公告清掉。
-     */
-    public static synchronized void reloadLocal() {
-        load();
-    }
-
-    private static synchronized void load() {
-        // 公告与邮件的运营参数内置在代码里，不读盘；这里只加载玩家可编辑的两份配置
-        ShopConfig loadedShop = loadFile("shop.json", ShopConfig.class, new ShopConfig());
-        VersionConfig loadedVersion = loadFile("version.json", VersionConfig.class, new VersionConfig());
-        normalize(loadedShop);
-        normalize(loadedVersion);
-        shop = loadedShop;
-        version = loadedVersion;
-    }
-
-    private static <T> T loadFile(String fileName, Class<T> type, T defaults) {
-        File dir = directory;
-        if (dir == null) {
-            return defaults;
-        }
-        File file = new File(dir, fileName);
-        try {
-            if (!file.exists()) {
-                if (!dir.exists() && !dir.mkdirs()) {
-                    LOGGER.warn("[Pages] 无法创建配置目录 {}", dir.getAbsolutePath());
-                }
-                write(file, defaults);
-                LOGGER.info("[Pages] 已生成默认配置 {}", file.getAbsolutePath());
-                return defaults;
-            }
-            try (Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
-                T parsed = GSON.fromJson(reader, type);
-                if (parsed == null) {
-                    LOGGER.warn("[Pages] {} 内容为空，使用默认值", file.getName());
-                    return defaults;
-                }
-                return parsed;
-            }
-        } catch (Exception failure) {
-            LOGGER.error("[Pages] 读取 {} 失败，使用默认值", file.getName(), failure);
-            return defaults;
-        }
-    }
-
-    private static void write(File file, Object value) {
-        try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
-            GSON.toJson(value, writer);
-        } catch (Exception failure) {
-            LOGGER.error("[Pages] 写入默认配置 {} 失败", file.getName(), failure);
-        }
     }
 
     // ================================================================ 校验
@@ -191,9 +117,6 @@ public final class PageConfigs {
     private static void normalize(ShopConfig config) {
         if (config == null) {
             return;
-        }
-        if (config.currencyName == null || config.currencyName.trim().isEmpty()) {
-            config.currencyName = "货币";
         }
         if (config.market == null) {
             config.market = new ShopConfig.Market();
@@ -274,7 +197,7 @@ public final class PageConfigs {
         return result;
     }
 
-    /** 整合包版本只做去空白：没有代码默认值，留空就是“版本未知”。 */
+    /** 整合包版本只做去空白：内置默认 1.0.0，注册成空串就是“版本未知”。 */
     private static void normalize(VersionConfig config) {
         if (config == null) {
             return;

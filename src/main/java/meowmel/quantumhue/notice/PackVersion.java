@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger;
  * 「当前版本」（整合包版本）的解析。
  *
  * <p>优先读 {@code meowmel.gtqtcore.GTQTCore.VERSION}：整合包版本由核心模组发布，装了 GTQTCore 就以它为准。
- * 没装 GTQTCore（或取不到字段）时才回退到 {@code config/quantumhue/version.json}。
+ * 没装 GTQTCore（或取不到字段）时才回退到经 API 注册的版本配置（{@link PageConfigs#version()}）。
  *
  * <p>用反射而不是编译期依赖：GTQTCore 是可选模组，把它的类写进依赖会让本模组在没装它时直接
  * {@code NoClassDefFoundError}。
@@ -27,7 +27,7 @@ public final class PackVersion {
 
     private PackVersion() {}
 
-    /** 当前整合包版本：核心模组优先，未安装时读 {@code version.json}；两处都没有则返回空串。 */
+    /** 当前整合包版本：核心模组优先，未安装时取经 API 注册的版本配置（内置兜底 {@code 1.0.0}）；两处都没有则返回空串。 */
     public static String current() {
         String core = coreVersion();
         if (!core.isEmpty()) {
@@ -54,7 +54,7 @@ public final class PackVersion {
                 coreVersion = readCoreVersion();
                 probed = true;
                 if (coreVersion.isEmpty()) {
-                    LOGGER.debug("[Notice] 未找到 GTQTCore.VERSION，当前版本回退到 version.json");
+                    LOGGER.debug("[Notice] 未找到 GTQTCore.VERSION，当前版本回退到 API 注册的版本配置");
                 } else {
                     LOGGER.info("[Notice] 当前整合包版本取自 GTQTCore：{}", coreVersion);
                 }

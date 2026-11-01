@@ -623,4 +623,78 @@ public class QuantumHueConfig {
         })
         public boolean enabled = true;
     }
+
+    /**
+     * 公告的远程拉取参数，这里是唯一一份（没有另外的内置默认值类）
+     *
+     * <p>页签不在这里配置：公告页固定为更新日志 / 公告 / 社群服务 / 邮件四个。
+     */
+    @Config.Name("Notice")
+    public static Notice notice = new Notice();
+
+    public static class Notice {
+
+        @Config.Name("Check Version On Login")
+        @Config.Comment({
+                "登录时检查远程版本",
+                "只影响聊天栏提示，不弹窗"
+        })
+        public boolean checkVersionOnLogin = true;
+
+        @Config.Name("Show On Login")
+        @Config.Comment({
+                "登录时自动打开公告页"
+        })
+        public boolean showOnLogin = true;
+
+        @Config.Name("Version Index Url")
+        @Config.Comment({
+                "版本更新公告索引（纯 JSON），索引列出目录内的版本 JSON 文件名",
+                "模组先比较文件名里的版本号，只下载比本地新的文件",
+                "留空表示不拉取该项"
+        })
+        public String versionIndexUrl =
+                "https://raw.githubusercontent.com/GTQT/GT-QuantumTransition/main/remote/version/index.json";
+
+        @Config.Name("Announcement Index Url")
+        @Config.Comment({
+                "公告索引（纯 JSON），索引列出公告 JSON 文件名",
+                "留空表示不拉取"
+        })
+        public String announcementIndexUrl =
+                "https://raw.githubusercontent.com/GTQT/GT-QuantumTransition/main/remote/announcement/index.json";
+
+        @Config.Name("Community Url")
+        @Config.Comment({
+                "社群服务远程文本地址",
+                "留空表示不拉取"
+        })
+        public String communityUrl =
+                "https://raw.githubusercontent.com/GTQT/GT-QuantumTransition/main/remote/community.txt";
+
+        @Config.Name("Mirrors")
+        @Config.Comment({
+                "直连失败后的镜像模板，按顺序逐个尝试；空列表表示不启用",
+                "模板里的 {url} 会替换成原始地址，没有占位符时按前缀拼接",
+                "例如: https://ghfast.top/{url}",
+                "镜像只是 GitHub 直连失败时的备选，直连成功时不会走它"
+        })
+        public String[] mirrors = new String[0];
+
+        @Config.Name("Local Proxy Port")
+        @Config.Comment({
+                "直连失败后尝试的本机代理端口（127.0.0.1），只允许填一个；填 0 表示不启用",
+                "常见取值: Clash 混合端口 7890、 Clash Verge 7897、 v2rayN 10809",
+                "端口没在监听时会自动跳过"
+        })
+        @Config.RangeInt(min = 0, max = 65535)
+        public int localProxyPort = 7890;
+
+        @Config.Name("Timeout Ms")
+        @Config.Comment({
+                "单次 HTTP 请求超时（毫秒）"
+        })
+        @Config.RangeInt(min = 1000, max = 60000)
+        public int timeoutMs = 10000;
+    }
 }

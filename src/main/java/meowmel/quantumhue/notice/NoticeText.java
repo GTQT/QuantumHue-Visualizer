@@ -40,12 +40,4 @@ public final class NoticeText {
         }
         return result.isEmpty() ? Collections.singletonList("§7[暂无内容]") : result;
     }
-
-    /** 页签内容来源地址：只取页签自己的 url。 */
-    public static String remoteUrl(NoticeConfig.Tab tab) {
-        if (tab != null && tab.url != null) {
-            return tab.url.trim();
-        }
-        return "";
-    }
 }

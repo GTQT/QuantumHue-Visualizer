@@ -3,7 +3,6 @@ package meowmel.quantumhue.page;
 import meowmel.quantumhue.config.PageBootstrap;
 import meowmel.quantumhue.config.PageConfigs;
 import meowmel.quantumhue.notice.CommunityStore;
-import meowmel.quantumhue.notice.NoticeConfig;
 import meowmel.quantumhue.notice.UpdateFeed;
 import meowmel.quantumhue.notice.UpdateFeedStore;
 import meowmel.quantumhue.notice.VersionState;
@@ -16,13 +15,12 @@ import org.lwjgl.input.Keyboard;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * 更新与公告页。
  *
- * <p>页签、文案、版本号和远程地址全部内置在 {@code NoticeConfig} 里（不读配置文件）；页签内容有三种：
- * 版本对比（{@code update}）、远程文本（{@code remote}）、本地文本（{@code text}）。
+ * <p>页签固定为四个：更新日志、公告、社群服务、邮件（邮件受内置的邮件总开关控制）；
+ * 没有任何可配置页签，远程地址只决定拉不拉数据。
  *
  * <p>任何网络请求都不在页面打开时发生：内容来自启动预取缓存，手动刷新由命令触发。
  */
@@ -53,7 +51,6 @@ public class GuiAnnouncement extends PageScreen {
     @Override
     protected void initPage() {
         // 页面只读内存数据；网络预取在加载阶段由 PageBootstrap 完成
-        PageConfigs.reloadLocal();
         lastBootstrapRevision = PageBootstrap.revision();
         rebuildTabs();
         loadCurrent();
@@ -61,21 +58,13 @@ public class GuiAnnouncement extends PageScreen {
 
     private void rebuildTabs() {
         tabs.clear();
-        NoticeConfig config = PageConfigs.notice();
-        for (NoticeConfig.Tab tab : config.tabs) {
-            tabs.add(new TabView(tab));
-        }
-        // 更新日志是内置页签，不需要任何配置文件也能看到
-        if (!hasTabType("update")) {
-            tabs.add(0, new TabView(new NoticeConfig.Tab("update", "更新日志", "update", "")));
-        }
-        // 公告是内置页签：每条公告对应远程目录里的一个 JSON
-        if (!hasTabType("announcements")) {
-            tabs.add(new TabView(new NoticeConfig.Tab("announcements", "公告", "announcements", "")));
-        }
-        // 邮件是内置页签：正文与奖励只来自服务端远程数据，这里不放任何可配置内容
-        if (PageConfigs.mail().enabled && !hasTabType("mail")) {
-            tabs.add(new TabView(new NoticeConfig.Tab("mail", "邮件", "mail", "")));
+        // 页签固定：更新日志 / 公告 / 社群服务 / 邮件
+        tabs.add(new TabView("update", "更新日志", "update"));
+        tabs.add(new TabView("announcements", "公告", "announcements"));
+        tabs.add(new TabView("community", "社群服务", "community"));
+        // 邮件正文与奖励只来自服务端远程数据，只有内置总开关打开时才显示
+        if (PageConfigs.mail().enabled) {
+            tabs.add(new TabView("mail", "邮件", "mail"));
         }
         currentIndex = 0;
         for (int i = 0; i < tabs.size(); i++) {
@@ -85,15 +74,6 @@ public class GuiAnnouncement extends PageScreen {
             }
         }
         currentTabId = tabs.get(currentIndex).id;
-    }
-
-    private boolean hasTabType(String type) {
-        for (TabView tab : tabs) {
-            if (type.equals(tab.type)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private boolean isAnnouncementsTab() {
@@ -162,13 +142,6 @@ public class GuiAnnouncement extends PageScreen {
         }
         if ("update".equals(tab.type)) {
             loadUpdateTab();
-            return;
-        }
-        // 所有正文都来自远程；本地 tab.lines 不再作为内容显示
-        if ("text".equals(tab.type) || "remote".equals(tab.type)) {
-            contentLines = new ArrayList<>();
-            contentLines.add("§7该页签没有远程内容。");
-            recalculateScroll();
         }
     }
 
@@ -190,7 +163,7 @@ public class GuiAnnouncement extends PageScreen {
 
         if (current.isEmpty()) {
             contentLines.add(String.format("§e[更新检查]§r 远程最新 §a%1$s", latest));
-            contentLines.add("§7当前版本未知：装上 §bGTQTCore§7，或在 §bconfig/quantumhue/version.json§7 填写整合包版本号。");
+            contentLines.add("§7当前版本未知：装上 §bGTQTCore§7，或让整合包通过 §bQuantumHuePageApi.registerPackVersion§7 填写整合包版本号。");
         } else {
             contentLines.add(String.format("§e[更新检查]§r 远程最新 §a%1$s§r | 当前 §e%2$s",
                     latest, current));
@@ -420,16 +393,16 @@ public class GuiAnnouncement extends PageScreen {
         }
     }
 
-    /** 页签的运行时视图：把配置项与遍历顺序解耦。 */
+    /** 页签的运行时视图：四个页签都是固定内容，只需 id / 标签 / 类型。 */
     private static final class TabView {
         final String id;
         final String label;
         final String type;
 
-        TabView(NoticeConfig.Tab tab) {
-            this.id = tab.id == null ? "" : tab.id.trim().toLowerCase(Locale.ROOT);
-            this.label = tab.label == null ? "公告" : tab.label;
-            this.type = tab.type == null ? "text" : tab.type;
+        TabView(String id, String label, String type) {
+            this.id = id;
+            this.label = label;
+            this.type = type;
         }
     }
 }

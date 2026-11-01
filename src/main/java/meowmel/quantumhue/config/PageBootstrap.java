@@ -1,30 +1,15 @@
 package meowmel.quantumhue.config;
 
 import com.google.gson.Gson;
-import meowmel.quantumhue.notice.Announcement;
-import meowmel.quantumhue.notice.CommunityStore;
-import meowmel.quantumhue.notice.NoticeConfig;
-import meowmel.quantumhue.notice.NoticeText;
-import meowmel.quantumhue.notice.PackVersion;
-import meowmel.quantumhue.notice.RemoteIndex;
-import meowmel.quantumhue.notice.RemoteTextFetcher;
-import meowmel.quantumhue.notice.UpdateFeed;
-import meowmel.quantumhue.notice.UpdateFeedStore;
-import meowmel.quantumhue.notice.VersionAnnouncement;
-import meowmel.quantumhue.notice.VersionUtil;
+import meowmel.quantumhue.QuantumHueConfig;
+import meowmel.quantumhue.notice.*;
 import meowmel.quantumhue.notice.client.AnnouncementStore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -40,8 +25,6 @@ public final class PageBootstrap {
 
     private static final Logger LOGGER = LogManager.getLogger("QuantumHue-Bootstrap");
     private static final Gson GSON = new Gson();
-    /** 单次请求超时；预取只尝试一次，失败就交给手动刷新，不再重试。 */
-    private static final int TIMEOUT_MS = 10_000;
     /**
      * 一次预取的总时间上限。
      *
@@ -53,7 +36,9 @@ public final class PageBootstrap {
     private static final int MAX_VERSION_FILES = 20;
     private static final int MAX_ANNOUNCEMENTS = 100;
 
-    /** 三个数据源与各文件之间并行拉取，避免先起跑的版本目录把总预算吃干。 */
+    /**
+     * 三个数据源与各文件之间并行拉取，避免先起跑的版本目录把总预算吃干。
+     */
     private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(8, runnable -> {
         Thread thread = new Thread(runnable, "QuantumHue-PageBootstrap");
         thread.setDaemon(true);
@@ -65,9 +50,12 @@ public final class PageBootstrap {
     private static final AtomicBoolean PENDING = new AtomicBoolean();
     private static volatile int revision;
 
-    private PageBootstrap() {}
+    private PageBootstrap() {
+    }
 
-    /** 游戏加载时调用一次；重复调用不会重复启动。 */
+    /**
+     * 游戏加载时调用一次；重复调用不会重复启动。
+     */
     public static void startAtLoad() {
         if (!STARTED.compareAndSet(false, true)) {
             return;
@@ -75,12 +63,16 @@ public final class PageBootstrap {
         launch();
     }
 
-    /** 手动刷新：后台重新预取，完成后 {@link #revision()} 自增。 */
+    /**
+     * 手动刷新：后台重新预取，完成后 {@link #revision()} 自增。
+     */
     public static void refreshAsync() {
         launch();
     }
 
-    /** 数据版本号；界面用它判断是否需要重绘。 */
+    /**
+     * 数据版本号；界面用它判断是否需要重绘。
+     */
     public static int revision() {
         return revision;
     }
@@ -149,7 +141,9 @@ public final class PageBootstrap {
         }
     }
 
-    /** 并行跑一轮三个来源；只等到本轮剩余预算。 */
+    /**
+     * 并行跑一轮三个来源；只等到本轮剩余预算。
+     */
     private static CompletableFuture<Boolean> submit(Callable<Boolean> task) {
         return CompletableFuture.supplyAsync(() -> {
             try {
@@ -164,12 +158,11 @@ public final class PageBootstrap {
     // ================================================================ 版本更新公告
 
     private static boolean fetchUpdate(long deadline) {
-        NoticeConfig config = PageConfigs.notice();
-        String indexUrl = trim(config.remote.versionIndexUrl);
+        String indexUrl = trim(QuantumHueConfig.notice.versionIndexUrl);
         if (indexUrl.isEmpty()) {
             return true;
         }
-        List<RemoteIndex.Entry> entries = RemoteIndex.list(indexUrl, TIMEOUT_MS);
+        List<RemoteIndex.Entry> entries = RemoteIndex.list(indexUrl, timeoutMs());
         boolean indexOk = entries != null;
         if (entries == null) {
             // 索引临时不可用时仍然直接探测“当前版本.json”，避免整页空白
@@ -177,7 +170,7 @@ public final class PageBootstrap {
             entries = new ArrayList<>();
         }
 
-        // 当前版本 = 整合包版本：装了 GTQTCore 取它的 VERSION，否则读 version.json；都没有就不过滤
+        // 当前版本 = 整合包版本：装了 GTQTCore 取它的 VERSION，否则取经 API 注册的版本配置；都没有就不过滤
         String local = PackVersion.current();
         List<RemoteIndex.Entry> candidates = new ArrayList<>();
         String highest = "";
@@ -294,7 +287,9 @@ public final class PageBootstrap {
         return complete || !logs.isEmpty();
     }
 
-    /** 索引地址同目录下的文件地址，例如 .../version/index.json + 1.9.0.json。 */
+    /**
+     * 索引地址同目录下的文件地址，例如 .../version/index.json + 1.9.0.json。
+     */
     private static String sibling(String indexUrl, String fileName) {
         try {
             return new java.net.URL(new java.net.URL(indexUrl), fileName).toString();
@@ -306,8 +301,7 @@ public final class PageBootstrap {
     // ================================================================ 社群服务
 
     private static boolean fetchCommunity(long deadline) {
-        NoticeConfig config = PageConfigs.notice();
-        String url = trim(config.remote.communityUrl);
+        String url = trim(QuantumHueConfig.notice.communityUrl);
         if (url.isEmpty()) {
             return true;
         }
@@ -322,12 +316,11 @@ public final class PageBootstrap {
     // ================================================================ 公告
 
     private static boolean fetchAnnouncements(long deadline) {
-        NoticeConfig config = PageConfigs.notice();
-        String indexUrl = trim(config.remote.announcementIndexUrl);
+        String indexUrl = trim(QuantumHueConfig.notice.announcementIndexUrl);
         if (indexUrl.isEmpty()) {
             return true;
         }
-        List<RemoteIndex.Entry> entries = RemoteIndex.list(indexUrl, TIMEOUT_MS);
+        List<RemoteIndex.Entry> entries = RemoteIndex.list(indexUrl, timeoutMs());
         if (entries == null) {
             return false;
         }
@@ -372,11 +365,18 @@ public final class PageBootstrap {
         if (System.currentTimeMillis() > deadline) {
             return null;
         }
-        String raw = RemoteTextFetcher.fetchFreshSync(url.trim(), TIMEOUT_MS);
+        String raw = RemoteTextFetcher.fetchFreshSync(url.trim(), timeoutMs());
         if (raw == null) {
             LOGGER.debug("[Pages] 预取失败: {}", url);
         }
         return raw;
+    }
+
+    /**
+     * 单次请求超时：只认 {@code quantumhue.cfg} 的 {@code Notice.timeoutMs}。
+     */
+    private static int timeoutMs() {
+        return QuantumHueConfig.notice.timeoutMs;
     }
 
     private static String trim(String value) {

@@ -1,21 +1,30 @@
 package meowmel.quantumhue.notice;
 
+import meowmel.quantumhue.config.PageConfigs;
+
 /**
- * 当前整合包版本的本地配置（{@code config/quantumhue/version.json}）。
+ * 当前整合包版本的配置模型，由外部通过对外开放 API 注册（见 {@code QuantumHuePageApi}），不再落盘。
  *
  * <p>它只是<b>兜底</b>：装了 GTQTCore 时，当前版本直接取它的 {@code VERSION} 字段（见 {@link PackVersion}），
- * 本文件会被忽略；只有没装核心模组时才读这里的值。
+ * 注册进来的值会被忽略；只有没装核心模组时才用 {@link PageConfigs#version()} 里配置的值。
  *
- * <p>这里存的是<b>整合包</b>的版本号，不是模组 jar 的版本。代码里不给默认值，留空就是“版本未知”：
- * 此时页面不显示版本号，也不做任何更新比较。
+ * <p>这里存的是<b>整合包</b>的版本号，不是模组 jar 的版本。唯一的代码默认值是 {@code 1.0.0}；
+ * 注册成空串表示“版本未知”：此时页面不显示版本号，也不做任何更新比较。
  */
 public class VersionConfig {
 
-    public String _comment = "当前整合包版本号（例如 1.9.0）。装了 GTQTCore 时以它的 VERSION 为准、本文件被忽略；"
-            + "没装时才读这里。留空表示版本未知，此时不显示版本号也不提示更新。与模组自身的版本无关。";
+    /** 内置兜底的整合包版本号；外部经 API 注册后会被覆盖。 */
+    public static final String DEFAULT_VERSION = "1.0.0";
 
-    /** 当前整合包版本号；留空表示未配置。 */
-    public String version = "";
+    /** 当前整合包版本号；空串表示未配置。 */
+    public String version = DEFAULT_VERSION;
+
+    /** 便捷构造：直接以给定版本号创建配置。 */
+    public static VersionConfig of(String version) {
+        VersionConfig config = new VersionConfig();
+        config.version = version;
+        return config;
+    }
 
     /** 去掉首尾空白的版本号；未配置时返回空串。 */
     public String resolved() {

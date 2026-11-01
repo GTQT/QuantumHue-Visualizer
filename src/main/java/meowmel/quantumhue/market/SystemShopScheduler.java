@@ -20,7 +20,7 @@ import java.util.UUID;
 /**
  * 系统订单投放器。
  *
- * <p>每过一个随机区间就从 {@code shop.json} 的 {@code market.buyPool / sellPool} 里抽若干种货物，
+ * <p>每过一个随机区间就从经 API 注册的 {@code market.buyPool / sellPool} 里抽若干种货物，
  * 生成带过期时间的系统收购单与系统出售单，并广播一条公告。
  *
  * <p>节奏参数不再写成 static final：那样改配置只能重启，现在每次投放都重新读，命令重载后立刻生效。

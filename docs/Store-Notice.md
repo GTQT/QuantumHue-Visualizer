@@ -33,82 +33,73 @@ remote/
 | `/market` | 打开商店 |
 | `/announcement` | 打开公告页（右侧含「公告」「邮件」页签） |
 | `/sell <单价> [数量]` | 把手持物品上架到市场 |
-| `/quantumhue reload` | 重读 `config/quantumhue/*.json` |
+| `/quantumhue reload` | 丢弃远程缓存，重新采用当前经 API 注册的配置 |
 | `/quantumhue refresh` | 重读配置，并在客户端/服务端后台重新预取更新日志、公告、社群服务与邮件 |
 | `/quantumhue shop` / `news` | 打开对应页面 |
 
-## 配置文件
+## 配置来源
 
-首次启动会在 `config/quantumhue/` 生成两个文件，之后只读不覆盖：
+商店与整合包版本**不再读写本地 json 文件**，改为通过对外开放 API 注册：
 
-- `shop.json` —— 市场参数、系统订单池、系统商店分类与商品（商店是本地运营配置）；
-- `version.json` —— 当前**整合包**版本号（与模组自身版本无关，公告页显示与更新比较都用它）。
+- `meowmel.quantumhue.api.QuantumHuePageApi#registerShopConfig(ShopConfig)` —— 市场参数、系统订单池、系统商店分类与商品；
+- `QuantumHuePageApi#registerPackVersion(String)` —— 当前**整合包**版本号（与模组自身版本无关，公告页显示与更新比较都用它）。
 
-公告/邮件的远程地址、超时、页签这些运营参数**内置在 jar 里**（`NoticeConfig` / `MailConfig`），
-不再读写 `notice.json`、`mail.json`；旧版本留下的这两个文件会被忽略，可以直接删掉。
-更新日志、公告、社群服务、邮件的正文全部来自远程；本地只保留 `version.json` 的当前版本号
-（以及商店的 `shop.json`）。
+整合包 / 前置模组在各自的 `FMLPreInitializationEvent`（或更早）里整份注册即可；注册是整棵替换，后注册的覆盖先注册的。
 
-修改后执行 `/quantumhue reload` 即可生效（商店页每次打开也会重读 `shop.json`）。
+未注册时的默认状态：
 
-### shop.json
+- 商店是**空目录**（没有分类、没有订单池，系统不投放订单）；
+- 整合包版本兜底为内置的 `1.0.0`（装了 `GTQTCore` 时仍以它的 `VERSION` 为准）。
 
-```jsonc
-{
-  "enabled": true,              // 商店总开关
-  "currencyName": "货币",
-  "market": {
-    "playerListingHours": 72,   // 玩家上架存活小时
-    "playerOrderHours": 72,     // 玩家收购单存活小时
-    "systemOrderHours": 2,      // 系统订单存活小时
-    "orderIntervalMinMinutes": 30,
-    "orderIntervalMaxMinutes": 60,
-    "orderGoodsMin": 3,         // 每次投放的种类数量区间
-    "orderGoodsMax": 6,
-    "buyPool":  [ { "item": "minecraft:cobblestone", "meta": 0, "minCount": 16, "maxCount": 64, "price": 1 } ],
-    "sellPool": [ { "item": "minecraft:torch",       "meta": 0, "minCount": 16, "maxCount": 64, "price": 1 } ]
-  },
-  "systemShop": {
-    "enabled": true,
-    "categories": [
-      {
-        "id": "building",          // 稳定 id，参与库存键，建议不要随意改名
-        "name": "建筑方块",         // 页面左侧分类名
-        "icon": "minecraft:stone", // 分类图标，留空则用该分类第一件商品
-        "iconMeta": 0,
-        "items": [
-          {
-            "id": "minecraft:stone#0", // 留空会自动生成（物品注册名#meta）
-            "item": "minecraft:stone", // 物品注册名
-            "meta": 0,
-            "name": "",                // 显示名覆盖，留空用物品自身名字
-            "count": 64,               // 每份包含数量
-            "price": 16,               // 每份单价
-            "stock": -1                // 库存份数，-1 为无限；有限库存会写进存档
-          }
-        ]
-      }
-    ]
-  }
-}
+公告的远程地址、超时、镜像与本机代理端口**只有一份**：`config/quantumhue.cfg` 的 `Notice` 段；
+邮件参数只内置在 `MailConfig` 里。两者都没有 `notice.json` / `mail.json`，旧版本留下的
+这两个文件会被忽略，可以直接删掉。同理，旧版本生成的 `shop.json` / `version.json` 现在也不再读取，可以直接删掉。
+更新日志、公告、社群服务、邮件的正文全部来自远程。
+
+改了经 API 注册的配置需要**重新构建 / 重启模组**才会生效（配置写死在代码里）；`/quantumhue reload` 用于丢弃远程缓存、重新采用当前配置，`/quantumhue refresh` 会重新预取远程内容。在模组设置里改 `Notice` 段的话，关闭设置界面就立即生效，不需要重启。
+
+### ShopConfig 结构
+
+注册用的 `ShopConfig` 对象结构如下（字段含义与原 `shop.json` 一致）：
+
+```java
+ShopConfig shop = new ShopConfig();
+shop.enabled = true;                 // 商店总开关
+shop.currencyName = "货币";           // 留空时界面回退到“货币”二字
+
+// 市场参数与系统订单池
+shop.market.playerListingHours = 72;    // 玩家上架存活小时
+shop.market.playerOrderHours = 72;      // 玩家收购单存活小时
+shop.market.systemOrderHours = 2;       // 系统订单存活小时
+shop.market.orderIntervalMinMinutes = 30;
+shop.market.orderIntervalMaxMinutes = 60;
+shop.market.orderGoodsMin = 3;          // 每次投放的种类数量区间
+shop.market.orderGoodsMax = 6;
+shop.market.buyPool.add(new ShopConfig.PoolEntry("minecraft:cobblestone", 0, 16, 64, 1));
+shop.market.sellPool.add(new ShopConfig.PoolEntry("minecraft:torch", 0, 16, 64, 1));
+
+// 系统商店分类与商品
+ShopConfig.Category building = new ShopConfig.Category("building", "建筑方块", "minecraft:stone");
+building.items.add(new ShopConfig.Item("minecraft:stone", 0, "", 64, 16, -1));
+shop.systemShop.categories.add(building);
+
+QuantumHuePageApi.registerShopConfig(shop);
 ```
 
-系统商店的货架由**服务端**按配置 + 已售记录重建后同步给客户端，所以专用服务器上以服务端
-`shop.json` 为准。已售份数保存在 `quantumhue_shop_data`（`WorldSavedData`）里，重启不会补货。
+- `id` 留空会自动生成（分类为 `category`、商品为 `物品注册名#meta`），越界的节奏参数会被夹到合法区间；
+- `Item` 构造参数依次为：物品注册名、meta、显示名覆盖（留空用物品自身名字）、每份数量、每份单价、库存份数（`-1` 为无限，有限库存会写进存档）；
+- 系统商店的货架由**服务端**按配置 + 已售记录重建后同步给客户端，所以专用服务器上以服务端注册的配置为准。已售份数保存在 `quantumhue_shop_data`（`WorldSavedData`）里，重启不会补货。
 
-### version.json
+### 整合包版本
 
-```jsonc
-{
-  "version": "1.9.0"       // 当前整合包版本号；留空表示版本未知
-}
+```java
+QuantumHuePageApi.registerPackVersion("1.9.0");   // 传空串表示版本未知
 ```
 
-- **它只是兜底**：装了 `GTQTCore` 时，当前版本直接反射读取 `meowmel.gtqtcore.GTQTCore.VERSION`，本文件被忽略；
-  只有没装核心模组时才读这里；
+- **它只是兜底**：装了 `GTQTCore` 时，当前版本直接反射读取 `meowmel.gtqtcore.GTQTCore.VERSION`，注册值被忽略；只有没装核心模组时才用这里注册的值；
 - 只用于「当前版本」的显示与比较：公告页顶部、更新日志页头部、登录时的更新提示；
-- 这里填的是**整合包**版本，不是模组 jar 的版本；**没有代码默认值**，也不会回退到模组版本；
-- 两处都没有版本号时：页面显示「版本 未配置」，不做新旧比较，登录也不发更新提示；
+- 这里填的是**整合包**版本，不是模组 jar 的版本；未注册时兜底为内置的 `1.0.0`，也不会回退到模组版本；
+- 版本为空串（显式注册了空值且没装 `GTQTCore`）时：页面显示「版本 未配置」，不做新旧比较，登录也不发更新提示；
 - 改完需要重新预取才会按新版本过滤更新日志：`/quantumhue refresh`。
 
 ### theme.json
@@ -126,31 +117,36 @@ remote/
   深色底与红/橙/绿的语义色（关闭、出售、警告、成功）不跟着变；
 - 也可以在标题栏关闭键左边的设置键里改，点色卡就生效并写盘，不需要重启。
 
-### 内置的公告参数
+### 公告参数
 
-写在 `meowmel.quantumhue.notice.NoticeConfig` 里，不走配置文件；要改就改代码并重新编译：
+`config/quantumhue.cfg` 的 `Notice` 段（`QuantumHueConfig.notice`）是公告参数的**唯一来源**，
+没有另一份内置默认值需要覆盖；代码里直接读它，所以改完 cfg 或模组设置界面就是生效路径：
 
-| 字段 | 内置值 | 说明 |
+| cfg 键 | 默认值 | 说明 |
 | --- | --- | --- |
-| `checkVersionOnLogin` | `true` | 登录时在聊天栏提示版本 |
-| `showOnLogin` | `true` | 登录时自动打开公告页 |
-| `remote.versionIndexUrl` | GTQT 仓库 `remote/version/index.json` | 版本更新公告索引（raw JSON） |
-| `remote.announcementIndexUrl` | GTQT 仓库 `remote/announcement/index.json` | 公告索引（raw JSON） |
-| `remote.communityUrl` | GTQT 仓库 `remote/community.txt` | 社群服务文本（raw） |
-| `remote.timeoutMs` | `10000` | 单次 HTTP 请求超时 |
-| `remote.failureCooldownMs` | `60000` | 失败后的冷却时间 |
-| `remote.mirrors` | 空 | 直连失败后依次尝试的镜像模板，`{url}` 为占位符 |
-| `tabs` | 更新日志 + 社群服务 | 右侧页签，顺序即显示顺序 |
+| `Check Version On Login` | `true` | 登录时在聊天栏提示版本 |
+| `Show On Login` | `true` | 登录时自动打开公告页 |
+| `Version Index Url` | GTQT 仓库 `remote/version/index.json` | 版本更新公告索引（raw JSON） |
+| `Announcement Index Url` | GTQT 仓库 `remote/announcement/index.json` | 公告索引（raw JSON） |
+| `Community Url` | GTQT 仓库 `remote/community.txt` | 社群服务文本（raw） |
+| `Timeout Ms` | `10000` | 单次 HTTP 请求超时 |
+| `Mirrors` | 空 | 直连失败后依次尝试的镜像模板，`{url}` 为占位符 |
+| `Local Proxy Port` | `0` | 直连失败后尝试的本机代理端口，只允许填一个，`0` = 不启用 |
 
-页签类型：
+地址类字段留空就是「不拉取该项」；`Local Proxy Port` 超出 0~65535 时视为不启用。
 
-- `type = update`：读取内存中的更新日志；模组会先比较版本 JSON 文件名/内容里的版本号，
-  只保留 **不低于本地版本** 的条目（包含当前版本，旧版本不会展示）；
-- `type = community`：读取加载阶段拉取的远程 `community.txt`；
-- `type = announcements`：读取公告列表；
-- `type = remote` / `type = text`：这两个旧类型不再显示本地正文，只显示空状态；所有正文必须走远程页签；
-- 文本支持 `&` 颜色码与 `#` 注释行。
-- 「公告」与「邮件」是**内置页签**，不写在 `tabs` 里；它们固定追加在自定义页签之后。
+### 固定页签
+
+公告页（`GuiAnnouncement`）的页签写死在代码里，**没有任何可配置页签**，按顺序四个：
+
+1. **更新日志**：读取内存中的更新日志；模组会先比较版本 JSON 文件名/内容里的版本号，
+   只保留 **不低于本地版本** 的条目（包含当前版本，旧版本不会展示）；
+2. **公告**：`AnnouncementPanel` 绘制，左侧列表、右侧正文，数据来自公告索引列出的 JSON；
+3. **社群服务**：加载阶段拉取的远程 `community.txt`；
+4. **邮件**：`MailPanel` 绘制，只来自服务端远程数据；`MailConfig.enabled` 为 `false` 时不显示。
+
+地址只决定对应页签有没有数据；拉取失败时页签仍在，显示「尚未同步」的空状态。
+文本支持 `&` 颜色码与 `#` 注释行。
 
 ### 拉取策略
 

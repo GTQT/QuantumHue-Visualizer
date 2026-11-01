@@ -73,7 +73,7 @@ public class QuantumHue {
     public void preInit(FMLPreInitializationEvent event) {
         LOGGER.info("Hello From {}!", Tags.MOD_NAME);
         configDir = event.getModConfigurationDirectory();
-        // 商店 / 公告的全部运营内容从这里读；首次运行会生成 config/quantumhue/*.json
+        // 只记录配置目录位置；商店与版本配置不再读写 json，改由外部经 QuantumHuePageApi 注册
         PageConfigs.init(configDir);
         // 加载阶段后台预取更新日志/公告/社群服务，最多尝试 3 次；进入游戏后只读内存
         PageBootstrap.startAtLoad();
@@ -104,6 +104,7 @@ public class QuantumHue {
     @SubscribeEvent
     public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
         if (event.getModID().equals(Tags.MOD_ID)) {
+            // 公告参数存在 cfg 的静态字段里，使用方直接读，同步完就立即生效
             ConfigManager.sync(Tags.MOD_ID, Config.Type.INSTANCE);
         }
     }

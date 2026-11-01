@@ -30,8 +30,7 @@ import java.util.UUID;
  * 自由交易商店与系统商店。
  *
  * <p>页签：系统商店 / 浏览商品 / 收购订单 / 出售物品 / 我的上架。系统商店的分类与商品全部来自
- * {@code config/quantumhue/shop.json}，货架由服务端按配置 + 已售记录重建后同步过来，所以玩家可以
- * 自由增删分类与商品，而不需要改动代码。
+ * 对外开放 API 注册的 {@code ShopConfig}（见 {@code QuantumHuePageApi}），货架由服务端按配置 + 已售记录重建后同步过来。
  *
  * <p>商店数据是服务端权威的：界面只读 {@link ShopClientStore}，打开页签时向服务端请求，买卖后由
  * 服务端回发增量或整页。客户端不直接访问 {@code ShopDatabase}。
@@ -93,6 +92,8 @@ public class GuiShop extends PageScreen {
 
     private final List<TabBtn> tabs = new ArrayList<>();
     private int tabHeight = PageTheme.TAB_H;
+    /** 只在真正打开时置位：窗口缩放会重新 initGui，但不应重播 BGM。 */
+    private boolean musicStarted;
     private boolean actionHover;
     private Integer hoverIdx;
     private Integer hoverOrderIdx;
@@ -115,8 +116,23 @@ public class GuiShop extends PageScreen {
     // ================================================================ 生命周期
 
     @Override
+    public void initGui() {
+        super.initGui();
+        // initGui 也会在窗口缩放时被调用，因此只在第一次真正打开时起播
+        if (!musicStarted) {
+            musicStarted = true;
+            ShopMusic.play();
+        }
+    }
+
+    @Override
+    public void onGuiClosed() {
+        ShopMusic.stop();
+        super.onGuiClosed();
+    }
+
+    @Override
     protected void initPage() {
-        PageConfigs.reloadLocal();
         layout();
         buildTabs();
         initFields();
@@ -1008,6 +1024,7 @@ public class GuiShop extends PageScreen {
     @Override
     protected void onPageClosed() {
         dragScroll = false;
+        ShopMusic.stop();
     }
 
     @Override

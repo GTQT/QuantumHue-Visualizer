@@ -1,10 +1,9 @@
 package meowmel.quantumhue.market;
 
 import meowmel.quantumhue.QuantumHue;
-import meowmel.quantumhue.config.PageConfigs;
+import meowmel.quantumhue.QuantumHueConfig;
 import meowmel.quantumhue.network.PacketHandler;
 import meowmel.quantumhue.network.packet.OpenPagePacket;
-import meowmel.quantumhue.notice.NoticeConfig;
 import meowmel.quantumhue.notice.VersionState;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.text.ITextComponent;
@@ -132,16 +131,8 @@ public class ShopEvents {
 
     // ================================================================ 公告与版本
 
-    private static NoticeConfig notice() {
-        try {
-            return PageConfigs.notice();
-        } catch (Throwable ignored) {
-            return new NoticeConfig();
-        }
-    }
-
     private void sendAnnouncement(EntityPlayerMP player) {
-        if (!notice().showOnLogin) {
+        if (!QuantumHueConfig.notice.showOnLogin) {
             return;
         }
         PacketHandler.sendTo(OpenPagePacket.news(), player);
@@ -151,12 +142,12 @@ public class ShopEvents {
      * 版本提示要等异步检查落定后再发，否则玩家只会看到“检查失败”。
      */
     private void sendVersionMessage(EntityPlayerMP player) {
-        if (!notice().checkVersionOnLogin) {
+        if (!QuantumHueConfig.notice.checkVersionOnLogin) {
             return;
         }
         // 没配整合包版本就不存在“新旧”，发一句“已是最新版”反而误导
         if (!VersionState.hasCurrentVersion()) {
-            QuantumHue.LOGGER.debug("[Notice] 取不到整合包版本（GTQTCore 与 version.json 都没有），跳过登录版本提示");
+            QuantumHue.LOGGER.debug("[Notice] 取不到整合包版本（GTQTCore 与 API 注册配置都没有），跳过登录版本提示");
             return;
         }
         VersionState.whenSettled(() -> {

@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
  * 商店 / 公告页的玩家配色偏好，存在 {@code config/quantumhue/theme.json}。
  *
  * <p>和 GuideQT 的 {@code settings.json} 是同一套思路：玩家自己的观感参数单独一份文件，
- * 与运营配置（{@code shop.json}）分开，改完立刻生效并写盘，不需要“应用”按钮，也不会
+ * 与经 API 注册的运营配置（{@code ShopConfig}）分开，改完立刻生效并写盘，不需要“应用”按钮，也不会
  * 因为崩服丢掉一次改动。
  *
  * <p>只有服务端运营配置由 {@link PageConfigs} 管；这里的内容纯客户端，服务端不读也不关心。

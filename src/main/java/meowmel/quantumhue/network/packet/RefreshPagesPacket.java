@@ -2,7 +2,6 @@ package meowmel.quantumhue.network.packet;
 
 import io.netty.buffer.ByteBuf;
 import meowmel.quantumhue.config.PageBootstrap;
-import meowmel.quantumhue.config.PageConfigs;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
@@ -37,7 +36,6 @@ public class RefreshPagesPacket implements IMessage {
         @SideOnly(Side.CLIENT)
         private static void handleClient() {
             Minecraft.getMinecraft().addScheduledTask(() -> {
-                PageConfigs.reloadLocal();
                 PageBootstrap.refreshAsync();
             });
         }

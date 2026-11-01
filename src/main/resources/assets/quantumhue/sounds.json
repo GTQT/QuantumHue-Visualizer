@@ -1,0 +1,13 @@
+{
+  "shop.bgm": {
+    "category": "music",
+    "sounds": [
+      {
+        "name": "shop_bgm",
+        "stream": true,
+        "volume": 1.0,
+        "pitch": 1.0
+      }
+    ]
+  }
+}

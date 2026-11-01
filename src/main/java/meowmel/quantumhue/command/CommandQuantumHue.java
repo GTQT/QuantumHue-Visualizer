@@ -18,8 +18,8 @@ import java.util.List;
  * {@code /quantumhue <reload|refresh|shop|news>}：页面系统的管理入口。
  *
  * <ul>
- *   <li>{@code reload} —— 重读 {@code config/quantumhue/*.json}；</li>
- *   <li>{@code refresh} —— 重读配置，并重新预取更新日志/公告/社群服务/邮件；</li>
+ *   <li>{@code reload} —— 丢弃远程缓存，重新采用当前经 API 注册的配置；</li>
+ *   <li>{@code refresh} —— 同上，并重新预取更新日志/公告/社群服务/邮件；</li>
  *   <li>{@code shop} / {@code news} —— 打开对应页面。</li>
  * </ul>
  */

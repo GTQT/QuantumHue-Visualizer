@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * 系统商店的“货架快照”。
  *
- * <p>货架内容来自 {@code shop.json} 的 {@code systemShop.categories}，剩余库存来自
+ * <p>货架内容来自经 API 注册的 {@code systemShop.categories}，剩余库存来自
  * {@link ShopDatabase} 的售出记录。服务端每次请求都会重建一次快照再发给客户端，所以客户端不需要
  * 读配置，也不会出现“本地配置和服务端不一致，买了服务端没有的东西”。
  */

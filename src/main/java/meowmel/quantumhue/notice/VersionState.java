@@ -50,7 +50,7 @@ public final class VersionState {
     /**
      * 公告页与聊天栏使用的“当前版本”，即整合包版本。
      *
-     * <p>装了 GTQTCore 时取它的 {@code VERSION} 字段，没装才取 {@code config/quantumhue/version.json}；
+     * <p>装了 GTQTCore 时取它的 {@code VERSION} 字段，没装才取经 API 注册的版本配置（内置兜底 {@code 1.0.0}）；
      * 两处都没有就是空串，不回退到模组版本。
      */
     public static String currentVersion() {

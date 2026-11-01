@@ -1,23 +1,14 @@
 package meowmel.quantumhue.notice;
 
-import meowmel.quantumhue.config.PageConfigs;
+import meowmel.quantumhue.QuantumHueConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.ProxySelector;
-import java.net.URI;
-import java.net.URL;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -28,14 +19,19 @@ import java.util.concurrent.Executors;
  *
  * <p><b>不做本地缓存</b>：每次调用都真正发起请求，结果只交给 {@code PageBootstrap} /
  * {@code MailService} 放到内存快照里。请求在独立线程池执行，界面线程不碰网络；
- * 直连失败后按 {@code NoticeConfig.remote.mirrors} 逐个尝试镜像。
+ * 直连失败后先试 {@code quantumhue.cfg} 里 {@code Notice.localProxyPort} 这一个本机代理端口，
+ * 再按 {@code Notice.mirrors} 逐个尝试镜像。
  */
 public final class RemoteTextFetcher {
 
     private static final Logger LOGGER = LogManager.getLogger("QuantumHue-Remote");
-    /** 单次响应最大字符数；防止异常地址把内存打满。 */
+    /**
+     * 单次响应最大字符数；防止异常地址把内存打满。
+     */
     private static final int MAX_CHARS = 1_000_000;
-    /** 同一地址的失败详情最多每 15 秒打一次，避免 30 秒重试把日志刷爆。 */
+    /**
+     * 同一地址的失败详情最多每 15 秒打一次，避免 30 秒重试把日志刷爆。
+     */
     private static final ConcurrentHashMap<String, Long> LAST_WARN = new ConcurrentHashMap<>();
 
     private static volatile ExecutorService executor;
@@ -45,14 +41,19 @@ public final class RemoteTextFetcher {
         System.setProperty("java.net.useSystemProxies", "true");
     }
 
-    private RemoteTextFetcher() {}
+    private RemoteTextFetcher() {
+    }
 
-    /** 异步拉取。 */
+    /**
+     * 异步拉取。
+     */
     public static CompletableFuture<String> fetchAsync(String url) {
         return fetchAsync(url, -1);
     }
 
-    /** 异步拉取，允许调用方覆盖超时时间。 */
+    /**
+     * 异步拉取，允许调用方覆盖超时时间。
+     */
     public static CompletableFuture<String> fetchAsync(String url, int timeoutMs) {
         String target = key(url);
         if (target == null) {
@@ -61,33 +62,45 @@ public final class RemoteTextFetcher {
         return CompletableFuture.supplyAsync(() -> request(target, timeoutMs), executor());
     }
 
-    /** 同步拉取（预加载/命令使用），失败返回 {@code null}。 */
+    /**
+     * 同步拉取（预加载/命令使用），失败返回 {@code null}。
+     */
     public static String fetchSync(String url) {
         return fetchSync(url, -1);
     }
 
-    /** 同步拉取，允许覆盖超时时间。 */
+    /**
+     * 同步拉取，允许覆盖超时时间。
+     */
     public static String fetchSync(String url, int timeoutMs) {
         String target = key(url);
         return target == null ? null : request(target, timeoutMs);
     }
 
-    /** 与 {@link #fetchSync} 相同：没有缓存可绕过。 */
+    /**
+     * 与 {@link #fetchSync} 相同：没有缓存可绕过。
+     */
     public static String fetchFreshSync(String url, int timeoutMs) {
         return fetchSync(url, timeoutMs);
     }
 
-    /** 兼容旧调用：没有缓存。 */
+    /**
+     * 兼容旧调用：没有缓存。
+     */
     public static boolean hasCached(String url) {
         return false;
     }
 
-    /** 兼容旧调用：没有缓存。 */
+    /**
+     * 兼容旧调用：没有缓存。
+     */
     public static void invalidate(String url) {
         // no-op
     }
 
-    /** 兼容旧调用：没有缓存。 */
+    /**
+     * 兼容旧调用：没有缓存。
+     */
     public static void invalidateAll() {
         // no-op
     }
@@ -101,7 +114,9 @@ public final class RemoteTextFetcher {
 
     // ================================================================ 内部实现
 
-    /** 先尝试系统/环境代理，再直连；都失败才按配置的镜像逐个重试。 */
+    /**
+     * 先尝试系统/环境代理，再直连；都失败才按配置的镜像逐个重试。
+     */
     private static String request(String url, int timeoutMs) {
         String result = requestWithProxies(url, timeoutMs);
         if (result != null) {
@@ -118,7 +133,9 @@ public final class RemoteTextFetcher {
         return null;
     }
 
-    /** 先尝试系统/环境代理，再直连；直连失败后才尝试本机常见代理端口。 */
+    /**
+     * 先尝试系统/环境代理，再直连；直连失败后才尝试配置的本机代理端口。
+     */
     private static String requestWithProxies(String url, int timeoutMs) {
         List<Proxy> proxies = proxiesFor(url);
         for (Proxy proxy : proxies) {
@@ -134,36 +151,30 @@ public final class RemoteTextFetcher {
         if (direct != null) {
             return direct;
         }
-        // 直连失败才探测本机代理，避免本机恰好开着别的服务时拖慢正常请求
-        for (Proxy proxy : localProxyCandidates()) {
-            LOGGER.info("[Remote] 直连失败，尝试本机代理 {}: {}", proxy.address(), url);
+        // 直连失败才试配置的本机代理端口，避免本机恰好开着别的服务时拖慢正常请求
+        Proxy local = configuredLocalProxy();
+        if (local != null) {
+            LOGGER.info("[Remote] 直连失败，尝试本机代理 {}: {}", local.address(), url);
             int proxyTimeout = timeoutMs > 0 ? Math.min(timeoutMs, 6000) : 6000;
-            String value = requestOnce(url, proxyTimeout, proxy);
+            String value = requestOnce(url, proxyTimeout, local);
             if (value != null) {
-                LOGGER.info("[Remote] 本机代理可用: {}", proxy.address());
+                LOGGER.info("[Remote] 本机代理可用: {}", local.address());
                 return value;
             }
         }
         return null;
     }
 
-    /** 本机常见代理端口；只连本机，不会扫描局域网。 */
-    private static List<Proxy> localProxyCandidates() {
-        List<Proxy> proxies = new ArrayList<>();
-        addLocalProxy(proxies, Proxy.Type.HTTP, 7890);
-        addLocalProxy(proxies, Proxy.Type.HTTP, 7897);
-        addLocalProxy(proxies, Proxy.Type.HTTP, 10809);
-        addLocalProxy(proxies, Proxy.Type.HTTP, 8080);
-        addLocalProxy(proxies, Proxy.Type.SOCKS, 7891);
-        addLocalProxy(proxies, Proxy.Type.SOCKS, 1080);
-        return proxies;
-    }
-
-    private static void addLocalProxy(List<Proxy> proxies, Proxy.Type type, int port) {
-        if (!localPortOpen(port)) {
-            return;
+    /**
+     * 配置里唯一的本机代理端口（{@code Notice.localProxyPort}）；
+     * 留 0 或端口没在监听时返回 {@code null}，表示不走本机代理。
+     */
+    private static Proxy configuredLocalProxy() {
+        int port = QuantumHueConfig.notice.localProxyPort;
+        if (port <= 0 || port > 65535 || !localPortOpen(port)) {
+            return null;
         }
-        proxies.add(new Proxy(type, new InetSocketAddress("127.0.0.1", port)));
+        return new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", port));
     }
 
     private static boolean localPortOpen(int port) {
@@ -175,7 +186,9 @@ public final class RemoteTextFetcher {
         }
     }
 
-    /** 收集环境变量、Java 代理属性与系统 ProxySelector 给出的代理。 */
+    /**
+     * 收集环境变量、Java 代理属性与系统 ProxySelector 给出的代理。
+     */
     private static List<Proxy> proxiesFor(String url) {
         Set<Proxy> proxies = new LinkedHashSet<>();
         boolean https = url != null && url.startsWith("https://");
@@ -260,21 +273,18 @@ public final class RemoteTextFetcher {
         }
     }
 
-    /** 按配置展开镜像模板；未配置时返回空表。 */
+    /**
+     * 按配置展开镜像模板；未配置时返回空表。
+     */
     private static List<String> mirrorUrls(String url) {
         if (url == null || !(url.startsWith("http://") || url.startsWith("https://"))) {
             return Collections.emptyList();
         }
-        List<String> mirrors;
-        try {
-            mirrors = PageConfigs.notice().remote.mirrors;
-        } catch (Throwable ignored) {
+        String[] mirrors = QuantumHueConfig.notice.mirrors;
+        if (mirrors == null || mirrors.length == 0) {
             return Collections.emptyList();
         }
-        if (mirrors == null || mirrors.isEmpty()) {
-            return Collections.emptyList();
-        }
-        List<String> urls = new ArrayList<>(mirrors.size());
+        List<String> urls = new ArrayList<>(mirrors.length);
         for (String mirror : mirrors) {
             if (mirror == null || mirror.trim().isEmpty()) {
                 continue;
@@ -331,7 +341,9 @@ public final class RemoteTextFetcher {
         }
     }
 
-    /** 失败详情（异常类型/HTTP 状态）用于排查浏览器能开而 Java 不能开的原因。 */
+    /**
+     * 失败详情（异常类型/HTTP 状态）用于排查浏览器能开而 Java 不能开的原因。
+     */
     private static void warnFailure(String url, String detail) {
         long now = System.currentTimeMillis();
         Long last = LAST_WARN.get(url);
@@ -343,12 +355,11 @@ public final class RemoteTextFetcher {
         }
     }
 
+    /**
+     * 调用方没有指定超时时用配置里的 {@code Notice.timeoutMs}。
+     */
     private static int timeout() {
-        try {
-            return PageConfigs.notice().remote.timeoutMs;
-        } catch (Throwable ignored) {
-            return 10000;
-        }
+        return QuantumHueConfig.notice.timeoutMs;
     }
 
     private static String key(String url) {
