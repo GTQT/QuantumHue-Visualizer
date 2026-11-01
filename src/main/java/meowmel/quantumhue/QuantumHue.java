@@ -34,6 +34,7 @@ import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.common.event.FMLModDisabledEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -65,6 +66,14 @@ public class QuantumHue {
     }
 
     /**
+     * 游戏加载完成阶段：此时所有模组加载期的商店注册都已进入记录表，据记录表统一构建商店。
+     */
+    @Mod.EventHandler
+    public void onLoadComplete(FMLLoadCompleteEvent event) {
+        PageConfigs.buildShopFromRegistry();
+    }
+
+    /**
      * <a href="https://cleanroommc.com/wiki/forge-mod-development/event#overview">
      *     Take a look at how many FMLStateEvents you can listen to via the @Mod.EventHandler annotation here
      * </a>
@@ -75,6 +84,8 @@ public class QuantumHue {
         configDir = event.getModConfigurationDirectory();
         // 只记录配置目录位置；商店与版本配置不再读写 json，改由外部经 QuantumHuePageApi 注册
         PageConfigs.init(configDir);
+        // 加载初始阶段实例化默认商店；各模组随后只往记录表里添加分类/商品，到加载完成阶段再统一构建
+        PageConfigs.prepareShop();
         // 加载阶段后台预取更新日志/公告/社群服务，最多尝试 3 次；进入游戏后只读内存
         PageBootstrap.startAtLoad();
         // 邮件同样在加载阶段预取到内存，世界加载时直接使用

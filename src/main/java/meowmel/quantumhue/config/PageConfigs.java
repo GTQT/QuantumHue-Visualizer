@@ -11,18 +11,23 @@ import meowmel.quantumhue.notice.VersionState;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * 商店与整合包版本的内存配置仓库。
  *
- * <p>配置内容不再来自本地 json 文件：商店运营参数与整合包版本号完全由外部通过
- * {@code meowmel.quantumhue.api.QuantumHuePageApi} 对外开放 API 注册进来
- * （入口在调用 {@link #init(File)} 之前或之后注册都可以，取值永远是懒读最新）。
+ * <p>配置内容不再来自本地 json 文件：商店与整合包版本完全由外部通过
+ * {@code meowmel.quantumhue.api.QuantumHuePageApi} 对外开放 API 注册进来。
+ * 商店采用「加载期记录、加载完成期构建」的增量模型：各模组在加载阶段调用
+ * {@link #addCategory}/{@link #addItem}/{@link #addBuyPool}/{@link #addSellPool} 只写进记录表，
+ * 到 {@code FMLLoadCompleteEvent} 由 {@link #buildShopFromRegistry()} 统一落进 {@link #shop}；
+ * 这样多个模组往同一分类加商品时不必关心彼此的加载顺序（按分类 id 合并）。
  * 未注册时商店为空目录；唯一保留的代码默认值是 {@link VersionConfig} 的版本号 {@code 1.0.0}。
  *
- * <p>注册进来的商店配置会做一轮结构校验：补齐缺失的分类/商品 id、把数值夹到合法区间，
+ * <p>构建时会做一轮结构校验：补齐缺失的分类/商品 id、把数值夹到合法区间，
  * 因此 API 侧只需要填业务内容，不必担心越界值。
  *
  * <p>公告的远程地址、超时、镜像、本机代理端口不在这里，只有一份：{@code quantumhue.cfg} 的
@@ -40,6 +45,15 @@ public final class PageConfigs {
     private static volatile MailConfig mail = new MailConfig();
     /** 完整重载计数；客户端内存视图用它判断要不要强制重新拉取。 */
     private static volatile long reloadEpoch;
+
+    /** 分类注册记录：categoryId -> 槽位，保留首次出现顺序，并按 id 跨模组合并。 */
+    private static final LinkedHashMap<String, CategorySlot> pendingCategories = new LinkedHashMap<>();
+    /** 系统收购订单池的注册记录。 */
+    private static final List<ShopConfig.PoolEntry> pendingBuyPool = new ArrayList<>();
+    /** 系统出售订单池的注册记录。 */
+    private static final List<ShopConfig.PoolEntry> pendingSellPool = new ArrayList<>();
+    /** 商店是否已据记录表构建过；构建后的晚到注册会据此即时重建。 */
+    private static volatile boolean shopBuilt;
 
     private PageConfigs() {}
 
@@ -78,16 +92,113 @@ public final class PageConfigs {
         return directory;
     }
 
-    // ================================================================ API 注册入口
+    // ================================================================ 增量注册（加载期只记录，加载完成期构建）
 
     /**
-     * 注册商店配置：整份替换当前生效的配置，{@code null} 视为回退到空目录。
-     *
-     * <p>供 {@code meowmel.quantumhue.api.QuantumHuePageApi} 调用；注册时会做一轮结构校验。
+     * 在加载初始阶段实例化商店：把 {@link #shop} 置为参数不变的默认空实例，供加载完成前的只读方回退。
+     * 由 {@code FMLPreInitializationEvent} 调用；不记录任何内容，也不清空记录表，
+     * 因此不受模组加载顺序影响（先于本模组注册的其它模组不会被清掉）。
      */
-    public static synchronized void setShop(ShopConfig config) {
-        shop = config == null ? new ShopConfig() : config;
-        normalize(shop);
+    public static synchronized void prepareShop() {
+        if (!shopBuilt) {
+            shop = new ShopConfig();
+        }
+    }
+
+    /**
+     * 记录一个商店分类：加载阶段只进记录表，不做实际添加。同 id 分类按合并处理，
+     * 晚到的 {@code name}/{@code icon} 只补空、不覆盖已有的非空值，所以 A 建分类、B 补商品谁先谁后都行。
+     */
+    public static synchronized void addCategory(String id, String name, String icon, int iconMeta) {
+        CategorySlot slot = slotFor(id);
+        if (!isBlank(name)) {
+            slot.name = name.trim();
+        }
+        if (!isBlank(icon)) {
+            slot.icon = icon.trim();
+            slot.iconMeta = iconMeta;
+        }
+        if (shopBuilt) {
+            buildShopFromRegistry();
+        }
+    }
+
+    /**
+     * 记录一件商品，归入 {@code categoryId} 对应分类：加载阶段只进记录表。
+     * 分类此刻还不存在也没关系，先占位，稍后由其它模组的 {@link #addCategory} 补全，构建时按 id 归并。
+     */
+    public static synchronized void addItem(String categoryId, ShopConfig.Item item) {
+        if (item == null) {
+            return;
+        }
+        slotFor(categoryId).items.add(item);
+        if (shopBuilt) {
+            buildShopFromRegistry();
+        }
+    }
+
+    /** 记录一条系统收购订单池条目：加载阶段只进记录表。 */
+    public static synchronized void addBuyPool(ShopConfig.PoolEntry entry) {
+        if (entry == null) {
+            return;
+        }
+        pendingBuyPool.add(entry);
+        if (shopBuilt) {
+            buildShopFromRegistry();
+        }
+    }
+
+    /** 记录一条系统出售订单池条目：加载阶段只进记录表。 */
+    public static synchronized void addSellPool(ShopConfig.PoolEntry entry) {
+        if (entry == null) {
+            return;
+        }
+        pendingSellPool.add(entry);
+        if (shopBuilt) {
+            buildShopFromRegistry();
+        }
+    }
+
+    /**
+     * 据记录表构建商店：在 {@code FMLLoadCompleteEvent}（游戏加载完成阶段）调用，此时所有模组
+     * 加载期的注册都已进入记录表，统一落进 {@link #shop} 并做结构校验。
+     *
+     * <p>记录表构建后不清空，所以加载完成后的晚到注册（{@link #addCategory} 等）会据此即时重建；
+     * 对同一记录集，重建是幂等且顺序稳定的（分类/商品都保留首次出现顺序）。
+     */
+    public static synchronized void buildShopFromRegistry() {
+        ShopConfig config = new ShopConfig();
+        for (Map.Entry<String, CategorySlot> entry : pendingCategories.entrySet()) {
+            CategorySlot slot = entry.getValue();
+            ShopConfig.Category category = new ShopConfig.Category(entry.getKey(), slot.name, slot.icon);
+            category.iconMeta = slot.iconMeta;
+            category.items.addAll(slot.items);
+            config.systemShop.categories.add(category);
+        }
+        config.market.buyPool.addAll(pendingBuyPool);
+        config.market.sellPool.addAll(pendingSellPool);
+        normalize(config);
+        shop = config;
+        shopBuilt = true;
+    }
+
+    /** 取（或按需创建）某分类的注册槽位；空白 id 归到空串槽位，构建时由校验器补出分类 id。 */
+    private static CategorySlot slotFor(String id) {
+        String key = id == null ? "" : id.trim();
+        CategorySlot slot = pendingCategories.get(key);
+        if (slot == null) {
+            slot = new CategorySlot();
+            pendingCategories.put(key, slot);
+        }
+        return slot;
+    }
+
+    /** 分类注册槽位：攒下该分类的显示信息与商品，等加载完成时统一构建成 {@link ShopConfig.Category}。 */
+    private static final class CategorySlot {
+        String name = "";
+        String icon = "";
+        int iconMeta = 0;
+        final List<ShopConfig.Item> items = new ArrayList<>();
     }
 
     /**

@@ -5,24 +5,35 @@ import meowmel.quantumhue.market.ShopConfig;
 import meowmel.quantumhue.notice.VersionConfig;
 
 /**
- * QuantumHue 页面系统的对外开放 API：整合包 / 前置模组用它注册商店与版本配置。
+ * QuantumHue 页面系统的对外开放 API：整合包 / 前置模组用它注册商店内容与整合包版本。
  *
- * <p>商店配置（{@link ShopConfig}）与整合包版本（{@link VersionConfig}）都不再读写本地 json
- * 文件，运营内容完全从这里进。建议在各自的 {@code FMLPreInitializationEvent}（或更早）里
- * 整份注册；注册是整棵替换，后注册的覆盖先注册的。
+ * <p>商店与整合包版本都不再读写本地 json 文件，运营内容完全从这里进。
  *
- * <p>商店默认是空目录（没有分类、没有订单池）；版本只有一个来源，就是这里注册的值（未注册时为内置的 {@code 1.0.0}）；
- * 核心模组（如 GTQTCore）会主动把自己的 {@code VERSION} 经 {@link #registerPackVersion(String)} 注册进来。
+ * <p>商店是<b>增量注册</b>模型，不是一次性整棵替换：
+ * <ol>
+ *   <li>QuantumHue 在游戏加载的初始阶段（{@code FMLPreInitializationEvent}）实例化一个参数不变的默认商店；</li>
+ *   <li>各模组在各自的加载阶段用 {@link #addShopCategory} / {@link #addShopItem} /
+ *       {@link #addMarketBuyPool} / {@link #addMarketSellPool} 往商店里<b>添加</b>分类与商品——
+ *       此时只写进记录表，不实际改动生效配置；</li>
+ *   <li>游戏加载完成阶段（{@code FMLLoadCompleteEvent}）由 QuantumHue 从记录表统一构建商店。</li>
+ * </ol>
+ * 因为是「先记录、后构建」，所以多个模组往同一分类加东西时不必关心彼此的加载顺序：
+ * 例如 A 模组 {@code addShopCategory("ore", ...)} 建分类并加铁矿，B 模组 {@code addShopItem("ore", ...)}
+ * 加铜矿——无论 A、B 谁先加载，同名分类 {@code "ore"} 最终都会合并成一条。
+ *
+ * <p>整合包版本只有一个来源，就是 {@link #registerPackVersion(String)} 注册的值（未注册时为内置的 {@code 1.0.0}）；
+ * 核心模组（如 GTQTCore）会主动把自己的 {@code VERSION} 注册进来。
  *
  * <p>示例：
  * <pre>{@code
- * ShopConfig shop = new ShopConfig();
- * shop.currencyName = "欧元";
- * ShopConfig.Category building = new ShopConfig.Category("building", "建筑方块", "minecraft:stone");
- * building.items.add(new ShopConfig.Item("minecraft:stone", 0, "", 64, 16, -1));
- * shop.systemShop.categories.add(building);
- * shop.market.buyPool.add(new ShopConfig.PoolEntry("minecraft:planks", 0, 16, 64, 1));
- * QuantumHuePageApi.registerShopConfig(shop);
+ * // A 模组：建分类并加商品
+ * QuantumHuePageApi.addShopCategory("building", "建筑方块", "minecraft:stone");
+ * QuantumHuePageApi.addShopItem("building", "minecraft:stone", 0, "", 64, 16, -1);
+ * // B 模组：往同一个分类里补商品，不用管 A 是否已加载
+ * QuantumHuePageApi.addShopItem("building", "minecraft:planks", 0, "", 64, 16, -1);
+ * // 系统订单池
+ * QuantumHuePageApi.addMarketBuyPool(new ShopConfig.PoolEntry("minecraft:planks", 0, 16, 64, 1));
+ * // 整合包版本
  * QuantumHuePageApi.registerPackVersion("1.9.0");
  * }</pre>
  */
@@ -30,19 +41,57 @@ public final class QuantumHuePageApi {
 
     private QuantumHuePageApi() {}
 
+    // ================================================================ 商店（增量注册）
+
     /**
-     * 注册商店配置：整份替换当前生效的配置。
+     * 添加一个商店分类：加载阶段只记录，游戏加载完成时统一构建。
      *
-     * <p>传 {@code null} 回退到空目录。id 留空的商品 / 分类会自动生成，越界的节奏参数会被夹到合法区间。
+     * <p>同 {@code id} 的分类会合并，后到的 {@code name}/{@code icon} 只补空、不覆盖已有非空值，
+     * 所以建分类和往分类加商品可以由不同模组分别完成，且不依赖彼此的加载顺序。
+     * {@code id} 留空时会在构建时自动生成。
      */
-    public static void registerShopConfig(ShopConfig config) {
-        PageConfigs.setShop(config);
+    public static void addShopCategory(String id, String name, String icon) {
+        PageConfigs.addCategory(id, name, icon, 0);
     }
 
-    /** 当前生效的商店配置（可直接读取校验后的结果）。 */
+    /** 同上，额外指定图标 meta。 */
+    public static void addShopCategory(String id, String name, String icon, int iconMeta) {
+        PageConfigs.addCategory(id, name, icon, iconMeta);
+    }
+
+    /**
+     * 往指定分类添加一件商品：加载阶段只记录，游戏加载完成时统一构建。
+     *
+     * <p>{@code categoryId} 对应的分类此刻可以还没被 {@link #addShopCategory} 建出来——会先占位，
+     * 构建时按 id 归并，因此不依赖建分类与加商品两者的先后顺序。
+     */
+    public static void addShopItem(String categoryId, ShopConfig.Item item) {
+        PageConfigs.addItem(categoryId, item);
+    }
+
+    /**
+     * 便捷重载：物品注册名、meta、显示名（可留空用物品自身名字）、每份数量、每份单价、库存（-1 无限）。
+     */
+    public static void addShopItem(String categoryId, String item, int meta, String name, int count, long price, int stock) {
+        PageConfigs.addItem(categoryId, new ShopConfig.Item(item, meta, name, count, price, stock));
+    }
+
+    /** 添加一条系统收购订单池条目（系统从玩家手里回收的物品）：加载阶段只记录。 */
+    public static void addMarketBuyPool(ShopConfig.PoolEntry entry) {
+        PageConfigs.addBuyPool(entry);
+    }
+
+    /** 添加一条系统出售订单池条目（系统向玩家出售的物品）：加载阶段只记录。 */
+    public static void addMarketSellPool(ShopConfig.PoolEntry entry) {
+        PageConfigs.addSellPool(entry);
+    }
+
+    /** 当前生效的商店配置：加载完成前是默认空实例，加载完成后为据记录表构建的结果。 */
     public static ShopConfig getShopConfig() {
         return PageConfigs.shop();
     }
+
+    // ================================================================ 整合包版本
 
     /**
      * 注册当前<b>整合包</b>版本号（与模组自身的版本无关）。

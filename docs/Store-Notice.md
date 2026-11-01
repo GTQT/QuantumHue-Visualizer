@@ -41,10 +41,16 @@ remote/
 
 商店与整合包版本**不再读写本地 json 文件**，改为通过对外开放 API 注册：
 
-- `meowmel.quantumhue.api.QuantumHuePageApi#registerShopConfig(ShopConfig)` —— 市场参数、系统订单池、系统商店分类与商品；
+- `meowmel.quantumhue.api.QuantumHuePageApi` 的 `addShopCategory` / `addShopItem` / `addMarketBuyPool` / `addMarketSellPool` —— 往商店里**增量添加**分类、商品与系统订单池条目；
 - `QuantumHuePageApi#registerPackVersion(String)` —— 当前**整合包**版本号（与模组自身版本无关，公告页显示与更新比较都用它）。
 
-整合包 / 前置模组在各自的 `FMLPreInitializationEvent`（或更早）里整份注册即可；注册是整棵替换，后注册的覆盖先注册的。
+商店是**增量注册**（不是一次性整棵替换），分三步：
+
+1. QuantumHue 在加载初始阶段（`FMLPreInitializationEvent`）实例化一个**参数不变的默认商店**；
+2. 各模组在各自的加载阶段（`preInit` / `init` / `postInit` 均可）调用 `addShop*` **添加**分类与商品——这一步只写进记录表，不实际改动生效配置；
+3. 游戏加载完成阶段（`FMLLoadCompleteEvent`）由 QuantumHue 从记录表统一构建商店。
+
+因为是「先记录、后构建」，所以多个模组往同一分类加东西时**不必关心彼此的加载顺序**：A 模组建分类 `ore` 并加铁矿、B 模组往 `ore` 加铜矿，无论 A、B 谁先加载，同名分类都会合并成一条。市场节奏参数、货币名等由 QuantumHue 侧的默认实例提供，注册方只填业务内容。
 
 未注册时的默认状态：
 
@@ -58,35 +64,25 @@ remote/
 
 改了经 API 注册的配置需要**重新构建 / 重启模组**才会生效（配置写死在代码里）；`/quantumhue reload` 用于丢弃远程缓存、重新采用当前配置，`/quantumhue refresh` 会重新预取远程内容。在模组设置里改 `Notice` 段的话，关闭设置界面就立即生效，不需要重启。
 
-### ShopConfig 结构
+### 注册示例
 
-注册用的 `ShopConfig` 对象结构如下（字段含义与原 `shop.json` 一致）：
+分类、商品、订单池都用增量 API 添加；`ShopConfig.PoolEntry` 与商品的字段含义与原 `shop.json` 一致：
 
 ```java
-ShopConfig shop = new ShopConfig();
-shop.enabled = true;                 // 商店总开关
-shop.currencyName = "货币";           // 留空时界面回退到“货币”二字
-
-// 市场参数与系统订单池
-shop.market.playerListingHours = 72;    // 玩家上架存活小时
-shop.market.playerOrderHours = 72;      // 玩家收购单存活小时
-shop.market.systemOrderHours = 2;       // 系统订单存活小时
-shop.market.orderIntervalMinMinutes = 30;
-shop.market.orderIntervalMaxMinutes = 60;
-shop.market.orderGoodsMin = 3;          // 每次投放的种类数量区间
-shop.market.orderGoodsMax = 6;
-shop.market.buyPool.add(new ShopConfig.PoolEntry("minecraft:cobblestone", 0, 16, 64, 1));
-shop.market.sellPool.add(new ShopConfig.PoolEntry("minecraft:torch", 0, 16, 64, 1));
-
-// 系统商店分类与商品
-ShopConfig.Category building = new ShopConfig.Category("building", "建筑方块", "minecraft:stone");
-building.items.add(new ShopConfig.Item("minecraft:stone", 0, "", 64, 16, -1));
-shop.systemShop.categories.add(building);
-
-QuantumHuePageApi.registerShopConfig(shop);
+// 建分类（同 id 会合并；name/icon 只补空、不覆盖已有非空值）
+QuantumHuePageApi.addShopCategory("building", "建筑方块", "minecraft:stone");
+// 往分类加商品：物品注册名、meta、显示名覆盖（留空用物品自身名字）、每份数量、每份单价、库存（-1 无限）
+QuantumHuePageApi.addShopItem("building", "minecraft:stone", 0, "", 64, 16, -1);
+// 别的模组也能往同一个 building 分类里补货，不用管谁先加载
+QuantumHuePageApi.addShopItem("building", "minecraft:planks", 0, "", 64, 16, -1);
+// 系统订单池：收购池（从玩家手里回收）与出售池（向玩家投放）
+QuantumHuePageApi.addMarketBuyPool(new ShopConfig.PoolEntry("minecraft:cobblestone", 0, 16, 64, 1));
+QuantumHuePageApi.addMarketSellPool(new ShopConfig.PoolEntry("minecraft:torch", 0, 16, 64, 1));
 ```
 
-- `id` 留空会自动生成（分类为 `category`、商品为 `物品注册名#meta`），越界的节奏参数会被夹到合法区间；
+市场节奏参数（上架/订单存活小时、投放间隔与种类数）与货币名不在这里配置，保持 QuantumHue 默认商店实例里的值。
+
+- 商品/分类 `id` 留空会在构建时自动生成（分类为 `category`、商品为 `物品注册名#meta`），越界值会被夹到合法区间；同一个分类 id 的多条 `addShopCategory` / `addShopItem` 会合并到一条货架；
 - `Item` 构造参数依次为：物品注册名、meta、显示名覆盖（留空用物品自身名字）、每份数量、每份单价、库存份数（`-1` 为无限，有限库存会写进存档）；
 - 系统商店的货架由**服务端**按配置 + 已售记录重建后同步给客户端，所以专用服务器上以服务端注册的配置为准。已售份数保存在 `quantumhue_shop_data`（`WorldSavedData`）里，重启不会补货。
 
