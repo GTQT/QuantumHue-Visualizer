@@ -6,6 +6,7 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiLabel;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.resources.I18n;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GLContext;
@@ -42,6 +43,16 @@ public class GtqtMainMenu extends GuiMainMenu {
     /** Vanilla's language picker. */
     private static final int LANGUAGE_BUTTON_ID = 5;
 
+    /**
+     * Slot 04 of the instrument column.
+     *
+     * <p>Vanilla uses id 14 for the Realms ("在线游戏") plate, which only exists when the client
+     * believes multiplayer services are reachable — in a Cleanroom development client it is simply
+     * absent, leaving a hole in the numbering.  The plate is repurposed here as the repository
+     * link: it is always present, and it opens the project's GitHub page.
+     */
+    private static final int GITHUB_BUTTON_ID = 14;
+
     /** Mirrors the condition vanilla uses to decide whether to show its OpenGL warning. */
     private boolean unsupportedGl;
 
@@ -50,10 +61,17 @@ public class GtqtMainMenu extends GuiMainMenu {
         super.initGui();
 
         for (Iterator<GuiButton> it = this.buttonList.iterator(); it.hasNext(); ) {
-            if (it.next().id == LANGUAGE_BUTTON_ID) {
+            int id = it.next().id;
+            // The language picker is hidden, and the Realms plate is replaced by our link below.
+            if (id == LANGUAGE_BUTTON_ID || id == GITHUB_BUTTON_ID) {
                 it.remove();
             }
         }
+
+        // Slot 04: always present, opens the repository.  Added after the vanilla pass so it is
+        // there even when Realms is unavailable (Cleanroom dev clients never add id 14).
+        this.buttonList.add(new GuiButton(GITHUB_BUTTON_ID, 0, 0, 0, 0,
+                I18n.format("quantumhue.menu.github")));
 
         for (GuiButton button : this.buttonList) {
             int[] rect = MenuLayout.buttonRect(button.id, this.width, this.height);
@@ -83,6 +101,16 @@ public class GtqtMainMenu extends GuiMainMenu {
 
         GtqtMenuChrome.drawFooter(mc, this, this.unsupportedGl);
         GtqtMenuChrome.drawTitleBlock(mc, this);
+    }
+
+    @Override
+    protected void actionPerformed(GuiButton button) throws IOException {
+        if (button.id == GITHUB_BUTTON_ID) {
+            // Same URL and same non-blocking launch as the pause menu's GitHub plate.
+            PauseLink.GITHUB.open();
+            return;
+        }
+        super.actionPerformed(button);
     }
 
     @Override

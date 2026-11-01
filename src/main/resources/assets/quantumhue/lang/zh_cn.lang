@@ -72,3 +72,6 @@ quantumhue.gamerule.naturalRegeneration.name=自然恢复
 quantumhue.gamerule.naturalRegeneration.tooltip.description=自然回复生命值
 quantumhue.gamerule.doDaylightCycle.name=昼夜循环
 quantumhue.gamerule.doDaylightCycle.tooltip.description=昼夜交替
+
+# 主菜单
+quantumhue.menu.github=GitHub

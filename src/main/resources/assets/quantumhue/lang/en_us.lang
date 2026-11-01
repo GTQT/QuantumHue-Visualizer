@@ -72,3 +72,6 @@ quantumhue.gamerule.naturalRegeneration.name=Natural Regeneration
 quantumhue.gamerule.naturalRegeneration.tooltip.description=Natural health regeneration
 quantumhue.gamerule.doDaylightCycle.name=Daylight Cycle
 quantumhue.gamerule.doDaylightCycle.tooltip.description=Day/night cycle
+
+# Main menu
+quantumhue.menu.github=GitHub

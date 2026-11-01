@@ -4,7 +4,6 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.IOUtils;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.util.glu.GLU;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -137,20 +136,18 @@ public final class GlSplashPainter implements SplashPainter {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        boolean mipmapped = false;
-        try {
-            data.position(0);
-            GLU.gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data);
-            mipmapped = true;
-        } catch (Throwable t) {
-            CustomSplash.LOGGER.warn("[QuantumHue] mipmaps unavailable for {}, using linear filtering", location, t);
-        }
-        if (!mipmapped) {
-            data.position(0);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        }
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                mipmapped ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+        // Level 0 only, GL_LINEAR minification.
+        //
+        // This used to go through GLU.gluBuild2DMipmaps. On the LWJGL3 / lwjglx stack the splash
+        // thread runs under Cleanroom's shim, and the mip chain it produced for these emblems is
+        // unusable: every level above 0 bleeds the transparent background into the mark, so the
+        // emblem renders as a washed-out grey ghost while the vector layers around it keep their
+        // colour. Uploading level 0 alone renders the emblem exactly as authored; the splash never
+        // magnifies and the emblem is a static downscale, so giving up the mip chain costs nothing
+        // visible.
+        data.position(0);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
         glBindTexture(GL_TEXTURE_2D, 0);
         glDisable(GL_TEXTURE_2D);
@@ -177,6 +174,15 @@ public final class GlSplashPainter implements SplashPainter {
      */
     private static void noAlphaTest() {
         glDisable(GL_ALPHA_TEST);
+        // The splash thread shares its context with the game, so fixed-function state set by
+        // whoever ran last is not trustworthy. Lighting in particular would modulate every
+        // textured primitive by the material and drain the colour out of the emblem; fog, culling
+        // and the texgen units are reset for the same reason.
+        glDisable(GL_LIGHTING);
+        glDisable(GL_FOG);
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_TEXTURE_GEN_S);
+        glDisable(GL_TEXTURE_GEN_T);
     }
 
     @Override
