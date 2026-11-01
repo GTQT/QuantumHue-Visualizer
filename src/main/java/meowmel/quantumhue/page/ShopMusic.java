@@ -26,8 +26,10 @@ public final class ShopMusic {
         if (mc.getSoundHandler() == null) {
             return;
         }
+        // 循环播放：商店是常驻页面，一遍放完就没声、开关还会停在“播放中”，
+        // 所以这里直接循环，关闭页面时由 stop() 收掉。
         playing = new PositionedSoundRecord(SOUND, SoundCategory.MUSIC, 1.0F, 1.0F,
-                false, 0, ISound.AttenuationType.NONE, 0.0F, 0.0F, 0.0F);
+                true, 0, ISound.AttenuationType.NONE, 0.0F, 0.0F, 0.0F);
         mc.getSoundHandler().playSound(playing);
     }
 
@@ -40,5 +42,24 @@ public final class ShopMusic {
             mc.getSoundHandler().stopSound(playing);
         }
         playing = null;
+    }
+
+    /** 当前是否有一曲在播；标题栏的音乐开关据此决定画“暂停”还是“播放”。 */
+    public static boolean isPlaying() {
+        return playing != null;
+    }
+
+    /**
+     * 标题栏音乐开关：正在播就停，停了就从头再放。
+     *
+     * @return 切换后的状态，{@code true} 表示现在正在播
+     */
+    public static boolean toggle() {
+        if (isPlaying()) {
+            stop();
+            return false;
+        }
+        play();
+        return isPlaying();
     }
 }

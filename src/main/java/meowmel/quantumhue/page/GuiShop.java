@@ -131,6 +131,23 @@ public class GuiShop extends PageScreen {
         super.onGuiClosed();
     }
 
+    // ================================================================ 标题栏音乐开关
+
+    @Override
+    protected boolean musicToggleVisible() {
+        return true;
+    }
+
+    @Override
+    protected boolean musicPlaying() {
+        return ShopMusic.isPlaying();
+    }
+
+    @Override
+    protected boolean toggleMusic() {
+        return ShopMusic.toggle();
+    }
+
     @Override
     protected void initPage() {
         layout();

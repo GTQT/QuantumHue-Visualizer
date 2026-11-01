@@ -1,6 +1,7 @@
 package meowmel.quantumhue.chat;
 
 import meowmel.quantumhue.QuantumHueConfig;
+import meowmel.quantumhue.api.utils.MouseWheel;
 import meowmel.quantumhue.chat.ChatChannel.ChannelType;
 import meowmel.quantumhue.chat.ChatMessageStore.ChatMessage;
 import meowmel.quantumhue.chat.packets.ChatGroupPacket;
@@ -1088,10 +1089,10 @@ public class ChatScreen extends GuiScreen {
             if (mx > panelRight()) return; // 面板外忽略
 
             if (mx < sidebarW())
-                sidebarScrollTarget = MathHelper.clamp(sidebarScrollTarget - dw * 0.35f, 0, sidebarMaxScroll);
+                sidebarScrollTarget = MathHelper.clamp(sidebarScrollTarget - MouseWheel.pixels(dw, 42f), 0, sidebarMaxScroll);
             else {
                 scrollToBottom = false;
-                scrollTarget = MathHelper.clamp(scrollTarget - dw * 0.4f, 0, maxScroll);
+                scrollTarget = MathHelper.clamp(scrollTarget - MouseWheel.pixels(dw, 48f), 0, maxScroll);
             }
         }
     }

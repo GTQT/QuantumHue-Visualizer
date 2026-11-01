@@ -20,6 +20,7 @@
     "LoadingScreenRendererMixin",
     "MixinGuiScrollingList",
     "MixinMinecraft",
+    "MusicTickerMixin",
     "MixinGuiSlot"
   ]
 }

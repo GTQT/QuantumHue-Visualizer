@@ -54,6 +54,12 @@ public abstract class PageScreen extends GuiScreen {
     protected boolean settingsHover;
     protected boolean settingsPressed;
 
+    /** 设置键左侧的音乐开关；只在需要背景音乐的页面（商店）显示。 */
+    protected int musicX;
+    protected int musicY;
+    protected boolean musicHover;
+    protected boolean musicPressed;
+
     /** 设置键打开的配色浮层；两个页面共用的同一块面板。 */
     private final PageThemePanel themePanel = new PageThemePanel();
 
@@ -68,8 +74,11 @@ public abstract class PageScreen extends GuiScreen {
         closeY = winY + (PageTheme.HEADER_H - PageTheme.CLOSE_SIZE) / 2;
         settingsX = closeX - PageTheme.CLOSE_SIZE - 4;
         settingsY = closeY;
+        musicX = settingsX - PageTheme.CLOSE_SIZE - 4;
+        musicY = settingsY;
         closePressed = false;
         settingsPressed = false;
+        musicPressed = false;
         // 窗口尺寸变了，浮层位置跟着失效；重新进 GUI 时直接收起
         themePanel.close();
         initPage();
@@ -106,6 +115,21 @@ public abstract class PageScreen extends GuiScreen {
         return null;
     }
 
+    /** 标题栏是否显示音乐开关；默认不显示，只有带背景音乐的页面（商店）打开。 */
+    protected boolean musicToggleVisible() {
+        return false;
+    }
+
+    /** 音乐开关的当前状态：{@code true} 表示正在播放（画暂停图标），否则画播放图标。 */
+    protected boolean musicPlaying() {
+        return false;
+    }
+
+    /** 切换背景音乐，返回切换后的状态。 */
+    protected boolean toggleMusic() {
+        return false;
+    }
+
     /** 绘制标题栏以下的一切（页签列、内容区、输入框）。 */
     protected abstract void drawPage(int mouseX, int mouseY);
 
@@ -139,9 +163,14 @@ public abstract class PageScreen extends GuiScreen {
         drawChrome();
         drawHeader();
         drawPage(mouseX, mouseY);
+        drawMusicButton(mouseX, mouseY);
         drawSettingsButton(mouseX, mouseY);
         drawCloseButton(mouseX, mouseY);
         super.drawScreen(mouseX, mouseY, partialTicks);
+        if (musicToggleVisible() && musicHover) {
+            tooltip(java.util.Collections.singletonList(musicPlaying() ? "关闭音乐" : "开启音乐"),
+                    mouseX, mouseY);
+        }
         if (themePanel.isOpen()) {
             // 浮层最后画：它自带一层压暗，盖住标题栏和两个键。画之前必须把深度测试关掉，
             // 否则物品写入的深度会把面板矩形顶掉，看起来就是物品浮在面板上面
@@ -188,8 +217,9 @@ public abstract class PageScreen extends GuiScreen {
 
         String status = pageStatus();
         if (status != null && !status.isEmpty()) {
-            // 设置键也在右边：状态文字再往左让一格，否则会压在两个键上
-            int statusX = settingsX - 10 - fontRenderer.getStringWidth(status);
+            // 设置键（以及商店页它左边的音乐键）也在右边：状态文字再往左让一格，否则会压在键上
+            int statusAnchor = musicToggleVisible() ? musicX : settingsX;
+            int statusX = statusAnchor - 10 - fontRenderer.getStringWidth(status);
             // 窄窗口下标题和状态会撞在一起：状态宁可让位，也不覆盖标题
             if (statusX > winX + PageTheme.PAD + 7 + fontRenderer.getStringWidth(brand) + 6) {
                 fontRenderer.drawString(status, statusX, textY, PageTheme.TEXT, false);
@@ -197,6 +227,39 @@ public abstract class PageScreen extends GuiScreen {
         }
         drawRect(winX + PageTheme.PAD, winY + PageTheme.HEADER_H,
                 winX + winWidth - PageTheme.PAD, winY + PageTheme.HEADER_H + 1, PageTheme.SEPARATOR);
+    }
+
+    /**
+     * 设置键左侧的音乐开关。
+     *
+     * <p>播放中画暂停双竖条（点一下即停），已停止画向右的播放三角（点一下重新播放）。
+     * 图标用矩形拼出来，和设置键一样不依赖字体里有没有音符字形。
+     */
+    protected void drawMusicButton(int mouseX, int mouseY) {
+        if (!musicToggleVisible()) {
+            musicHover = false;
+            return;
+        }
+        musicHover = in(mouseX, mouseY, musicX, musicY, PageTheme.CLOSE_SIZE, PageTheme.CLOSE_SIZE);
+        int background = musicPressed ? PageTheme.SETTINGS_PRESS
+                : (musicHover ? PageTheme.SETTINGS_HOVER : PageTheme.SETTINGS_BG);
+        drawRect(musicX + 1, musicY, musicX + PageTheme.CLOSE_SIZE - 1,
+                musicY + PageTheme.CLOSE_SIZE, background);
+        drawRect(musicX, musicY + 1, musicX + PageTheme.CLOSE_SIZE,
+                musicY + PageTheme.CLOSE_SIZE - 1, background);
+
+        boolean playing = musicPlaying();
+        int icon = musicHover || musicPressed ? 0xFFFFFFFF
+                : (playing ? PageTheme.TITLE : PageTheme.TEXT_DIM);
+        if (playing) {
+            drawRect(musicX + 4, musicY + 4, musicX + 6, musicY + 10, icon);
+            drawRect(musicX + 8, musicY + 4, musicX + 10, musicY + 10, icon);
+        } else {
+            for (int i = 0; i < 5; i++) {
+                int half = i + 1;
+                drawRect(musicX + 5 + i, musicY + 7 - half, musicX + 6 + i, musicY + 7 + half, icon);
+            }
+        }
     }
 
     /** 关闭键左侧的配色设置键：三条带旋钮的推子，不依赖字体里有没有齿轮字形。 */
@@ -401,6 +464,12 @@ public abstract class PageScreen extends GuiScreen {
             settingsPressed = true;
             return;
         }
+        musicHover = musicToggleVisible()
+                && in(mouseX, mouseY, musicX, musicY, PageTheme.CLOSE_SIZE, PageTheme.CLOSE_SIZE);
+        if (button == 0 && musicHover) {
+            musicPressed = true;
+            return;
+        }
         if (mousePageClicked(mouseX, mouseY, button)) {
             return;
         }
@@ -413,6 +482,7 @@ public abstract class PageScreen extends GuiScreen {
         if (themePanel.isOpen()) {
             closePressed = false;
             settingsPressed = false;
+            musicPressed = false;
             return;
         }
         if (state == 0 && closePressed) {
@@ -429,6 +499,15 @@ public abstract class PageScreen extends GuiScreen {
             settingsPressed = false;
             if (activate) {
                 openSettings();
+                return;
+            }
+        }
+        if (state == 0 && musicPressed) {
+            boolean activate = in(mouseX, mouseY, musicX, musicY, PageTheme.CLOSE_SIZE,
+                    PageTheme.CLOSE_SIZE);
+            musicPressed = false;
+            if (activate) {
+                toggleMusic();
                 return;
             }
         }

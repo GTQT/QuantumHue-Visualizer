@@ -1,5 +1,6 @@
 package meowmel.quantumhue.menu;
 
+import meowmel.quantumhue.api.utils.MouseWheel;
 import meowmel.quantumhue.pause.PauseAction;
 import meowmel.quantumhue.pause.PauseEntry;
 import meowmel.quantumhue.pause.PauseLayout;
@@ -430,7 +431,9 @@ public class GtqtInGameMenu extends GuiIngameMenu {
         if (this.layout.maxScroll > 0.5f) {
             int wheel = Mouse.getEventDWheel();
             if (wheel != 0) {
-                this.scroll.wheel(wheel / 120.0);
+                // LWJGL2 一格 ±120、Cleanroom 的 lwjglx 一格 ±1；这里统一成“格数”再交给
+                // PauseScroll（它的 720 系数是按每格 1.0 调的），否则在 clr 里滚轮等于没动。
+                this.scroll.wheel(MouseWheel.notches(wheel));
                 this.pointer.cancel();
             }
         }
