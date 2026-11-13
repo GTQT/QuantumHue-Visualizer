@@ -1,6 +1,7 @@
 package meowmel.quantumhue.config;
 
 import com.meowmel.quantumhue.Tags;
+import meowmel.quantumhue.lottery.LotteryConfig;
 import meowmel.quantumhue.mail.MailConfig;
 import meowmel.quantumhue.mail.MailService;
 import meowmel.quantumhue.market.ShopConfig;
@@ -52,8 +53,20 @@ public final class PageConfigs {
     private static final List<ShopConfig.PoolEntry> pendingBuyPool = new ArrayList<>();
     /** 系统出售订单池的注册记录。 */
     private static final List<ShopConfig.PoolEntry> pendingSellPool = new ArrayList<>();
+    /** 默认抽奖奖池的符号注册记录。 */
+    private static final List<LotteryConfig.Symbol> pendingLotterySymbols = new ArrayList<>();
+    /** 额外奖池的注册记录；key 是奖池 id，保留首次出现顺序。 */
+    private static final LinkedHashMap<String, LotteryPoolSlot> pendingLotteryPools = new LinkedHashMap<>();
+    private static volatile boolean lotteryEnabled = true;
+    /** 没有注册任何符号时是否使用内置演示奖池；显式 clear 后关闭。 */
+    private static volatile boolean lotteryUseDefaults = true;
+    private static volatile long pendingLotteryBaseCost = 100L;
     /** 商店是否已据记录表构建过；构建后的晚到注册会据此即时重建。 */
     private static volatile boolean shopBuilt;
+    /** 抽奖配置；与商店一起在加载完成阶段构建。 */
+    private static volatile LotteryConfig lottery = new LotteryConfig();
+
+    private static final long MAX_MONEY = 1_000_000_000_000_000L;
 
     private PageConfigs() {}
 
@@ -71,6 +84,11 @@ public final class PageConfigs {
     /** 当前生效的商店配置；外部未注册时为空目录。 */
     public static ShopConfig shop() {
         return shop;
+    }
+
+    /** 当前生效的抽奖配置；加载完成前是空奖池，加载完成后为据记录表构建的结果。 */
+    public static LotteryConfig lottery() {
+        return lottery;
     }
 
     /** 当前整合包版本；外部未注册时为内置默认 {@code 1.0.0}。 */
@@ -160,6 +178,159 @@ public final class PageConfigs {
     }
 
     /**
+     * 记录一个抽奖符号：加载阶段只进记录表，游戏加载完成时统一构建。传入的对象会被复制，
+     * 注册后继续修改原对象不会影响奖池。
+     */
+    public static synchronized void addLotterySymbol(LotteryConfig.Symbol symbol) {
+        if (symbol == null) {
+            return;
+        }
+        pendingLotterySymbols.add(symbol.copy());
+        if (shopBuilt) {
+            buildShopFromRegistry();
+        }
+    }
+
+    /**
+     * 记录一个额外奖池。奖池 id 用于网络与存档里定位；{@code default} 保留给默认奖池，
+     * 额外奖池不要使用。名称/图标只补空，价格与开关以最后一次注册为准。
+     */
+    public static synchronized void addLotteryPool(String id, String name, String icon,
+                                                   int iconMeta, long baseSpinCost) {
+        String key = id == null ? "" : id.trim();
+        if (key.isEmpty()) {
+            int suffix = pendingLotteryPools.size() + 1;
+            do {
+                key = "pool_" + suffix++;
+            } while (pendingLotteryPools.containsKey(key));
+        }
+        LotteryPoolSlot slot = pendingLotteryPools.get(key);
+        if (slot == null) {
+            slot = new LotteryPoolSlot();
+            pendingLotteryPools.put(key, slot);
+        }
+        if (!isBlank(name)) {
+            slot.name = name.trim();
+        }
+        if (!isBlank(icon)) {
+            slot.icon = icon.trim();
+            slot.iconMeta = Math.max(0, iconMeta);
+        }
+        slot.baseSpinCost = clamp(baseSpinCost, 0L, MAX_MONEY);
+        if (shopBuilt) {
+            buildShopFromRegistry();
+        }
+    }
+
+    /**
+     * 往指定奖池追加一个符号；空白 id 或 {@code default} 指向默认奖池。
+     * 奖池尚未创建时会先占位，随后由 {@link #addLotteryPool} 补全名称与价格。
+     */
+    public static synchronized void addLotterySymbol(String poolId, LotteryConfig.Symbol symbol) {
+        if (symbol == null) {
+            return;
+        }
+        String key = poolId == null ? "" : poolId.trim();
+        if (key.isEmpty() || "default".equalsIgnoreCase(key)) {
+            addLotterySymbol(symbol);
+            return;
+        }
+        LotteryPoolSlot slot = pendingLotteryPools.get(key);
+        if (slot == null) {
+            slot = new LotteryPoolSlot();
+            pendingLotteryPools.put(key, slot);
+        }
+        slot.symbols.add(symbol.copy());
+        if (shopBuilt) {
+            buildShopFromRegistry();
+        }
+    }
+
+    /** 调整指定奖池的每行基础价；空白 id 或 {@code default} 指向默认奖池。 */
+    public static synchronized void setLotteryCosts(String poolId, long baseSpinCost) {
+        String key = poolId == null ? "" : poolId.trim();
+        if (key.isEmpty() || "default".equalsIgnoreCase(key)) {
+            setLotteryCosts(baseSpinCost);
+            return;
+        }
+        LotteryPoolSlot slot = pendingLotteryPools.get(key);
+        if (slot == null) {
+            slot = new LotteryPoolSlot();
+            pendingLotteryPools.put(key, slot);
+        }
+        slot.baseSpinCost = clamp(baseSpinCost, 0L, MAX_MONEY);
+        if (shopBuilt) {
+            buildShopFromRegistry();
+        }
+    }
+
+    /** 开关指定奖池；总开关仍由 {@link #setLotteryEnabled(boolean)} 控制。 */
+    public static synchronized void setLotteryPoolEnabled(String poolId, boolean enabled) {
+        String key = poolId == null ? "" : poolId.trim();
+        if (key.isEmpty() || "default".equalsIgnoreCase(key)) {
+            return;
+        }
+        LotteryPoolSlot slot = pendingLotteryPools.get(key);
+        if (slot == null) {
+            slot = new LotteryPoolSlot();
+            pendingLotteryPools.put(key, slot);
+        }
+        slot.enabled = enabled;
+        if (shopBuilt) {
+            buildShopFromRegistry();
+        }
+    }
+
+    /** 清空指定奖池的符号；空白 id 或 {@code default} 指向默认奖池。 */
+    public static synchronized void clearLotterySymbols(String poolId) {
+        String key = poolId == null ? "" : poolId.trim();
+        if (key.isEmpty() || "default".equalsIgnoreCase(key)) {
+            clearLotterySymbols();
+            return;
+        }
+        LotteryPoolSlot slot = pendingLotteryPools.get(key);
+        if (slot != null) {
+            slot.symbols.clear();
+            if (shopBuilt) {
+                buildShopFromRegistry();
+            }
+        }
+    }
+
+    /** 删除全部额外奖池；默认奖池不受影响。 */
+    public static synchronized void clearLotteryPools() {
+        pendingLotteryPools.clear();
+        if (shopBuilt) {
+            buildShopFromRegistry();
+        }
+    }
+
+    /** 调整抽奖的每行基础价；实际费用 = 基础价 × 本次抽取行数。 */
+    public static synchronized void setLotteryCosts(long baseSpinCost) {
+        pendingLotteryBaseCost = clamp(baseSpinCost, 0L, MAX_MONEY);
+        if (shopBuilt) {
+            buildShopFromRegistry();
+        }
+    }
+
+    /** 开关抽奖；关闭后页面仍可打开，但抽奖会被服务端拒绝。 */
+    public static synchronized void setLotteryEnabled(boolean enabled) {
+        lotteryEnabled = enabled;
+        if (shopBuilt) {
+            buildShopFromRegistry();
+        }
+    }
+
+    /** 清空已注册的符号；同时停用“空奖池使用内置演示奖池”的回退。 */
+    public static synchronized void clearLotterySymbols() {
+        pendingLotterySymbols.clear();
+        lotteryUseDefaults = false;
+        if (shopBuilt) {
+            buildShopFromRegistry();
+        }
+    }
+
+    /**
      * 据记录表构建商店：在 {@code FMLLoadCompleteEvent}（游戏加载完成阶段）调用，此时所有模组
      * 加载期的注册都已进入记录表，统一落进 {@link #shop} 并做结构校验。
      *
@@ -180,6 +351,48 @@ public final class PageConfigs {
         normalize(config);
         shop = config;
         shopBuilt = true;
+        buildLottery();
+    }
+
+    /** 据记录表构建抽奖配置；没有注册任何奖池时按需使用内置演示奖池。 */
+    private static void buildLottery() {
+        LotteryConfig config = new LotteryConfig();
+        config.enabled = lotteryEnabled;
+        config.baseSpinCost = pendingLotteryBaseCost;
+
+        List<LotteryConfig.Symbol> source;
+        if (pendingLotterySymbols.isEmpty() && pendingLotteryPools.isEmpty() && lotteryUseDefaults) {
+            source = LotteryConfig.defaultSymbols();
+        } else {
+            source = pendingLotterySymbols;
+        }
+        for (LotteryConfig.Symbol symbol : source) {
+            if (symbol != null) {
+                config.symbols.add(symbol.copy());
+            }
+        }
+
+        int index = 0;
+        for (Map.Entry<String, LotteryPoolSlot> entry : pendingLotteryPools.entrySet()) {
+            index++;
+            LotteryPoolSlot slot = entry.getValue();
+            LotteryConfig.Pool pool = new LotteryConfig.Pool();
+            pool.id = entry.getKey();
+            pool.name = slot.name;
+            pool.icon = slot.icon;
+            pool.iconMeta = slot.iconMeta;
+            pool.enabled = slot.enabled;
+            pool.baseSpinCost = slot.baseSpinCost;
+            pool.symbols = new ArrayList<>();
+            for (LotteryConfig.Symbol symbol : slot.symbols) {
+                if (symbol != null) {
+                    pool.symbols.add(symbol.copy());
+                }
+            }
+            config.pools.add(pool);
+        }
+        normalizeLottery(config);
+        lottery = config;
     }
 
     /** 取（或按需创建）某分类的注册槽位；空白 id 归到空串槽位，构建时由校验器补出分类 id。 */
@@ -199,6 +412,16 @@ public final class PageConfigs {
         String icon = "";
         int iconMeta = 0;
         final List<ShopConfig.Item> items = new ArrayList<>();
+    }
+
+    /** 额外奖池的注册槽位；与默认奖池一样，加载完成时统一构建。 */
+    private static final class LotteryPoolSlot {
+        String name = "";
+        String icon = "minecraft:chest";
+        int iconMeta;
+        boolean enabled = true;
+        long baseSpinCost = 100L;
+        final List<LotteryConfig.Symbol> symbols = new ArrayList<>();
     }
 
     /**
@@ -248,6 +471,103 @@ public final class PageConfigs {
             config.systemShop = new ShopConfig.SystemShop();
         }
         config.systemShop.categories = normalizeCategories(config.systemShop.categories);
+    }
+
+    /**
+     * 抽奖配置校验：价格夹到非负且有上限；每个奖池的符号补 id/name、权重至少 1、赔率去掉空条目；
+     * 每个奖池最多 128 个符号、最多 16 个奖池，保证网络包里的符号下标能用一个字节表示。
+     */
+    private static void normalizeLottery(LotteryConfig config) {
+        if (config == null) {
+            return;
+        }
+        config.baseSpinCost = clamp(config.baseSpinCost, 0L, MAX_MONEY);
+        config.symbols = normalizeLotterySymbols(config.symbols);
+
+        List<LotteryConfig.Pool> pools = new ArrayList<>();
+        Set<String> poolIds = new HashSet<>();
+        poolIds.add("default");
+        if (config.pools != null) {
+            int index = 0;
+            for (LotteryConfig.Pool pool : config.pools) {
+                if (pool == null) {
+                    continue;
+                }
+                index++;
+                pool.id = uniqueId(poolIds, pool.id, "pool_" + index);
+                if (isBlank(pool.name)) {
+                    pool.name = "奖池 " + index;
+                } else {
+                    pool.name = pool.name.trim();
+                }
+                pool.icon = isBlank(pool.icon) ? "minecraft:chest" : pool.icon.trim();
+                pool.iconMeta = Math.max(0, pool.iconMeta);
+                pool.baseSpinCost = clamp(pool.baseSpinCost, 0L, MAX_MONEY);
+                pool.symbols = normalizeLotterySymbols(pool.symbols);
+                pools.add(pool);
+                if (pools.size() >= 16) {
+                    break;
+                }
+            }
+        }
+        config.pools = pools;
+    }
+
+    private static List<LotteryConfig.Symbol> normalizeLotterySymbols(
+            List<LotteryConfig.Symbol> symbols) {
+        List<LotteryConfig.Symbol> result = new ArrayList<>();
+        Set<String> ids = new HashSet<>();
+        int index = 0;
+        if (symbols != null) {
+            for (LotteryConfig.Symbol symbol : symbols) {
+                if (symbol == null) {
+                    continue;
+                }
+                index++;
+                symbol.icon = symbol.icon == null ? "" : symbol.icon.trim();
+                symbol.iconMeta = Math.max(0, symbol.iconMeta);
+                String fallback = isBlank(symbol.icon)
+                        ? "symbol_" + index
+                        : symbol.icon.replace(':', '_').replace('.', '_');
+                symbol.id = uniqueId(ids, symbol.id, fallback);
+                if (isBlank(symbol.name)) {
+                    symbol.name = isBlank(symbol.icon) ? "符号 " + index : symbol.icon;
+                }
+                symbol.weight = clamp(symbol.weight, 1, 100_000);
+                symbol.three = normalizePayout(symbol.three);
+                symbol.four = normalizePayout(symbol.four);
+                symbol.five = normalizePayout(symbol.five);
+                result.add(symbol);
+                if (result.size() >= 128) {
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    private static LotteryConfig.Payout normalizePayout(LotteryConfig.Payout payout) {
+        if (payout == null) {
+            return null;
+        }
+        payout.money = clamp(payout.money, 0L, MAX_MONEY);
+        List<LotteryConfig.Reward> items = new ArrayList<>();
+        if (payout.items != null) {
+            for (LotteryConfig.Reward reward : payout.items) {
+                if (reward == null || isBlank(reward.item)) {
+                    continue;
+                }
+                reward.item = reward.item.trim();
+                reward.meta = Math.max(0, reward.meta);
+                reward.count = clamp(reward.count, 1, 2304);
+                items.add(reward);
+                if (items.size() >= 16) {
+                    break;
+                }
+            }
+        }
+        payout.items = items;
+        return payout.isEmpty() ? null : payout;
     }
 
     private static List<ShopConfig.PoolEntry> normalizePool(List<ShopConfig.PoolEntry> pool) {
@@ -337,6 +657,10 @@ public final class PageConfigs {
     }
 
     private static int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private static long clamp(long value, long min, long max) {
         return Math.max(min, Math.min(max, value));
     }
 }

@@ -1,6 +1,7 @@
 package meowmel.quantumhue.api;
 
 import meowmel.quantumhue.config.PageConfigs;
+import meowmel.quantumhue.lottery.LotteryConfig;
 import meowmel.quantumhue.market.ShopConfig;
 import meowmel.quantumhue.notice.VersionConfig;
 import net.minecraft.item.ItemStack;
@@ -116,6 +117,110 @@ public final class QuantumHuePageApi {
     /** 当前生效的商店配置：加载完成前是默认空实例，加载完成后为据记录表构建的结果。 */
     public static ShopConfig getShopConfig() {
         return PageConfigs.shop();
+    }
+
+    // ================================================================ 抽奖（老虎机）
+
+    /**
+     * 注册一个抽奖符号（完整对象重载）。
+     *
+     * <p>符号的 {@code weight} 是每个转轮的相对抽取权重，{@code three/four/five} 分别是左起连续
+     * 3/4/5 个相同符号时的奖品；某一档留 {@code null} 会回退到更短一档。奖品可以同时包含货币与物品：
+     * <pre>{@code
+     * LotteryConfig.Symbol diamond = new LotteryConfig.Symbol(
+     *         "diamond", "钻石", "minecraft:diamond", 0, 10,
+     *         LotteryConfig.Payout.of(3000).withItem("minecraft:diamond", 0, 1),
+     *         LotteryConfig.Payout.of(30000).withItem("minecraft:diamond", 0, 8),
+     *         LotteryConfig.Payout.of(300000));
+     * QuantumHuePageApi.addLotterySymbol(diamond);
+     * }</pre>
+     *
+     * <p>加载阶段只记录，游戏加载完成时统一构建；注册后的对象会被复制，再修改它不会影响奖池。
+     */
+    public static void addLotterySymbol(LotteryConfig.Symbol symbol) {
+        PageConfigs.addLotterySymbol(symbol);
+    }
+
+    /** 便捷重载：注册一个只赔货币的符号。 */
+    public static void addLotterySymbol(String id, String name, String icon, int iconMeta, int weight,
+                                        long win3, long win4, long win5) {
+        PageConfigs.addLotterySymbol(new LotteryConfig.Symbol(id, name, icon, iconMeta, weight,
+                LotteryConfig.Payout.of(win3), LotteryConfig.Payout.of(win4),
+                LotteryConfig.Payout.of(win5)));
+    }
+
+    /**
+     * 注册一个可切换的额外奖池。{@code id} 用于抽奖请求与文档定位；重复使用同一个 id 会更新该奖池的
+     * 名称/价格。{@code default} 保留给默认奖池，不要用作额外奖池 id。
+     * {@code baseSpinCost} 是该奖池每行基础价，抽 1/2/3 行分别扣 1/2/3 倍。
+     *
+     * <p>额外奖池与默认奖池互不影响；默认奖池的符号仍用无 poolId 的
+     * {@link #addLotterySymbol(LotteryConfig.Symbol)} 注册。
+     */
+    public static void addLotteryPool(String id, String name, String icon, int iconMeta,
+                                      long baseSpinCost) {
+        PageConfigs.addLotteryPool(id, name, icon, iconMeta, baseSpinCost);
+    }
+
+    /** 便捷重载：奖池图标使用默认 meta 0。 */
+    public static void addLotteryPool(String id, String name, String icon, long baseSpinCost) {
+        PageConfigs.addLotteryPool(id, name, icon, 0, baseSpinCost);
+    }
+
+    /** 往指定额外奖池追加一个符号（完整对象重载）。 */
+    public static void addLotterySymbol(String poolId, LotteryConfig.Symbol symbol) {
+        PageConfigs.addLotterySymbol(poolId, symbol);
+    }
+
+    /** 往指定额外奖池追加一个只赔货币的符号。 */
+    public static void addLotterySymbol(String poolId, String id, String name, String icon,
+                                        int iconMeta, int weight, long win3, long win4, long win5) {
+        PageConfigs.addLotterySymbol(poolId, new LotteryConfig.Symbol(id, name, icon, iconMeta,
+                weight, LotteryConfig.Payout.of(win3), LotteryConfig.Payout.of(win4),
+                LotteryConfig.Payout.of(win5)));
+    }
+
+    /** 调整指定奖池的每行基础价；传空串或 {@code default} 时作用于默认奖池。 */
+    public static void setLotteryCosts(String poolId, long baseSpinCost) {
+        PageConfigs.setLotteryCosts(poolId, baseSpinCost);
+    }
+
+    /** 开关指定额外奖池；总开关仍由 {@link #setLotteryEnabled(boolean)} 控制。 */
+    public static void setLotteryPoolEnabled(String poolId, boolean enabled) {
+        PageConfigs.setLotteryPoolEnabled(poolId, enabled);
+    }
+
+    /** 清空指定奖池的符号；传空串或 {@code default} 时作用于默认奖池。 */
+    public static void clearLotterySymbols(String poolId) {
+        PageConfigs.clearLotterySymbols(poolId);
+    }
+
+    /** 删除全部额外奖池；默认奖池不受影响。 */
+    public static void clearLotteryPools() {
+        PageConfigs.clearLotteryPools();
+    }
+
+    /**
+     * 调整抽奖价格：{@code baseSpinCost} 是每行价格，实际扣费 = 基础价 × 本次抽取行数
+     * （例如基础价 100 时，抽 1/2/3 行分别为 100/200/300）。
+     */
+    public static void setLotteryCosts(long baseSpinCost) {
+        PageConfigs.setLotteryCosts(baseSpinCost);
+    }
+
+    /** 开关抽奖；关闭后界面仍能打开，但服务端会拒绝抽奖。 */
+    public static void setLotteryEnabled(boolean enabled) {
+        PageConfigs.setLotteryEnabled(enabled);
+    }
+
+    /** 清空奖池（同时停用空奖池时的内置演示奖池）。 */
+    public static void clearLotterySymbols() {
+        PageConfigs.clearLotterySymbols();
+    }
+
+    /** 当前生效的抽奖配置；加载完成前为空奖池。 */
+    public static LotteryConfig getLotteryConfig() {
+        return PageConfigs.lottery();
     }
 
     // ================================================================ 整合包版本

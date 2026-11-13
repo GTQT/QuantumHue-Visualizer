@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import meowmel.quantumhue.QuantumHue;
 import meowmel.quantumhue.chat.packets.ChatGroupPacket;
+import meowmel.quantumhue.chat.packets.ChatNoticePacket;
 import meowmel.quantumhue.chat.packets.ChatPrivatePacket;
 import meowmel.quantumhue.chat.packets.GroupManagePacket;
 import meowmel.quantumhue.chat.packets.TpRequestPacket;
@@ -31,6 +32,61 @@ public class ChatServerListener {
     private static final Map<String, Group> groups = new LinkedHashMap<>();
     private static int groupCounter;
     private static final Gson GSON = new Gson();
+
+    // ===== 离线私聊 =====
+
+    private static final Map<String, List<OfflineMail>> offlineMails = new LinkedHashMap<>();
+    private static final int MAX_OFFLINE_MAILS = 50;
+
+    /** 离线私聊：玩家下线时暂存，上线后按原顺序补发。 */
+    public static class OfflineMail {
+        public String targetName;
+        public String senderName;
+        public String senderUUID;
+        public String message;
+        public long time;
+    }
+
+    /** 目标不在线时留言；队列满返回 false。 */
+    public static boolean queueOfflineMail(String targetName, String senderName, UUID senderUUID, String message) {
+        if (targetName == null || targetName.isEmpty()) {
+            return false;
+        }
+        List<OfflineMail> list = offlineMails.computeIfAbsent(
+                targetName.toLowerCase(Locale.ROOT), key -> new ArrayList<>());
+        if (list.size() >= MAX_OFFLINE_MAILS) {
+            return false;
+        }
+        OfflineMail mail = new OfflineMail();
+        mail.targetName = targetName;
+        mail.senderName = senderName;
+        mail.senderUUID = senderUUID != null ? senderUUID.toString() : "";
+        mail.message = message;
+        mail.time = System.currentTimeMillis();
+        list.add(mail);
+        saveOfflineMails();
+        return true;
+    }
+
+    /** 上线时补发留言；只补发一次，失败也不重试，避免刷屏。 */
+    private static void deliverOfflineMails(EntityPlayerMP player) {
+        List<OfflineMail> mails = offlineMails.remove(player.getName().toLowerCase(Locale.ROOT));
+        if (mails == null || mails.isEmpty()) {
+            return;
+        }
+        for (OfflineMail mail : mails) {
+            UUID senderUuid;
+            try {
+                senderUuid = UUID.fromString(mail.senderUUID);
+            } catch (Exception failure) {
+                senderUuid = new UUID(0L, 0L);
+            }
+            PacketHandler.sendTo(new ChatPrivatePacket(player.getName(), mail.message,
+                    mail.senderName, senderUuid), player);
+        }
+        PacketHandler.sendTo(new ChatNoticePacket("§7你有 " + mails.size() + " 条离线私聊"), player);
+        saveOfflineMails();
+    }
 
     public static class Group {
         public final String id;
@@ -163,6 +219,40 @@ public class ChatServerListener {
         return new File(worldDir, "quantumhue/groups.json");
     }
 
+    private static File getOfflineFile() {
+        World world = FMLCommonHandler.instance().getMinecraftServerInstance().getEntityWorld();
+        if (world == null) return null;
+        File worldDir = world.getSaveHandler().getWorldDirectory();
+        return new File(worldDir, "quantumhue/offline_mail.json");
+    }
+
+    private static void saveOfflineMails() {
+        File file = getOfflineFile();
+        if (file == null) return;
+        file.getParentFile().mkdirs();
+        try (Writer w = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
+            GSON.toJson(offlineMails, w);
+        } catch (Exception e) {
+            QuantumHue.LOGGER.error("Failed to save offline mails", e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void loadOfflineMails(File worldDir) {
+        File file = new File(worldDir, "quantumhue/offline_mail.json");
+        if (!file.exists()) return;
+        try (Reader r = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
+            Map<String, List<OfflineMail>> loaded = GSON.fromJson(r,
+                    new TypeToken<Map<String, List<OfflineMail>>>(){}.getType());
+            offlineMails.clear();
+            if (loaded != null) {
+                offlineMails.putAll(loaded);
+            }
+        } catch (Exception e) {
+            QuantumHue.LOGGER.error("Failed to load offline mails", e);
+        }
+    }
+
     private static void saveGroups() {
         File file = getGroupsFile();
         if (file == null) return;
@@ -252,7 +342,9 @@ public class ChatServerListener {
     public void onWorldLoad(WorldEvent.Load event) {
         if (event.getWorld().isRemote) return;
         if (event.getWorld().provider.getDimension() != 0) return;
-        loadGroups(event.getWorld().getSaveHandler().getWorldDirectory());
+        File worldDir = event.getWorld().getSaveHandler().getWorldDirectory();
+        loadGroups(worldDir);
+        loadOfflineMails(worldDir);
     }
 
     @SubscribeEvent
@@ -260,6 +352,7 @@ public class ChatServerListener {
         if (event.getWorld().isRemote) return;
         if (event.getWorld().provider.getDimension() != 0) return;
         saveGroups();
+        saveOfflineMails();
     }
 
     // ===== 玩家事件：登录时同步已有群 =====
@@ -275,6 +368,8 @@ public class ChatServerListener {
                 PacketHandler.sendTo(GroupManagePacket.createSync(group.id, group.name, names), player);
             }
         }
+
+        deliverOfflineMails(player);
     }
 
     // ===== TP 请求接受检测 =====

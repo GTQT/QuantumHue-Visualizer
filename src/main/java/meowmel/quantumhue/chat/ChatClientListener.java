@@ -1,13 +1,14 @@
 package meowmel.quantumhue.chat;
 
 import net.minecraft.client.Minecraft;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
- * 客户端事件监听 — 世界切换时触发聊天历史保存/加载
+ * 客户端事件监听 — 世界切换时触发聊天历史保存/加载，并驱动 HUD 预览。
  */
 @SideOnly(Side.CLIENT)
 public class ChatClientListener {
@@ -27,5 +28,12 @@ public class ChatClientListener {
             key = "world";
         }
         ChatMessageStore.setCurrentWorld(key);
+        ChatHud.tick(mc);
+    }
+
+    @SubscribeEvent
+    public void onRenderOverlay(RenderGameOverlayEvent.Post event) {
+        if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) return;
+        ChatHud.render(Minecraft.getMinecraft(), event.getResolution());
     }
 }

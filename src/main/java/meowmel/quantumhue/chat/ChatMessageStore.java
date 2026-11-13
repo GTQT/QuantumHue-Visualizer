@@ -209,11 +209,13 @@ public class ChatMessageStore {
         if (isSystem && !targetList.isEmpty()) {
             ChatMessage last = targetList.get(targetList.size() - 1);
             if (last.isSystem() && last.content().getUnformattedText().equals(content.getUnformattedText())) {
-                targetList.set(targetList.size() - 1, new ChatMessage(
+                ChatMessage merged = new ChatMessage(
                         last.senderUUID(), last.senderName(), last.content(),
                         LocalTime.now(), last.isOwn(), last.isSystem(),
                         last.rawPlayerName(), last.channelId(),
-                        last.duplicateCount() + 1, last.messageHash()));
+                        last.duplicateCount() + 1, last.messageHash());
+                targetList.set(targetList.size() - 1, merged);
+                trackAppend(merged);
                 return;
             }
         }
@@ -222,16 +224,18 @@ public class ChatMessageStore {
             ChatMessage last = targetList.get(targetList.size() - 1);
             if (!last.isSystem() && isSameSender(last, senderName, rawPlayerName)
                     && last.content().getUnformattedText().equals(content.getUnformattedText())) {
-                targetList.set(targetList.size() - 1, new ChatMessage(
+                ChatMessage merged = new ChatMessage(
                         last.senderUUID(), last.senderName(), last.content(),
                         LocalTime.now(), last.isOwn(), last.isSystem(),
                         last.rawPlayerName(), last.channelId(),
-                        last.duplicateCount() + 1, last.messageHash()));
+                        last.duplicateCount() + 1, last.messageHash());
+                targetList.set(targetList.size() - 1, merged);
+                trackAppend(merged);
                 return;
             }
         }
 
-        targetList.add(new ChatMessage(
+        ChatMessage added = new ChatMessage(
                 senderUUID,
                 senderName != null ? senderName : new TextComponentString(""),
                 content,
@@ -242,7 +246,8 @@ public class ChatMessageStore {
                 channelId,
                 1,
                 messageHash
-        ));
+        );
+        targetList.add(added);
 
         // 容量限制
         while (targetList.size() > MAX_MESSAGES) {
@@ -256,6 +261,8 @@ public class ChatMessageStore {
                 ch.incrementUnread();
             }
         }
+
+        trackAppend(added);
     }
 
     private static boolean isSameSender(ChatMessage last, ITextComponent senderName, String rawPlayerName) {
@@ -309,12 +316,104 @@ public class ChatMessageStore {
         pendingEchoes.removeIf(e -> e.time < cutoff);
     }
 
+    // ===== HUD 数据（关闭聊天时的最近消息 + 提示音） =====
+
+    private static final int MAX_RECENT = 200;
+    private static final List<ChatMessage> recentMessages = new ArrayList<>();
+    private static long lastMessageAt;
+    /** 0 = 没有提醒，1 = 私聊，2 = 被 @。 */
+    private static int pendingNotifyKind;
+
+    /** 跨频道按到达顺序排列的最近消息，供 HUD 预览用。 */
+    public static List<ChatMessage> getRecentMessages() {
+        return Collections.unmodifiableList(recentMessages);
+    }
+
+    public static long getLastMessageAt() {
+        return lastMessageAt;
+    }
+
+    /** 取走待播放的提示音类型：1 = 私聊，2 = 被 @；取走后清空。 */
+    public static int consumeNotify() {
+        int kind = pendingNotifyKind;
+        pendingNotifyKind = 0;
+        return kind;
+    }
+
+    private static void trackAppend(ChatMessage msg) {
+        lastMessageAt = System.currentTimeMillis();
+        pushRecent(msg);
+        if (screenOpen || msg.isOwn() || msg.isSystem()) {
+            return;
+        }
+        String id = msg.channelId();
+        boolean priv = id != null && id.startsWith("priv:");
+        boolean mention = mentionsLocalPlayer(msg.content().getUnformattedText());
+        if (mention) {
+            pendingNotifyKind = 2;
+        } else if (priv && pendingNotifyKind == 0) {
+            pendingNotifyKind = 1;
+        }
+    }
+
+    private static void pushRecent(ChatMessage msg) {
+        for (int i = recentMessages.size() - 1; i >= 0; i--) {
+            ChatMessage old = recentMessages.get(i);
+            if (old.channelId().equals(msg.channelId())
+                    && old.messageHash().equals(msg.messageHash())
+                    && old.content().getUnformattedText().equals(msg.content().getUnformattedText())
+                    && Objects.equals(old.rawPlayerName(), msg.rawPlayerName())) {
+                recentMessages.set(i, msg);
+                return;
+            }
+        }
+        recentMessages.add(msg);
+        while (recentMessages.size() > MAX_RECENT) {
+            recentMessages.remove(0);
+        }
+    }
+
+    /** 用来判断「@我」：允许 @全体 / @all，中文、标点都算名字边界。 */
+    private static boolean mentionsLocalPlayer(String text) {
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc.player == null || text == null || text.isEmpty()) {
+            return false;
+        }
+        String lower = text.toLowerCase(Locale.ROOT);
+        if (lower.contains("@all") || lower.contains("@全体")) {
+            return true;
+        }
+        String name = mc.player.getName().toLowerCase(Locale.ROOT);
+        if (name.isEmpty()) {
+            return false;
+        }
+        String needle = "@" + name;
+        int idx = lower.indexOf(needle);
+        while (idx >= 0) {
+            int end = idx + needle.length();
+            boolean left = idx == 0 || !isWordChar(lower.charAt(idx - 1));
+            boolean right = end >= lower.length() || !isWordChar(lower.charAt(end));
+            if (left && right) {
+                return true;
+            }
+            idx = lower.indexOf(needle, idx + 1);
+        }
+        return false;
+    }
+
+    private static boolean isWordChar(char c) {
+        return c < 128 && (Character.isLetterOrDigit(c) || c == '_');
+    }
+
     // ===== 屏幕状态 =====
 
     public static void setScreenOpen(boolean open) {
         screenOpen = open;
-        if (open && activeChannel != null) {
-            activeChannel.markRead();
+        if (open) {
+            pendingNotifyKind = 0;
+            if (activeChannel != null) {
+                activeChannel.markRead();
+            }
         }
     }
 
@@ -345,6 +444,9 @@ public class ChatMessageStore {
         // 清空旧数据
         channels.clear();
         channelMessages.clear();
+        recentMessages.clear();
+        pendingNotifyKind = 0;
+        lastMessageAt = 0;
         // 重建世界频道（兜底）
         ChatChannel world = ChatChannel.world();
         channels.add(world);

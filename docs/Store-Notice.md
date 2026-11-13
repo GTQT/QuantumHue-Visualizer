@@ -246,6 +246,88 @@ QuantumHuePageApi.registerPackVersion("1.9.0");   // 传空串表示版本未知
 `getMoney(EntityPlayer)` / `setMoney(EntityPlayer, long)`，不把 FTB Money 变成硬依赖：
 没装时界面照常打开，余额为 0，购买/货币奖励会被服务端拒绝并提示。
 
+## 抽奖（老虎机）
+
+商店页右侧新增「幸运抽奖」页签。玩法是 5 列 × 最多 3 行的老虎机：界面提供「抽一行 / 抽两行 /
+抽三行」三个按钮，**选几行就只结算几行**，默认选中「抽一行」。费用按本次选择的行数计算，为
+`baseSpinCost × 行数`，基础价默认 `100`，即 1/2/3 行分别为 `100 / 200 / 300`。
+
+抽奖支持多个可切换奖池：注册了额外奖池后，标题下方的「奖池」条会显示当前奖池名与
+`(序号/总数)`，用左右箭头循环切换。每个奖池有自己的名称、图标、基础价与符号表，抽奖时按
+**当前选中的奖池**计价和抽取；默认奖池的 id 固定为 `default`，没有额外奖池时不会显示切换箭头。
+
+每一行独立结算：从最左侧开始数连续相同的符号，连续 **3 / 4 / 5** 个分别取该符号配置的
+三档奖品；某一档留空会回退到更短的档位。货币奖励与抽奖费用一次性结算，物品奖励通过
+`ShopDelivery.give` 发放（背包满时掉落在脚下）。
+
+- 抽奖页只负责播放动画，**结果完全由服务端生成**，客户端不能决定中奖符号；
+- 每个符号按 `weight` 加权抽取，单格概率 = `weight / 所有符号 weight 之和`；
+- 中奖判定只看每行左起连续相同的个数；连续 4/5 个取更高档，三连后第 4 个不同仍按三连结算；
+- 转轮逐列停止，中奖行有金色呼吸边框、扫光与碎屑，金额从 0 滚到最终值；等待服务端时按钮和状态文字会给出反馈；
+- 服务端对抽奖有 350ms 冷却，余额从 FTB Money 实时读取，行数由本次请求决定；
+
+### 奖池 API
+
+奖池与价格和商店一样走增量注册：加载阶段只记录，`FMLLoadCompleteEvent` 时统一构建。
+**没有任何模组注册符号或额外奖池时**会使用内置的演示奖池（煤炭/红石/铁/金/青金石/钻石/绿宝石/下界之星，
+单行期望返还约 0.75 倍单行费用），方便开箱即玩；只要注册过至少一个符号或奖池，就完全使用注册内容。
+调用 `clearLotterySymbols()` 会清空默认奖池的注册并停用演示奖池。
+
+```java
+// 完整对象：id、显示名、图标、权重、3/4/5 连奖品；奖品可同时含货币与物品
+LotteryConfig.Symbol diamond = new LotteryConfig.Symbol(
+        "diamond", "钻石", "minecraft:diamond", 0, 10,
+        LotteryConfig.Payout.of(3000).withItem("minecraft:diamond", 0, 1),
+        LotteryConfig.Payout.of(30000).withItem("minecraft:diamond", 0, 8),
+        LotteryConfig.Payout.of(300000));
+QuantumHuePageApi.addLotterySymbol(diamond);
+
+// 便捷重载：只赔货币
+QuantumHuePageApi.addLotterySymbol("coal", "煤炭", "minecraft:coal", 0, 30, 300, 3000, 30000);
+
+// 每行基础价：抽 1/2/3 行分别扣 100/200/300
+QuantumHuePageApi.setLotteryCosts(100);
+QuantumHuePageApi.setLotteryEnabled(true);
+
+// 额外奖池：id、显示名、图标、图标 meta、每行基础价
+QuantumHuePageApi.addLotteryPool("vip", "VIP 奖池", "minecraft:diamond_block", 0, 500);
+QuantumHuePageApi.addLotterySymbol("vip", diamond); // 也可用带 poolId 的便捷重载
+QuantumHuePageApi.addLotterySymbol("vip", "vip_coal", "煤炭", "minecraft:coal", 0, 30, 500, 5000, 50000);
+QuantumHuePageApi.setLotteryCosts("vip", 500);       // 该池抽 1/2/3 行分别扣 500/1000/1500
+QuantumHuePageApi.setLotteryPoolEnabled("vip", true); // 单独关闭某个奖池
+
+// 需要时：清空某池符号 / 删除全部额外奖池（默认奖池不受影响）
+// QuantumHuePageApi.clearLotterySymbols("vip");
+// QuantumHuePageApi.clearLotteryPools();
+
+LotteryConfig current = QuantumHuePageApi.getLotteryConfig();
+
+// 如果需要“不注册任何符号且不使用演示奖池”，再调用：
+// QuantumHuePageApi.clearLotterySymbols();
+```
+
+- `weight` 必须大于 0，构建时会夹到 `1..100000`；同一奖池内 `id` 重复会自动加后缀；
+- 额外奖池 id 留空会自动生成 `pool_N`，`default` 保留给默认奖池；最多 16 个额外奖池，每池最多 128 个符号；
+- 奖池缺少名称时自动补「奖池 N」，缺少图标时用箱子；负数价格会被夹到 0；
+- `Payout` 的 `money` 为 0 且没有有效物品时视为该档无奖励；
+- 物品注册名写错时只跳过该物品并打警告，不影响同档货币；
+- 客户端只收到解析好的图标、权重与赔率文本，结果完全由服务端抽取，客户端不参与结算。
+
+### 默认奖池
+
+| 符号 | 权重 | 3 连 | 4 连 | 5 连 |
+| --- | ---: | ---: | ---: | ---: |
+| 煤炭 | 30 | 300 | 3,000 | 30,000 |
+| 红石 | 25 | 400 | 4,000 | 40,000 |
+| 铁锭 | 25 | 500 | 5,000 | 50,000 |
+| 金锭 | 20 | 800 | 8,000 | 80,000 |
+| 青金石 | 18 | 1,000 | 10,000 | 100,000 |
+| 钻石 | 10 | 3,000 | 30,000 | 300,000 |
+| 绿宝石 | 8 | 5,000 | 50,000 | 500,000 |
+| 下界之星 | 2 | 20,000 | 200,000 | 2,000,000 |
+
+表中均为货币奖励。整合包应通过 `addLotterySymbol` 注册自己的奖池，内置表只用于演示。
+
 ## 服务端权威与网络包
 
 | 包 | 方向 | 用途 |
@@ -260,6 +342,8 @@ QuantumHuePageApi.registerPackVersion("1.9.0");   // 传空串表示版本未知
 | `MessageSellItem` / `MessageRemoveListing` | C→S | 上架 / 下架取回 |
 | `MessageMailAction` | C→S | 请求邮件列表/详情、领取（只传 mailId） |
 | `MessageMailView` | S→C | 邮件摘要、详情、奖励、错误提示 |
+| `MessageLotteryAction` | C→S | 请求抽奖页、按所选奖池与行数抽奖（只传行动、奖池 id 与行数） |
+| `MessageLotteryView` | S→C | 全部奖池快照、余额、抽奖结果、提示 |
 
 ## UI 统一
 
@@ -272,4 +356,5 @@ QuantumHuePageApi.registerPackVersion("1.9.0");   // 传空串表示版本未知
   `PageThemePanel` 浮层，点色卡即写盘，因此不需要关闭页面、也不会丢搜索词和滚动位置；
 - 「公告」页签由 `AnnouncementPanel` 绘制，左侧公告列表、右侧正文预览；
 - 「邮件」页签由 `MailPanel` 绘制，左侧邮件列表、右侧正文/奖励/领取按钮；
-- 两个面板共用同一套配色与滚动条，与商店页保持一致。
+- 「幸运抽奖」页签由 `LotteryPanel` 绘制，5 列 × 最多 3 行的转轮、奖池切换条、三个抽奖按钮与可滚动奖池表；
+- 这些面板共用同一套配色与滚动条，与商店页保持一致。

@@ -3,6 +3,7 @@ package meowmel.quantumhue;
 import com.meowmel.quantumhue.Tags;
 import meowmel.quantumhue.biomeInfo.BiomeInfoEventHandler;
 import meowmel.quantumhue.chat.ChatClientListener;
+import meowmel.quantumhue.chat.ChatThemeSettings;
 import meowmel.quantumhue.chat.server.ChatServerListener;
 import meowmel.quantumhue.blur.SimpleBlurHandler;
 import meowmel.quantumhue.client.highlight.ClientHighlightHandler;
@@ -117,6 +118,13 @@ public class QuantumHue {
         if (event.getModID().equals(Tags.MOD_ID)) {
             // 公告参数存在 cfg 的静态字段里，使用方直接读，同步完就立即生效
             ConfigManager.sync(Tags.MOD_ID, Config.Type.INSTANCE);
+            // 聊天配色没被玩家自定义过时，跟随 Forge 配置即时刷新（仅客户端有界面配色）
+            if (net.minecraftforge.fml.common.FMLCommonHandler.instance()
+                    .getEffectiveSide()
+                    .isClient()) {
+                ChatThemeSettings.get()
+                        .onConfigChanged();
+            }
         }
     }
 

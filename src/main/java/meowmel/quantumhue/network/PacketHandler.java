@@ -2,12 +2,15 @@ package meowmel.quantumhue.network;
 
 
 import meowmel.quantumhue.chat.packets.ChatGroupPacket;
+import meowmel.quantumhue.chat.packets.ChatNoticePacket;
 import meowmel.quantumhue.chat.packets.ChatPrivatePacket;
 import meowmel.quantumhue.chat.packets.GroupManagePacket;
 import meowmel.quantumhue.chat.packets.TpRequestPacket;
 import meowmel.quantumhue.network.packet.MessageBuyItem;
 import meowmel.quantumhue.network.packet.MessageMailAction;
 import meowmel.quantumhue.network.packet.MessageMailView;
+import meowmel.quantumhue.network.packet.MessageLotteryAction;
+import meowmel.quantumhue.network.packet.MessageLotteryView;
 import meowmel.quantumhue.network.packet.MessageRemoveListing;
 import meowmel.quantumhue.network.packet.MessageSellItem;
 import meowmel.quantumhue.network.packet.MessageSellToOrder;
@@ -138,6 +141,16 @@ public class PacketHandler {
                 MessageSystemBuy.class,
                 packetId++,
                 Side.SERVER);
+        instance.registerMessage(
+                MessageLotteryView.Handler.class,
+                MessageLotteryView.class,
+                packetId++,
+                Side.CLIENT);
+        instance.registerMessage(
+                MessageLotteryAction.Handler.class,
+                MessageLotteryAction.class,
+                packetId++,
+                Side.SERVER);
 
         // 邮件
         instance.registerMessage(
@@ -150,6 +163,13 @@ public class PacketHandler {
                 MessageMailAction.class,
                 packetId++,
                 Side.SERVER);
+
+        // 聊天提示（服务端 → 客户端）
+        instance.registerMessage(
+                ChatNoticePacket.ClientHandler.class,
+                ChatNoticePacket.class,
+                packetId++,
+                Side.CLIENT);
     }
 
     public static void sendTo(IMessage message, net.minecraft.entity.player.EntityPlayerMP player) {

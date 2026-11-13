@@ -55,25 +55,46 @@ public class ChatPrivatePacket implements IMessage {
         ByteBufUtils.writeUTF8String(buf, senderUUID.toString());
     }
 
-    /** 服务端 Handler：转发私聊给目标 */
+    /** 服务端 Handler：转发私聊给目标；目标离线时留言，并提示发送者。 */
     public static class ServerHandler implements IMessageHandler<ChatPrivatePacket, IMessage> {
+
+        private static final int MAX_LENGTH = 256;
+
         @Override
         public IMessage onMessage(ChatPrivatePacket pkt, MessageContext ctx) {
+            final net.minecraft.entity.player.EntityPlayerMP sender = ctx.getServerHandler().player;
+            if (sender == null) {
+                return null;
+            }
+            final String targetName = pkt.targetName == null ? "" : pkt.targetName.trim();
+            final String rawMessage = pkt.message == null ? "" : pkt.message.trim();
+            if (targetName.isEmpty() || rawMessage.isEmpty()) {
+                return null;
+            }
+            final String message = rawMessage.length() > MAX_LENGTH
+                    ? rawMessage.substring(0, MAX_LENGTH) : rawMessage;
+
             FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> {
                 net.minecraft.entity.player.EntityPlayerMP target =
                         FMLCommonHandler.instance().getMinecraftServerInstance()
-                                .getPlayerList().getPlayerByUsername(pkt.targetName);
+                                .getPlayerList().getPlayerByUsername(targetName);
+
+                // 一律使用服务端身份，避免客户端伪造发送者
+                String senderName = sender.getName();
+                UUID senderUUID = sender.getUniqueID();
+
                 if (target != null) {
-                    // 转发给目标
                     ChatPrivatePacket forward = new ChatPrivatePacket(
-                            pkt.senderName,  // target 收到时，sender 是原发送者
-                            pkt.message,
-                            pkt.senderName,
-                            pkt.senderUUID);
-                    // 用 senderName 作为 targetName 发给发送者自己（回显）
-                    meowmel.quantumhue.network.PacketHandler.sendTo(forward,
-                            (net.minecraft.entity.player.EntityPlayerMP) target);
+                            targetName, message, senderName, senderUUID);
+                    meowmel.quantumhue.network.PacketHandler.sendTo(forward, target);
+                    return;
                 }
+
+                boolean queued = meowmel.quantumhue.chat.server.ChatServerListener
+                        .queueOfflineMail(targetName, senderName, senderUUID, message);
+                meowmel.quantumhue.network.PacketHandler.sendTo(new ChatNoticePacket(queued
+                        ? "§e" + targetName + " 不在线，消息已留言，上线后会收到"
+                        : "§c" + targetName + " 不在线，且留言队列已满"), sender);
             });
             return null;
         }
