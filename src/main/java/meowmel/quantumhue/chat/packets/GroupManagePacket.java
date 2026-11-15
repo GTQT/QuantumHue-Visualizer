@@ -123,10 +123,15 @@ public class GroupManagePacket implements IMessage {
     }
 
     /** 客户端：收到群同步 */
-    @SideOnly(Side.CLIENT)
     public static class ClientHandler implements IMessageHandler<GroupManagePacket, IMessage> {
         @Override
         public IMessage onMessage(GroupManagePacket pkt, MessageContext ctx) {
+            handleClient(pkt, ctx);
+            return null;
+        }
+
+        @SideOnly(Side.CLIENT)
+        private static void handleClient(GroupManagePacket pkt, MessageContext ctx) {
             FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> {
                 if (pkt.action == SYNC) {
                     // 服务端同步群成员列表
@@ -135,7 +140,6 @@ public class GroupManagePacket implements IMessage {
                             pkt.memberNames, new ArrayList<>());
                 }
             });
-            return null;
         }
     }
 }

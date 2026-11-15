@@ -106,10 +106,15 @@ public class ChatGroupPacket implements IMessage {
     }
 
     /** 客户端：收到群消息 → 添加到对应频道 */
-    @SideOnly(Side.CLIENT)
     public static class ClientHandler implements IMessageHandler<ChatGroupPacket, IMessage> {
         @Override
         public IMessage onMessage(ChatGroupPacket pkt, MessageContext ctx) {
+            handleClient(pkt, ctx);
+            return null;
+        }
+
+        @SideOnly(Side.CLIENT)
+        private static void handleClient(ChatGroupPacket pkt, MessageContext ctx) {
             FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> {
                 if (pkt.action == 1) {
                     // 同步群信息
@@ -126,7 +131,6 @@ public class ChatGroupPacket implements IMessage {
                             pkt.senderName, chId);
                 }
             });
-            return null;
         }
     }
 }

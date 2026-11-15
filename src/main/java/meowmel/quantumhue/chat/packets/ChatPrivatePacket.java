@@ -101,10 +101,15 @@ public class ChatPrivatePacket implements IMessage {
     }
 
     /** 客户端 Handler：收到私聊消息 → 添加到对应频道 */
-    @SideOnly(Side.CLIENT)
     public static class ClientHandler implements IMessageHandler<ChatPrivatePacket, IMessage> {
         @Override
         public IMessage onMessage(ChatPrivatePacket pkt, MessageContext ctx) {
+            handleClient(pkt, ctx);
+            return null;
+        }
+
+        @SideOnly(Side.CLIENT)
+        private static void handleClient(ChatPrivatePacket pkt, MessageContext ctx) {
             FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> {
                 Minecraft mc = Minecraft.getMinecraft();
                 ITextComponent content = new TextComponentString(pkt.message);
@@ -115,7 +120,6 @@ public class ChatPrivatePacket implements IMessage {
                 ChatMessageStore.addMessage(content, pkt.senderUUID, sender, false,
                         pkt.senderName, "priv:" + pkt.senderName);
             });
-            return null;
         }
     }
 }
