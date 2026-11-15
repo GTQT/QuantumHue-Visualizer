@@ -93,14 +93,18 @@ public class QuantumHue {
         MailService.preloadAsync();
         VersionState.loadCached();
         PacketHandler.init();
-        EquipmentCompareHandler.registerKeyBinding();
-        MinecraftForge.EVENT_BUS.register(new ModernSplashEvents());
-        CreateWorldUIClient.registerTabs();
+        if (event.getSide().isClient()) {
+            EquipmentCompareHandler.registerKeyBinding();
+            MinecraftForge.EVENT_BUS.register(new ModernSplashEvents());
+            CreateWorldUIClient.registerTabs();
+        }
     }
 
     @Mod.EventHandler
     public void serverStart(FMLServerStartingEvent event) {
-        event.registerServerCommand(new CommandGameRuleEditor());
+        if (event.getSide().isClient()) {
+            event.registerServerCommand(new CommandGameRuleEditor());
+        }
         event.registerServerCommand(new CommandMarket());
         event.registerServerCommand(new CommandAnnouncement());
         event.registerServerCommand(new CommandSell());
@@ -133,20 +137,19 @@ public class QuantumHue {
         if (event.getSide().isClient()) {
             MinecraftForge.EVENT_BUS.register(new PauseMenuEvents());
             MinecraftForge.EVENT_BUS.register(new ClientHighlightHandler());
+            MinecraftForge.EVENT_BUS.register(new SimpleBlurHandler());
+            MinecraftForge.EVENT_BUS.register(new AdvancedTooltipHandler());
+            MinecraftForge.EVENT_BUS.register(EquipmentCompareHandler.class);
+            MinecraftForge.EVENT_BUS.register(new BiomeInfoEventHandler());
+            MinecraftForge.EVENT_BUS.register(new HudRenderer());
+            MinecraftForge.EVENT_BUS.register(new ThaumcraftAuraUpdater());
+            MinecraftForge.EVENT_BUS.register(new ChatClientListener());
+            IGIInit.registerDefaults(configDir);
         }
-        MinecraftForge.EVENT_BUS.register(new SimpleBlurHandler());
-        MinecraftForge.EVENT_BUS.register(new AdvancedTooltipHandler());
-        MinecraftForge.EVENT_BUS.register(EquipmentCompareHandler.class);
-        MinecraftForge.EVENT_BUS.register(new BiomeInfoEventHandler());
-        MinecraftForge.EVENT_BUS.register(new HudRenderer());
-        MinecraftForge.EVENT_BUS.register(new ThaumcraftAuraUpdater());
-        MinecraftForge.EVENT_BUS.register(new ChatClientListener());
         MinecraftForge.EVENT_BUS.register(new ChatServerListener());
         // 商店 / 公告的服务端部分：订单投放、过期清理、登录结算
         MinecraftForge.EVENT_BUS.register(new ShopEvents());
         // 邮件系统的服务端部分：远程拉取、领取校验
         MinecraftForge.EVENT_BUS.register(new MailEvents());
-
-        IGIInit.registerDefaults(configDir);
     }
 }
