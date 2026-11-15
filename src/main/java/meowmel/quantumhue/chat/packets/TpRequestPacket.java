@@ -84,7 +84,6 @@ public class TpRequestPacket implements IMessage {
     }
 
     /** 客户端：不使用 */
-    @SideOnly(Side.CLIENT)
     public static class ClientHandler implements IMessageHandler<TpRequestPacket, IMessage> {
         @Override
         public IMessage onMessage(TpRequestPacket pkt, MessageContext ctx) {

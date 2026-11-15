@@ -41,6 +41,8 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -93,6 +95,13 @@ public class QuantumHue {
         MailService.preloadAsync();
         VersionState.loadCached();
         PacketHandler.init();
+        if (event.getSide().isClient()) {
+            registerClientPreInit();
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    private static void registerClientPreInit() {
         EquipmentCompareHandler.registerKeyBinding();
         MinecraftForge.EVENT_BUS.register(new ModernSplashEvents());
         CreateWorldUIClient.registerTabs();
@@ -100,11 +109,18 @@ public class QuantumHue {
 
     @Mod.EventHandler
     public void serverStart(FMLServerStartingEvent event) {
-        event.registerServerCommand(new CommandGameRuleEditor());
+        if (!event.getServer().isDedicatedServer()) {
+            registerIntegratedServerCommands(event);
+        }
         event.registerServerCommand(new CommandMarket());
         event.registerServerCommand(new CommandAnnouncement());
         event.registerServerCommand(new CommandSell());
         event.registerServerCommand(new CommandQuantumHue());
+    }
+
+    @SideOnly(Side.CLIENT)
+    private static void registerIntegratedServerCommands(FMLServerStartingEvent event) {
+        event.registerServerCommand(new CommandGameRuleEditor());
     }
 
     @Mod.EventHandler
@@ -131,8 +147,18 @@ public class QuantumHue {
     @Mod.EventHandler
     public void onInit(FMLInitializationEvent event) {
         if (event.getSide().isClient()) {
-            MinecraftForge.EVENT_BUS.register(new PauseMenuEvents());
+            registerClientInit(configDir);
         }
+        MinecraftForge.EVENT_BUS.register(new ChatServerListener());
+        // 商店 / 公告的服务端部分：订单投放、过期清理、登录结算
+        MinecraftForge.EVENT_BUS.register(new ShopEvents());
+        // 邮件系统的服务端部分：远程拉取、领取校验
+        MinecraftForge.EVENT_BUS.register(new MailEvents());
+    }
+
+    @SideOnly(Side.CLIENT)
+    private static void registerClientInit(File configDir) {
+        MinecraftForge.EVENT_BUS.register(new PauseMenuEvents());
         MinecraftForge.EVENT_BUS.register(new SimpleBlurHandler());
         MinecraftForge.EVENT_BUS.register(new AdvancedTooltipHandler());
         MinecraftForge.EVENT_BUS.register(EquipmentCompareHandler.class);
@@ -141,11 +167,6 @@ public class QuantumHue {
         MinecraftForge.EVENT_BUS.register(new HudRenderer());
         MinecraftForge.EVENT_BUS.register(new ThaumcraftAuraUpdater());
         MinecraftForge.EVENT_BUS.register(new ChatClientListener());
-        MinecraftForge.EVENT_BUS.register(new ChatServerListener());
-        // 商店 / 公告的服务端部分：订单投放、过期清理、登录结算
-        MinecraftForge.EVENT_BUS.register(new ShopEvents());
-        // 邮件系统的服务端部分：远程拉取、领取校验
-        MinecraftForge.EVENT_BUS.register(new MailEvents());
 
         IGIInit.registerDefaults(configDir);
     }
