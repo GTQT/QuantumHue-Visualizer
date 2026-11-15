@@ -8,6 +8,8 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * 神秘时代灵气数据同步消息。
@@ -86,9 +88,14 @@ public class ThaumcraftAuraMessage implements IMessage {
 
         @Override
         public IMessage onMessage(ThaumcraftAuraMessage message, MessageContext ctx) {
-            if (message.isRequest) return null;
-            ThaumcraftDataCache.updateAura(message.vis, message.flux);
+            if (message.isRequest || !ctx.side.isClient()) return null;
+            handleClient(message);
             return null;
+        }
+
+        @SideOnly(Side.CLIENT)
+        private static void handleClient(ThaumcraftAuraMessage message) {
+            ThaumcraftDataCache.updateAura(message.vis, message.flux);
         }
     }
 }
