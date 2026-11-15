@@ -132,12 +132,12 @@ public class QuantumHue {
     public void onInit(FMLInitializationEvent event) {
         if (event.getSide().isClient()) {
             MinecraftForge.EVENT_BUS.register(new PauseMenuEvents());
+            MinecraftForge.EVENT_BUS.register(new ClientHighlightHandler());
         }
         MinecraftForge.EVENT_BUS.register(new SimpleBlurHandler());
         MinecraftForge.EVENT_BUS.register(new AdvancedTooltipHandler());
         MinecraftForge.EVENT_BUS.register(EquipmentCompareHandler.class);
         MinecraftForge.EVENT_BUS.register(new BiomeInfoEventHandler());
-        MinecraftForge.EVENT_BUS.register(new ClientHighlightHandler());
         MinecraftForge.EVENT_BUS.register(new HudRenderer());
         MinecraftForge.EVENT_BUS.register(new ThaumcraftAuraUpdater());
         MinecraftForge.EVENT_BUS.register(new ChatClientListener());

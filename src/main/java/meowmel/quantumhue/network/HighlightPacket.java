@@ -108,14 +108,17 @@ public class HighlightPacket implements IMessage {
     }
 
     // ========== 客户端处理器 ==========
-    @SideOnly(Side.CLIENT)
     public static class ClientHandler implements IMessageHandler<HighlightPacket, IMessage> {
         @Override
         public IMessage onMessage(HighlightPacket message, MessageContext ctx) {
-            FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> {
-                ClientHighlightHandler.addHighlight(message);
-            });
+            handleClient(message, ctx);
             return null;
+        }
+
+        @SideOnly(Side.CLIENT)
+        private static void handleClient(HighlightPacket message, MessageContext ctx) {
+            FMLCommonHandler.instance().getWorldThread(ctx.netHandler)
+                    .addScheduledTask(() -> ClientHighlightHandler.addHighlight(message));
         }
     }
 }
