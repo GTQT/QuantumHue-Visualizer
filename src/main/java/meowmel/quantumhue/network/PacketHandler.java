@@ -5,6 +5,8 @@ import meowmel.quantumhue.chat.packets.ChatGroupPacket;
 import meowmel.quantumhue.chat.packets.ChatNoticePacket;
 import meowmel.quantumhue.chat.packets.ChatPrivatePacket;
 import meowmel.quantumhue.chat.packets.GroupManagePacket;
+import meowmel.quantumhue.chat.packets.TaskActionPacket;
+import meowmel.quantumhue.chat.packets.TaskSyncPacket;
 import meowmel.quantumhue.chat.packets.TpRequestPacket;
 import meowmel.quantumhue.network.packet.MessageBuyItem;
 import meowmel.quantumhue.network.packet.MessageMailAction;
@@ -92,6 +94,17 @@ public class PacketHandler {
         instance.registerMessage(
                 TpRequestPacket.ClientHandler.class,
                 TpRequestPacket.class,
+                packetId++,
+                Side.CLIENT);
+        // Chat - Task Board
+        instance.registerMessage(
+                TaskActionPacket.ServerHandler.class,
+                TaskActionPacket.class,
+                packetId++,
+                Side.SERVER);
+        instance.registerMessage(
+                TaskSyncPacket.ClientHandler.class,
+                TaskSyncPacket.class,
                 packetId++,
                 Side.CLIENT);
 

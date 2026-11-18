@@ -127,7 +127,7 @@ public class AdvancedTooltipHandler {
 
         TooltipContent rawContent = contentExtractor.extractTooltipContent(event.getLines(), stack);
         FontRenderer font = event.getFontRenderer();
-        List<String> wrappedLines = TooltipUtils.wrapTooltipText(rawContent.remainingLines, font, TooltipConstants.TOOLTIP_MAX_WIDTH);
+        List<meowmel.quantumhue.tooltips.text.TooltipTextLine> wrappedLines = TooltipUtils.wrapTooltipText(rawContent.remainingLines, font, TooltipConstants.TOOLTIP_MAX_WIDTH);
 
         TooltipContent content = new TooltipContent(rawContent.itemName, rawContent.modName, wrappedLines);
 
@@ -167,7 +167,7 @@ public class AdvancedTooltipHandler {
         }
 
         tooltipRenderer.drawItemIcon(stack, layout.iconX, layout.iconY, itemIconAnimation.getScale());
-        tooltipRenderer.drawTooltipText(content, layout, event.getFontRenderer());
+        tooltipRenderer.drawTooltipText(content, layout, event.getFontRenderer(), colors);
 
         if (tooltipAnimation.isAnimating()) {
             GLStateHelper.disableScissorClip();

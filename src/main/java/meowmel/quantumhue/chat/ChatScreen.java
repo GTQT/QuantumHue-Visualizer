@@ -9,6 +9,7 @@ import meowmel.quantumhue.chat.packets.ChatPrivatePacket;
 import meowmel.quantumhue.chat.packets.GroupManagePacket;
 import meowmel.quantumhue.chat.packets.TpRequestPacket;
 import meowmel.quantumhue.network.PacketHandler;
+import meowmel.quantumhue.task.client.TaskStore;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -129,6 +130,8 @@ public class ChatScreen extends GuiScreen {
 
     // 聊天设置浮层
     private final ChatSettingsPanel settingsPanel = new ChatSettingsPanel();
+    // 群任务板浮层
+    private final TaskPanel taskPanel = new TaskPanel();
 
     // 搜索
     private GuiTextField searchField;
@@ -154,6 +157,52 @@ public class ChatScreen extends GuiScreen {
     }
 
     private int panelRight() { return panelW; }
+
+    private String activeGroupId() {
+        return activeChannel != null && activeChannel.isGroup() ? activeChannel.getGroupId() : "";
+    }
+
+    private boolean canUseTaskBoard() {
+        return QuantumHueConfig.taskBoard.enabled && !activeGroupId().isEmpty();
+    }
+
+    private int taskEntryWidth() {
+        return mc.fontRenderer.getStringWidth("记事板 " + TaskStore.get().openCount(activeGroupId())) + 12;
+    }
+
+    private int taskEntryX() {
+        return panelRight() - 58 - 6 - taskEntryWidth();
+    }
+
+    private void openTaskBoard() {
+        if (!canUseTaskBoard()) {
+            return;
+        }
+        if (settingsPanel.isOpen()) {
+            settingsPanel.close();
+        }
+        taskPanel.open(this, activeGroupId());
+    }
+
+    private void openTaskBoardCreate() {
+        if (!canUseTaskBoard()) {
+            return;
+        }
+        if (settingsPanel.isOpen()) {
+            settingsPanel.close();
+        }
+        taskPanel.openCreate(this, activeGroupId());
+    }
+
+    private void openTaskBoard(String groupId, String taskId) {
+        if (groupId == null || groupId.isEmpty()) {
+            return;
+        }
+        if (settingsPanel.isOpen()) {
+            settingsPanel.close();
+        }
+        taskPanel.openTask(groupId, taskId);
+    }
 
     @Override
     public void initGui() {
@@ -219,6 +268,7 @@ public class ChatScreen extends GuiScreen {
     public void onGuiClosed() {
         Keyboard.enableRepeatEvents(false);
         ChatMessageStore.setScreenOpen(false);
+        taskPanel.close();
     }
 
     @Override
@@ -229,6 +279,7 @@ public class ChatScreen extends GuiScreen {
         inputField.updateCursorCounter();
         if (searchOpen && searchField != null) searchField.updateCursorCounter();
         if (creatingGroup) groupNameField.updateCursorCounter();
+        if (taskPanel.isOpen()) taskPanel.updateScreen();
     }
 
     // ===== 渲染入口 =====
@@ -273,6 +324,7 @@ public class ChatScreen extends GuiScreen {
 
         // 设置浮层是屏幕级模态，不跟随滑入动画
         if (settingsPanel.isOpen()) settingsPanel.draw(mouseX, mouseY);
+        if (taskPanel.isOpen()) taskPanel.draw(mouseX, mouseY);
 
         if (closing && System.currentTimeMillis() - animStart >= animationMs()) {
             mc.displayGuiScreen(null);
@@ -399,8 +451,26 @@ public class ChatScreen extends GuiScreen {
         String title = activeChannel != null ? activeChannel.getDisplayName() : "聊天";
         if (activeChannel != null && activeChannel.isGroup())
             title = "👥 " + title + " (" + activeChannel.getMemberNames().size() + ")";
+        int titleRight = panelRight() - PAD;
+        if (canUseTaskBoard() && !searchOpen) {
+            titleRight = Math.min(titleRight, taskEntryX() - 6);
+        }
+        title = mc.fontRenderer.trimStringToWidth(title,
+                Math.max(24, titleRight - sidebarW() - PAD));
         mc.fontRenderer.drawStringWithShadow(title, sidebarW() + PAD,
                 (HEADER_H - 8) / 2, ChatColors.TEXT_HEADER);
+
+        // 群任务板入口（只对群聊显示）
+        if (canUseTaskBoard() && !searchOpen) {
+            String taskLabel = "记事板 " + TaskStore.get().openCount(activeGroupId());
+            int taskW = taskEntryWidth();
+            int taskX = taskEntryX();
+            boolean hoverTask = mx >= taskX && mx < taskX + taskW && my >= 6 && my < 20;
+            Gui.drawRect(taskX, 6, taskX + taskW, 20,
+                    hoverTask ? ChatColors.SIDEBAR_HOVER : ChatColors.SIDEBAR_HOVER & 0x60FFFFFF);
+            mc.fontRenderer.drawStringWithShadow(taskLabel, taskX + 6, 9,
+                    hoverTask ? ChatColors.TEXT_PRIMARY : ChatColors.TEXT_SECONDARY);
+        }
 
         // 时间显示（实时时钟）/ 搜索框
         if (searchOpen) {
@@ -615,6 +685,9 @@ public class ChatScreen extends GuiScreen {
     }
 
     private int getMsgHeight(ChatMessage msg) {
+        if (msg.kind() == ChatMessageStore.ChatMessage.KIND_TASK_CARD) {
+            return TaskCardRenderer.HEIGHT;
+        }
         int wrapW = textWrapWidth();
         String text = EmojiRegistry.replaceShortcodes(msg.content().getFormattedText());
         if (msg.isSystem()) {
@@ -629,6 +702,15 @@ public class ChatScreen extends GuiScreen {
         int r = panelRight();
         int contentW = r - sidebarW();
         boolean own = msg.isOwn();
+
+        if (msg.kind() == ChatMessageStore.ChatMessage.KIND_TASK_CARD) {
+            int wrapW = textWrapWidth();
+            int cardW = TaskCardRenderer.cardWidth(wrapW);
+            int cardX = own ? r - PAD - cardW : sidebarW() + PAD;
+            TaskCardRenderer.draw(msg, cardX, baseY, wrapW);
+            messageBubbleRects.add(new int[]{cardX, baseY, cardW, TaskCardRenderer.HEIGHT, index});
+            return;
+        }
 
         if (msg.isSystem()) {
             int wrapW = contentW - PAD * 2;
@@ -785,6 +867,21 @@ public class ChatScreen extends GuiScreen {
         mc.fontRenderer.drawStringWithShadow(LABEL_ITEM, x + TOOLBAR_BTN_PAD / 2, y,
                 hoverItem ? ChatColors.TEXT_PRIMARY : ChatColors.TEXT_SECONDARY);
 
+        // 群任务板：只有群聊可用，其他频道置灰
+        String taskLabel = "＋任务";
+        int taskW = mc.fontRenderer.getStringWidth(taskLabel) + TOOLBAR_BTN_PAD;
+        int taskX = x + itemW + gap;
+        boolean taskEnabled = canUseTaskBoard();
+        boolean hoverTask = taskEnabled && mx >= taskX && mx < taskX + taskW
+                && my >= toolTop && my < toolTop + TOOLBAR_H;
+        if (taskEnabled) {
+            Gui.drawRect(taskX, toolTop + 3, taskX + taskW, toolTop + TOOLBAR_H - 3,
+                    hoverTask ? ChatColors.ACCENT_DIM : ChatColors.SIDEBAR_HOVER);
+        }
+        mc.fontRenderer.drawStringWithShadow(taskLabel, taskX + TOOLBAR_BTN_PAD / 2, y,
+                !taskEnabled ? ChatColors.TASK_MUTED
+                        : hoverTask ? ChatColors.TEXT_PRIMARY : ChatColors.TEXT_SECONDARY);
+
         // 右侧：搜索 + 设置
         int themeW = mc.fontRenderer.getStringWidth("设置") + TOOLBAR_BTN_PAD;
         int searchW = mc.fontRenderer.getStringWidth("搜索") + TOOLBAR_BTN_PAD;
@@ -840,6 +937,11 @@ public class ChatScreen extends GuiScreen {
             net.minecraft.item.ItemStack held = mc.player.getHeldItemMainhand();
             if (!held.isEmpty())
                 sendShareMessage(mc.player.getName() + " 分享了物品 " + held.getDisplayName());
+        } else if (canUseTaskBoard()
+                && mx >= x + coordW + gap + itemW + gap
+                && mx < x + coordW + gap + itemW + gap
+                        + mc.fontRenderer.getStringWidth("＋任务") + TOOLBAR_BTN_PAD) {
+            openTaskBoardCreate();
         }
     }
 
@@ -1278,6 +1380,11 @@ public class ChatScreen extends GuiScreen {
 
     @Override
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
+        // 任务板打开时是模态
+        if (taskPanel.isOpen()) {
+            taskPanel.keyTyped(typedChar, keyCode);
+            return;
+        }
         // 设置浮层打开时是模态：ESC 关浮层，其余按键一律吞掉
         if (settingsPanel.isOpen()) {
             settingsPanel.keyPressed(keyCode);
@@ -1362,6 +1469,10 @@ public class ChatScreen extends GuiScreen {
     @Override
     public void handleMouseInput() throws IOException {
         super.handleMouseInput();
+        if (taskPanel.isOpen()) {
+            taskPanel.handleMouseInput();
+            return;
+        }
         if (settingsPanel.isOpen()) return;
         int dw = Mouse.getEventDWheel();
         if (dw != 0) {
@@ -1399,6 +1510,12 @@ public class ChatScreen extends GuiScreen {
             return;
         }
 
+        // 任务板优先吃掉点击
+        if (taskPanel.isOpen()) {
+            taskPanel.mouseClicked(mx, my, btn);
+            return;
+        }
+
         // 设置浮层优先吃掉点击（点面板外则关闭浮层）
         if (settingsPanel.isOpen()) {
             settingsPanel.mouseClicked(mx, my, btn);
@@ -1415,6 +1532,24 @@ public class ChatScreen extends GuiScreen {
             onGuiClosed();
             mc.displayGuiScreen(null);
             return;
+        }
+
+        // 左键任务卡 → 打开任务详情
+        if (btn == 0 && my > HEADER_H && my < height - BAR_H - TOOLBAR_H) {
+            List<ChatMessage> messages = ChatMessageStore.getActiveMessages();
+            for (int[] rect : messageBubbleRects) {
+                if (mx >= rect[0] && mx < rect[0] + rect[2]
+                        && my >= rect[1] && my < rect[1] + rect[3]) {
+                    if (rect[4] >= 0 && rect[4] < messages.size()) {
+                        ChatMessage msg = messages.get(rect[4]);
+                        if (msg != null && msg.kind() == ChatMessageStore.ChatMessage.KIND_TASK_CARD) {
+                            openTaskBoard(TaskCardRenderer.groupIdOf(msg), msg.taskId());
+                            return;
+                        }
+                    }
+                    break;
+                }
+            }
         }
 
         // 表情选择器点击
@@ -1495,6 +1630,15 @@ public class ChatScreen extends GuiScreen {
             return;
         }
 
+        // 群任务板入口
+        if (btn == 0 && canUseTaskBoard() && !searchOpen) {
+            int taskX = taskEntryX();
+            if (mx >= taskX && mx < taskX + taskEntryWidth() && my >= 6 && my < 20) {
+                openTaskBoard();
+                return;
+            }
+        }
+
         // 清空按钮
         String clearLabel = "清空";
         int clearW = mc.fontRenderer.getStringWidth(clearLabel);
@@ -1522,12 +1666,17 @@ public class ChatScreen extends GuiScreen {
 
     @Override
     protected void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
+        if (taskPanel.isOpen() && taskPanel.mouseDragged(mouseX, mouseY)) return;
         if (settingsPanel.isOpen() && settingsPanel.mouseDragged(mouseX, mouseY)) return;
         super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
     }
 
     @Override
     protected void mouseReleased(int mouseX, int mouseY, int state) {
+        if (taskPanel.isOpen()) {
+            taskPanel.mouseReleased();
+            return;
+        }
         if (settingsPanel.isOpen()) {
             settingsPanel.mouseReleased();
             return;

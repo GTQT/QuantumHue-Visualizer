@@ -106,6 +106,43 @@ public class ChatServerListener {
         }
     }
 
+    // ===== 群查询（任务板使用） =====
+
+    public static boolean groupExists(String groupId) {
+        return groupId != null && groups.containsKey(groupId);
+    }
+
+    public static boolean isGroupMember(String groupId, UUID playerId) {
+        Group group = groupId == null ? null : groups.get(groupId);
+        return group != null && playerId != null && group.members.contains(playerId);
+    }
+
+    public static boolean isGroupOwner(String groupId, UUID playerId) {
+        Group group = groupId == null ? null : groups.get(groupId);
+        return group != null && playerId != null && group.owner.equals(playerId);
+    }
+
+    public static Set<UUID> getGroupMemberUuids(String groupId) {
+        Group group = groupId == null ? null : groups.get(groupId);
+        if (group == null) {
+            return new LinkedHashSet<>();
+        }
+        return new LinkedHashSet<>(group.members);
+    }
+
+    public static List<String> getGroupsForPlayer(UUID playerId) {
+        List<String> ids = new ArrayList<>();
+        if (playerId == null) {
+            return ids;
+        }
+        for (Group group : groups.values()) {
+            if (group.members.contains(playerId)) {
+                ids.add(group.id);
+            }
+        }
+        return ids;
+    }
+
     // ===== 群管理 =====
 
     public static void handleGroupManage(EntityPlayerMP player, GroupManagePacket pkt) {

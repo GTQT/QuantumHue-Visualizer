@@ -43,6 +43,9 @@ public final class ChatColors {
     public static int DUPLICATE_TAG;
     // 时间分隔条 / 面板边缘 / 草稿提醒
     public static int TIME_SEP_BG, PANEL_EDGE, SEARCH_MARK, MENTION_MARK;
+    // 群任务板
+    public static int TASK_DONE, TASK_CARD_BG, TASK_CARD_BORDER, TASK_PROGRESS_BG,
+            TASK_PROGRESS_FG, TASK_MUTED, TASK_DELETED;
 
     static { reload(); }
 
@@ -111,6 +114,14 @@ public final class ChatColors {
         PANEL_EDGE = mix(accent, bg, 0.50f);
         SEARCH_MARK = light ? darken(accent, 0.10f) : lighten(accent, 0.10f);
         MENTION_MARK = mix(accent, txtL, 0.20f);
+
+        TASK_DONE = mix(0xFF49B36A, accent, 0.20f);
+        TASK_CARD_BG = shift(bg, 0.075f * d);
+        TASK_CARD_BORDER = mix(accent, bg, 0.40f);
+        TASK_PROGRESS_BG = shift(bg, 0.12f * d);
+        TASK_PROGRESS_FG = TASK_DONE;
+        TASK_MUTED = mix(txtD, bg, 0.25f);
+        TASK_DELETED = 0xFFE05A5A;
     }
 
     // ===== 颜色工具 =====

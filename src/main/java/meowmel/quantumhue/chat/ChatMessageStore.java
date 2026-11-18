@@ -59,6 +59,9 @@ public class ChatMessageStore {
     // ===== 消息模型 =====
 
     public static class ChatMessage {
+        public static final int KIND_NORMAL = 0;
+        public static final int KIND_TASK_CARD = 1;
+
         private final UUID senderUUID;
         private final ITextComponent senderName;
         private final ITextComponent content;
@@ -69,10 +72,20 @@ public class ChatMessageStore {
         private final String channelId;
         private final int duplicateCount;
         private final String messageHash;
+        private final int kind;
+        private final String taskId;
 
         public ChatMessage(UUID senderUUID, ITextComponent senderName, ITextComponent content,
                            LocalTime time, boolean isOwn, boolean isSystem,
                            String rawPlayerName, String channelId, int duplicateCount, String messageHash) {
+            this(senderUUID, senderName, content, time, isOwn, isSystem, rawPlayerName,
+                    channelId, duplicateCount, messageHash, KIND_NORMAL, "");
+        }
+
+        public ChatMessage(UUID senderUUID, ITextComponent senderName, ITextComponent content,
+                           LocalTime time, boolean isOwn, boolean isSystem,
+                           String rawPlayerName, String channelId, int duplicateCount, String messageHash,
+                           int kind, String taskId) {
             this.senderUUID = senderUUID;
             this.senderName = senderName;
             this.content = content;
@@ -83,6 +96,8 @@ public class ChatMessageStore {
             this.channelId = channelId;
             this.duplicateCount = duplicateCount;
             this.messageHash = messageHash;
+            this.kind = kind;
+            this.taskId = taskId == null ? "" : taskId;
         }
 
         public UUID senderUUID() { return senderUUID; }
@@ -95,6 +110,8 @@ public class ChatMessageStore {
         public String channelId() { return channelId; }
         public int duplicateCount() { return duplicateCount; }
         public String messageHash() { return messageHash; }
+        public int kind() { return kind; }
+        public String taskId() { return taskId; }
     }
 
     public static class SenderMeta {
@@ -263,6 +280,73 @@ public class ChatMessageStore {
         }
 
         trackAppend(added);
+    }
+
+    /**
+     * 往群聊里放一张任务卡。卡片只发一次；后续标题/进度由 TaskStore 实时读取。
+     */
+    public static void addTaskCard(String groupId, String taskId, String title, String creatorName) {
+        if (groupId == null || groupId.isEmpty() || taskId == null || taskId.isEmpty()) {
+            return;
+        }
+        String channelId = "group:" + groupId;
+        ChatChannel channel = findChannelById(channelId);
+        if (channel == null) {
+            channel = ChatChannel.group(groupId, "群聊", new ArrayList<String>(), new ArrayList<UUID>());
+            channels.add(channel);
+        }
+        List<ChatMessage> targetList = getChannelMessages(channelId);
+        String name = creatorName == null ? "" : creatorName;
+        ChatMessage added = new ChatMessage(
+                new UUID(0L, 0L),
+                new TextComponentString(name),
+                new TextComponentString(title == null ? "" : title),
+                LocalTime.now(),
+                false,
+                false,
+                name,
+                channelId,
+                1,
+                "task:" + taskId,
+                ChatMessage.KIND_TASK_CARD,
+                taskId
+        );
+        targetList.add(added);
+        while (targetList.size() > MAX_MESSAGES) {
+            targetList.remove(0);
+        }
+        ChatChannel active = activeChannel;
+        boolean isActive = active != null && channelId.equals(active.getId());
+        if (!screenOpen || !isActive) {
+            if (!isActive) {
+                channel.incrementUnread();
+            }
+        }
+        trackAppend(added);
+    }
+
+    public static boolean hasTaskCard(String groupId, String taskId) {
+        if (groupId == null || taskId == null) {
+            return false;
+        }
+        List<ChatMessage> list = channelMessages.get("group:" + groupId);
+        if (list == null) {
+            return false;
+        }
+        for (ChatMessage msg : list) {
+            if (msg.kind() == ChatMessage.KIND_TASK_CARD && taskId.equals(msg.taskId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void addTaskSystem(String groupId, String text) {
+        if (groupId == null || groupId.isEmpty() || text == null || text.isEmpty()) {
+            return;
+        }
+        addMessage(new TextComponentString(text), new UUID(0L, 0L),
+                new TextComponentString("系统"), true, "", "group:" + groupId);
     }
 
     private static boolean isSameSender(ChatMessage last, ITextComponent senderName, String rawPlayerName) {
@@ -447,6 +531,7 @@ public class ChatMessageStore {
         recentMessages.clear();
         pendingNotifyKind = 0;
         lastMessageAt = 0;
+        meowmel.quantumhue.task.client.TaskStore.get().reset();
         // 重建世界频道（兜底）
         ChatChannel world = ChatChannel.world();
         channels.add(world);
@@ -501,6 +586,8 @@ public class ChatMessageStore {
                 obj.put("time", msg.time().format(DateTimeFormatter.ISO_LOCAL_TIME));
                 obj.put("isOwn", msg.isOwn());
                 obj.put("isSystem", msg.isSystem());
+                obj.put("kind", msg.kind());
+                if (msg.taskId() != null && !msg.taskId().isEmpty()) obj.put("taskId", msg.taskId());
                 if (msg.rawPlayerName() != null) obj.put("rawPlayerName", msg.rawPlayerName());
                 msgList.add(obj);
             }
@@ -574,7 +661,8 @@ public class ChatMessageStore {
                             // 矫正 channelId
                             msg = new ChatMessage(msg.senderUUID(), msg.senderName(), msg.content(),
                                     msg.time(), msg.isOwn(), msg.isSystem(),
-                                    msg.rawPlayerName(), chId, msg.duplicateCount(), msg.messageHash());
+                                    msg.rawPlayerName(), chId, msg.duplicateCount(), msg.messageHash(),
+                                    msg.kind(), msg.taskId());
                             msgs.add(msg);
                         }
                     }
@@ -623,8 +711,11 @@ public class ChatMessageStore {
             boolean own = Boolean.TRUE.equals(obj.get("isOwn"));
             boolean sys = Boolean.TRUE.equals(obj.get("isSystem"));
             String rpn = (String) obj.get("rawPlayerName");
+            Object kindObj = obj.get("kind");
+            int kind = kindObj instanceof Number ? ((Number) kindObj).intValue() : ChatMessage.KIND_NORMAL;
+            String taskId = obj.get("taskId") instanceof String ? (String) obj.get("taskId") : "";
             return new ChatMessage(uuid, senderName, content, time, own, sys, rpn,
-                    "world", 1, "");
+                    "world", 1, "", kind, taskId);
         } catch (Exception e) {
             return null;
         }

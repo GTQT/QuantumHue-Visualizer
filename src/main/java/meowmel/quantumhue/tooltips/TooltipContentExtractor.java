@@ -1,5 +1,7 @@
 package meowmel.quantumhue.tooltips;
 
+import meowmel.quantumhue.tooltips.text.TooltipTextLine;
+import meowmel.quantumhue.tooltips.text.TooltipTextMarkup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
 
@@ -14,7 +16,7 @@ public class TooltipContentExtractor {
         String itemName = originalLines.isEmpty() ? "" : originalLines.get(0);
         String detectedModName = modInfoHelper.getModName(stack);
 
-        List<String> remainingLines = new ArrayList<>();
+        List<TooltipTextLine> remainingLines = new ArrayList<>();
         boolean modNameFound = false;
 
         for (int i = 1; i < originalLines.size(); i++) {
@@ -26,7 +28,7 @@ public class TooltipContentExtractor {
                 modNameFound = true;
                 continue;
             }
-            remainingLines.add(line);
+            remainingLines.add(TooltipTextMarkup.parse(line));
         }
 
         String modName = modNameFound ? detectedModName : null;

@@ -12,12 +12,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
 import meowmel.quantumhue.QuantumHueConfig;
 import meowmel.quantumhue.tooltips.applecore.AppleSkinRenderer;
+import meowmel.quantumhue.tooltips.text.TooltipTextRenderer;
 import meowmel.quantumhue.tooltips.thaumcraft.ThaumcraftIntegration;
 import meowmel.quantumhue.tooltips.thaumcraft.ThaumcraftRenderer;
 
 import java.util.List;
 
 public class TooltipRenderer {
+
+    private final TooltipTextRenderer textEffects = new TooltipTextRenderer();
 
     // ==================== 背景绘制 ====================
 
@@ -140,15 +143,27 @@ public class TooltipRenderer {
 
     // ==================== 文本渲染（组件化） ====================
 
-    public void drawTooltipText(TooltipContent content, TooltipLayout layout, FontRenderer font) {
+    public void drawTooltipText(TooltipContent content, TooltipLayout layout, FontRenderer font, TooltipColors colors) {
         int textPadding = TooltipConstants.TEXT_PADDING;
         int lineHeight = TooltipConstants.LINE_HEIGHT;
         int iconTextX = layout.x + textPadding + TooltipConstants.ICON_SIZE;
         int currentY = layout.y + textPadding;
 
+        List<TooltipLine> lines = content.buildComponentLines();
+        QuantumHueConfig.TooltipTextEffects textCfg = QuantumHueConfig.tooltip_text_effects;
+        boolean effects = textCfg != null && textCfg.enabled && !textEffects.isBroken();
+        if (effects) {
+            textEffects.beginFrame(content, lines, font);
+        }
+
         // 物品名
         int itemNameColor = TooltipColorHelper.getItemNameColor(content.itemName);
-        font.drawStringWithShadow(" " + content.itemName, iconTextX, currentY, itemNameColor);
+        String itemText = " " + content.itemName;
+        if (effects) {
+            textEffects.drawItemName(itemText, iconTextX, currentY, itemNameColor, colors.borderStart);
+        } else {
+            font.drawStringWithShadow(itemText, iconTextX, currentY, itemNameColor);
+        }
         currentY += lineHeight;
 
         // 模组名
@@ -161,7 +176,6 @@ public class TooltipRenderer {
 
         // 根据组件类型渲染每一行
         int leftAlignedX = layout.x + textPadding;
-        List<TooltipLine> lines = content.buildComponentLines();
 
         // 找到连续 ASPECT_SPACER 区域的起始行索引
         int aspectRenderY = -1;
@@ -173,10 +187,17 @@ public class TooltipRenderer {
             }
         }
 
+        int bodyIndex = 0;
         for (TooltipLine line : lines) {
             switch (line.type) {
                 case TEXT:
-                    font.drawStringWithShadow(line.text, leftAlignedX, currentY, 0xFFFFFF);
+                    if (effects) {
+                        textEffects.drawBodyLine(line.styled, leftAlignedX, currentY, bodyIndex,
+                                colors.borderStart, layout.x + layout.width - 2);
+                    } else {
+                        font.drawStringWithShadow(line.text, leftAlignedX, currentY, 0xFFFFFF);
+                    }
+                    bodyIndex++;
                     break;
                 case ASPECT_SPACER:
                     // 占位行：仍渲染原文字以保证和原版一致（要素图标覆盖在上面）

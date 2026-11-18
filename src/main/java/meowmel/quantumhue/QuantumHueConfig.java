@@ -18,6 +18,9 @@ public class QuantumHueConfig {
     @Config.Name("Tooltip Background")
     public static TooltipBackground tooltip_background = new TooltipBackground();
 
+    @Config.Name("Tooltip Text Effects")
+    public static TooltipTextEffects tooltip_text_effects = new TooltipTextEffects();
+
     @Config.Name("Blur Config")
     public static Blur blur = new Blur();
 
@@ -222,6 +225,119 @@ public class QuantumHueConfig {
         public boolean enabled = true;
     }
 
+    public static class TooltipTextEffects {
+
+        @Config.Comment({
+                "是否启用 Tooltip 字体特效",
+                "包含逐字显现、发光、标签高亮条与故障乱码",
+                "true: 启用",
+                "false: 禁用（完全回退到原版纯文字渲染）"
+        })
+        @Config.Name("启用")
+        public boolean enabled = true;
+
+        @Config.Comment({
+                "正文逐字显现（打字机效果）",
+                "每页文字在打开 Tooltip 时快速逐个显现",
+                "true: 启用",
+                "false: 禁用"
+        })
+        @Config.Name("逐字显现")
+        public boolean typewriter = true;
+
+        @Config.Comment({
+                "整页文字显现总时长（毫秒）",
+                "越短打字越快；0 表示瞬时全部显示",
+                "范围: 0 ~ 3000"
+        })
+        @Config.RangeInt(min = 0, max = 3000)
+        @Config.Name("显现时长")
+        public int introDuration = 420;
+
+        @Config.Comment({
+                "相邻两行开始打字的间隔（毫秒）",
+                "制造从上到下逐行铺开的感觉",
+                "范围: 0 ~ 200"
+        })
+        @Config.RangeInt(min = 0, max = 200)
+        @Config.Name("行间隔")
+        public int lineStagger = 25;
+
+        @Config.Comment({
+                "文字外发光",
+                "物品名与 [发光] 区间的文字会带一圈柔和光晕",
+                "true: 启用",
+                "false: 禁用"
+        })
+        @Config.Name("发光")
+        public boolean glow = true;
+
+        @Config.Comment({
+                "发光强度",
+                "0.0 = 无光晕",
+                "1.0 = 最强光晕",
+                "范围: 0.0 ~ 1.0"
+        })
+        @Config.RangeDouble(min = 0.0, max = 1.0)
+        @Config.Name("发光强度")
+        public double glowStrength = 0.35;
+
+        @Config.Comment({
+                "标签高亮条",
+                "带 [高亮] / [效果] 标签的片段后方会浮现一条发光色带",
+                "true: 启用",
+                "false: 禁用"
+        })
+        @Config.Name("标签高亮")
+        public boolean highlight = true;
+
+        @Config.Comment({
+                "高亮颜色",
+                "格式: 0xAARRGGBB",
+                "默认: 0xFFFF3B30 (警示红)"
+        })
+        @Config.RangeInt(min = Integer.MIN_VALUE, max = Integer.MAX_VALUE)
+        @Config.Name("高亮颜色")
+        public int highlightColor = 0xFFFF3B30;
+
+        @Config.Comment({
+                "故障/乱码特效",
+                "带 [故障] / [效果] 标签的片段会周期性爆发出字形位移、缺字、白色块遮挡与红/青残影",
+                "true: 启用",
+                "false: 禁用"
+        })
+        @Config.Name("故障特效")
+        public boolean glitch = true;
+
+        @Config.Comment({
+                "故障爆发间隔（毫秒）",
+                "每到这个时间点，故障片段会抖动一次",
+                "范围: 1000 ~ 60000"
+        })
+        @Config.RangeInt(min = 1000, max = 60000)
+        @Config.Name("故障间隔")
+        public int glitchInterval = 7000;
+
+        @Config.Comment({
+                "单次故障爆发持续时间（毫秒）",
+                "范围: 100 ~ 1500"
+        })
+        @Config.RangeInt(min = 100, max = 1500)
+        @Config.Name("故障时长")
+        public int glitchDuration = 420;
+
+        @Config.Comment({
+                "故障强度",
+                "控制位移距离、遮挡块大小与残影浓度",
+                "0.0 = 最轻微",
+                "1.0 = 最剧烈",
+                "范围: 0.0 ~ 1.0"
+        })
+        @Config.RangeDouble(min = 0.0, max = 1.0)
+        @Config.Name("故障强度")
+        public double glitchIntensity = 0.45;
+    }
+
     public static class TOPCustomColor {
 
         @Config.Comment({
@@ -372,6 +488,35 @@ public class QuantumHueConfig {
         @Config.Name("Text Dim")
         @Config.Comment({ "次要文字颜色 (RRGGBB 十六进制)", "默认: 999999" })
         public String textDim = "999999";
+    }
+
+    @Config.Name("Task Board")
+    public static TaskBoard taskBoard = new TaskBoard();
+
+    public static class TaskBoard {
+        @Config.Name("Enabled")
+        @Config.Comment({ "启用群聊任务板（公共记事板）" })
+        public boolean enabled = true;
+
+        @Config.Name("Max Tasks Per Group")
+        @Config.Comment({ "每个群最多保留多少个任务；超出时优先淘汰最旧的已完成/已删除任务", "范围: 10 ~ 500" })
+        @Config.RangeInt(min = 10, max = 500)
+        public int maxTasksPerGroup = 100;
+
+        @Config.Name("Max Items Per Task")
+        @Config.Comment({ "单个任务最多多少个检查项", "范围: 1 ~ 50" })
+        @Config.RangeInt(min = 1, max = 50)
+        public int maxItemsPerTask = 20;
+
+        @Config.Name("Max Comments Per Task")
+        @Config.Comment({ "单个任务最多多少条评论", "范围: 10 ~ 500" })
+        @Config.RangeInt(min = 10, max = 500)
+        public int maxCommentsPerTask = 100;
+
+        @Config.Name("Archive Days")
+        @Config.Comment({ "已完成任务保留多少天后自动清理", "范围: 1 ~ 365" })
+        @Config.RangeInt(min = 1, max = 365)
+        public int archiveDays = 30;
     }
 
     public static class EquipmentComparison {

@@ -2,6 +2,7 @@ package meowmel.quantumhue.tooltips;
 
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraftforge.client.event.RenderTooltipEvent;
+import meowmel.quantumhue.tooltips.text.TooltipTextLine;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ public class TooltipLayoutManager {
         int mouseX = event.getX();
         int mouseY = event.getY();
 
-        int leftWidth = calculateMaxWidth(content.currentPageLines, font);
+        int leftWidth = calculateMaxWidthStyled(content.currentPageLines, font);
         leftWidth = Math.min(leftWidth, TooltipConstants.TOOLTIP_MAX_WIDTH);
 
         int rightWidth = calculateRightWidth(content, font);
@@ -56,6 +57,15 @@ public class TooltipLayoutManager {
         int y = adjustPosition(mouseY + TooltipConstants.MOUSE_OFFSET_Y, totalHeight, screenHeight, borderPadding);
 
         return new TooltipLayout(x, y, totalWidth, totalHeight, 0, x + textPadding, y + textPadding);
+    }
+
+    private int calculateMaxWidthStyled(List<TooltipTextLine> lines, FontRenderer font) {
+        int maxWidth = 0;
+        for (TooltipTextLine line : lines) {
+            int width = font.getStringWidth(line.text);
+            if (width > maxWidth) maxWidth = width;
+        }
+        return maxWidth;
     }
 
     private int calculateMaxWidth(List<String> lines, FontRenderer font) {

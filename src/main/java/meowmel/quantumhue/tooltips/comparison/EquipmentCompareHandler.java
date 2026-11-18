@@ -2,6 +2,7 @@ package meowmel.quantumhue.tooltips.comparison;
 
 import meowmel.quantumhue.QuantumHueConfig;
 import meowmel.quantumhue.tooltips.*;
+import meowmel.quantumhue.tooltips.text.TooltipTextLine;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiScreen;
@@ -162,7 +163,7 @@ public class EquipmentCompareHandler {
 
                 // 提取内容
                 TooltipContent content = contentExtractor.extractTooltipContent(rawLines, equippedStack);
-                List<String> wrappedLines = TooltipUtils.wrapTooltipText(
+                List<TooltipTextLine> wrappedLines = TooltipUtils.wrapTooltipText(
                         content.remainingLines, font, TooltipConstants.TOOLTIP_MAX_WIDTH);
                 content.currentPageLines = wrappedLines;
                 content.needsPagination = false;
@@ -200,7 +201,7 @@ public class EquipmentCompareHandler {
                 // 绘制Tooltip
                 tooltipRenderer.drawTooltipBackground(layout, colors, content);
                 tooltipRenderer.drawItemIcon(equippedStack, layout.iconX, layout.iconY);
-                tooltipRenderer.drawTooltipText(content, layout, font);
+                tooltipRenderer.drawTooltipText(content, layout, font, colors);
 
                 GLStateHelper.restoreGLState();
                 GlStateManager.popMatrix();

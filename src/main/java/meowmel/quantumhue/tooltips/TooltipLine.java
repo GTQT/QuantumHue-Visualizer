@@ -1,8 +1,10 @@
 package meowmel.quantumhue.tooltips;
 
+import meowmel.quantumhue.tooltips.text.TooltipTextLine;
+
 /**
  * Tooltip 行组件——轻量级组件化行渲染。
- * 每行携带类型标记，渲染时由各自处理，避免字符串匹配判断行类型。
+ * 每行携带类型标记与行内特效区间，渲染时由各自处理，避免字符串匹配判断行类型。
  */
 public class TooltipLine {
 
@@ -17,22 +19,29 @@ public class TooltipLine {
 
     public final String text;
     public final Type type;
+    /** 原始行与特效区间；ASPECT_SPACER/FOOD_INFO 使用纯文本占位。 */
+    public final TooltipTextLine styled;
 
-    private TooltipLine(String text, Type type) {
+    private TooltipLine(String text, Type type, TooltipTextLine styled) {
         this.text = text;
         this.type = type;
+        this.styled = styled;
     }
 
     public static TooltipLine text(String text) {
-        return new TooltipLine(text, Type.TEXT);
+        return new TooltipLine(text, Type.TEXT, TooltipTextLine.plain(text));
+    }
+
+    public static TooltipLine text(TooltipTextLine line) {
+        return new TooltipLine(line.text, Type.TEXT, line);
     }
 
     public static TooltipLine aspectSpacer() {
-        return new TooltipLine("    ", Type.ASPECT_SPACER);
+        return new TooltipLine("    ", Type.ASPECT_SPACER, TooltipTextLine.plain("    "));
     }
 
     public static TooltipLine foodInfo() {
-        return new TooltipLine("", Type.FOOD_INFO);
+        return new TooltipLine("", Type.FOOD_INFO, TooltipTextLine.plain(""));
     }
 
     /** 检测是否为 Thaumcraft 要素占位行（4 空格） */
