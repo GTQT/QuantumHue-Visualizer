@@ -212,7 +212,7 @@ public abstract class PageScreen extends GuiScreen {
         int textY = winY + (PageTheme.HEADER_H - fontRenderer.FONT_HEIGHT) / 2 - 1;
         drawRect(winX + PageTheme.PAD, textY, winX + PageTheme.PAD + 3,
                 textY + fontRenderer.FONT_HEIGHT, PageTheme.ACCENT);
-        String brand = "§6§l[GTQT] §r§7格雷量子跃迁 §8| §f" + pageTitle();
+        String brand = "泛宇宙格雷科技有限公司 | §f" + pageTitle();
         fontRenderer.drawString(brand, winX + PageTheme.PAD + 7, textY, PageTheme.TITLE, true);
 
         String status = pageStatus();

@@ -7,6 +7,7 @@ import meowmel.quantumhue.market.SystemShopCatalog;
 import meowmel.quantumhue.market.TradeItem;
 import meowmel.quantumhue.market.client.ShopClientStore;
 import meowmel.quantumhue.network.PacketHandler;
+import meowmel.quantumhue.stock.client.StockClientStore;
 import meowmel.quantumhue.network.packet.MessageBuyItem;
 import meowmel.quantumhue.network.packet.MessageRemoveListing;
 import meowmel.quantumhue.network.packet.MessageSellItem;
@@ -52,6 +53,8 @@ public class GuiShop extends PageScreen {
     private final EntityPlayer player;
     /** 抽奖页独立管理自己的绘制、命中与滚动；它只读服务端推送的状态。 */
     private final LotteryPanel lotteryPanel = new LotteryPanel(this);
+    /** 交易终端同样自管绘制与命中，服务端快照由 StockClientStore 缓存。 */
+    private final StockPanel stockPanel = new StockPanel(this);
     private long playerMoney;
 
     // 内容列（搜索框 + 列表）
@@ -107,7 +110,15 @@ public class GuiShop extends PageScreen {
     }
 
     public GuiShop(EntityPlayer player) {
+        this(player, false);
+    }
+
+    /** @param openStock true 时直接落在「交易终端」页，供 {@code /market stock} 使用。 */
+    public GuiShop(EntityPlayer player, boolean openStock) {
         this.player = player;
+        if (openStock) {
+            currentTab = Tab.STOCK;
+        }
     }
 
     private static String f(long value) {
@@ -175,7 +186,7 @@ public class GuiShop extends PageScreen {
     }
 
     private void applyLayout() {
-        if (currentTab == Tab.LOTTERY) {
+        if (currentTab == Tab.LOTTERY || currentTab == Tab.STOCK) {
             lx = cx;
             ly = cy;
             lw = cw;
@@ -261,6 +272,9 @@ public class GuiShop extends PageScreen {
             case LOTTERY:
                 lotteryPanel.open();
                 break;
+            case STOCK:
+                stockPanel.open();
+                break;
         }
     }
 
@@ -273,6 +287,10 @@ public class GuiShop extends PageScreen {
     private void reload() {
         if (currentTab == Tab.LOTTERY) {
             playerMoney = LotteryClientStore.playerMoney();
+            return;
+        }
+        if (currentTab == Tab.STOCK) {
+            playerMoney = StockClientStore.wallet();
             return;
         }
         if (currentTab == Tab.SYSTEM) {
@@ -359,11 +377,15 @@ public class GuiShop extends PageScreen {
 
     @Override
     protected String pageTitle() {
-        return "自由交易商店";
+        return currentTab == Tab.STOCK ? "交易终端" : "自由交易商店";
     }
 
     @Override
     protected String pageStatus() {
+        if (currentTab == Tab.STOCK) {
+            return String.format("§7余额 §e%s §7%s §8· §7权益 §e%s",
+                    f(playerMoney), currency(), f(StockClientStore.equity()));
+        }
         return String.format("§7余额 §e%s §7%s", f(playerMoney), currency());
     }
 
@@ -382,20 +404,24 @@ public class GuiShop extends PageScreen {
         if (showsAction()) {
             drawAction(mouseX, mouseY);
         }
-        if (currentTab != Tab.LOTTERY) {
+        boolean fullPanel = currentTab == Tab.LOTTERY || currentTab == Tab.STOCK;
+        if (!fullPanel) {
             drawFields();
         }
 
-        int clipW = currentTab == Tab.LOTTERY ? lw : lw + PageTheme.GAP + PageTheme.SCROLL_W;
+        int clipW = fullPanel ? lw : lw + PageTheme.GAP + PageTheme.SCROLL_W;
         beginClip(lx, ly, clipW, lh);
         drawContent(mouseX, mouseY);
-        if (maxScroll > 0) {
+        if (!fullPanel && maxScroll > 0) {
             drawScrollbar(lx + lw + PageTheme.GAP, ly, PageTheme.SCROLL_W, lh, scroll, maxScroll,
                     dragScroll, mouseX, mouseY);
         }
         endClip();
         if (currentTab == Tab.LOTTERY) {
             lotteryPanel.drawOverlay(mouseX, mouseY);
+            return;
+        }
+        if (currentTab == Tab.STOCK) {
             return;
         }
         drawFade(lx, ly, lw + PageTheme.GAP + PageTheme.SCROLL_W, 3, true);
@@ -427,6 +453,9 @@ public class GuiShop extends PageScreen {
                 break;
             case LOTTERY:
                 lotteryPanel.draw(lx, ly, lw, lh, mouseX, mouseY);
+                break;
+            case STOCK:
+                stockPanel.draw(lx, ly, lw, lh, mouseX, mouseY);
                 break;
             default:
                 break;
@@ -807,6 +836,9 @@ public class GuiShop extends PageScreen {
         if (currentTab == Tab.LOTTERY) {
             return lotteryPanel.click(mouseX, mouseY, button);
         }
+        if (currentTab == Tab.STOCK) {
+            return stockPanel.click(mouseX, mouseY, button);
+        }
         if (fieldClick(mouseX, mouseY)) {
             return true;
         }
@@ -826,7 +858,7 @@ public class GuiShop extends PageScreen {
     }
 
     private boolean fieldClick(int mouseX, int mouseY) {
-        if (currentTab == Tab.LOTTERY) {
+        if (currentTab == Tab.LOTTERY || currentTab == Tab.STOCK) {
             return false;
         }
         if (currentTab == Tab.SELL) {
@@ -861,6 +893,8 @@ public class GuiShop extends PageScreen {
                 return clickSellButton(mouseX, mouseY);
             case LOTTERY:
                 return lotteryPanel.click(mouseX, mouseY, 0);
+            case STOCK:
+                return stockPanel.click(mouseX, mouseY, 0);
             default:
                 return false;
         }
@@ -980,6 +1014,9 @@ public class GuiShop extends PageScreen {
     @Override
     protected void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
         super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
+        if (currentTab == Tab.STOCK && stockPanel.mouseDragged(mouseX, mouseY)) {
+            return;
+        }
         if (dragScroll && maxScroll > 0) {
             int thumbHeight = thumbHeight(lh, maxScroll);
             scroll = clamp(0, maxScroll,
@@ -989,6 +1026,9 @@ public class GuiShop extends PageScreen {
 
     @Override
     protected boolean mousePageReleased(int mouseX, int mouseY, int state) {
+        if (state == 0 && currentTab == Tab.STOCK && stockPanel.mouseReleased(state)) {
+            return true;
+        }
         if (state == 0 && dragScroll) {
             dragScroll = false;
             return true;
@@ -998,6 +1038,9 @@ public class GuiShop extends PageScreen {
 
     @Override
     protected boolean mousePageScrolled(int mouseX, int mouseY, int wheel) {
+        if (currentTab == Tab.STOCK) {
+            return stockPanel.wheel(mouseX, mouseY, wheel);
+        }
         if (currentTab == Tab.LOTTERY) {
             return lotteryPanel.wheel(mouseX, mouseY, wheel);
         }
@@ -1020,6 +1063,9 @@ public class GuiShop extends PageScreen {
 
     @Override
     protected boolean keyPageTyped(char typedChar, int keyCode) {
+        if (currentTab == Tab.STOCK) {
+            return stockPanel.key(typedChar, keyCode);
+        }
         if (currentTab == Tab.LOTTERY) {
             return false;
         }
@@ -1063,6 +1109,9 @@ public class GuiShop extends PageScreen {
         if (currentTab == Tab.LOTTERY && tab != Tab.LOTTERY) {
             lotteryPanel.close();
         }
+        if (currentTab == Tab.STOCK && tab != Tab.STOCK) {
+            stockPanel.close();
+        }
         currentTab = tab;
         scroll = 0;
         categoryScroll = 0;
@@ -1105,10 +1154,20 @@ public class GuiShop extends PageScreen {
         lotteryPanel.update();
     }
 
+    /** 交易终端快照到达后刷新余额与面板。 */
+    public void onStockDataUpdated() {
+        if (mc.currentScreen != this) {
+            return;
+        }
+        playerMoney = StockClientStore.wallet();
+        stockPanel.updateData();
+    }
+
     @Override
     protected void onPageClosed() {
         dragScroll = false;
         lotteryPanel.close();
+        stockPanel.close();
         ShopMusic.stop();
     }
 
@@ -1128,6 +1187,7 @@ public class GuiShop extends PageScreen {
             sellQtyField.updateCursorCounter();
         }
         lotteryPanel.update();
+        stockPanel.update();
     }
 
     // ================================================================ 业务操作
@@ -1255,7 +1315,8 @@ public class GuiShop extends PageScreen {
         BUY_ORDERS("系统收购"),
         SELL("出售物品"),
         MY_LISTINGS("我的商品"),
-        LOTTERY("幸运抽奖");
+        LOTTERY("幸运抽奖"),
+        STOCK("交易终端");
 
         final String label;
 

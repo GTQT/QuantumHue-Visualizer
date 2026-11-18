@@ -18,7 +18,7 @@ public class CommandMarket extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/market - 打开自由交易市场";
+        return "/market [stock] - 打开自由交易市场或交易终端";
     }
 
     @Override
@@ -32,6 +32,8 @@ public class CommandMarket extends CommandBase {
             sender.sendMessage(new TextComponentString("§c该命令仅限玩家使用"));
             return;
         }
-        PacketHandler.sendTo(OpenPagePacket.shop(), (EntityPlayerMP) sender);
+        boolean stock = args.length > 0 && "stock".equalsIgnoreCase(args[0]);
+        PacketHandler.sendTo(stock ? OpenPagePacket.stock() : OpenPagePacket.shop(),
+                (EntityPlayerMP) sender);
     }
 }

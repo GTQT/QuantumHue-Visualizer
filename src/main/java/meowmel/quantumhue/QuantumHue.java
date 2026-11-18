@@ -27,6 +27,7 @@ import meowmel.quantumhue.modernsplash.ModernSplashEvents;
 import meowmel.quantumhue.network.PacketHandler;
 import meowmel.quantumhue.notice.RemoteTextFetcher;
 import meowmel.quantumhue.notice.VersionState;
+import meowmel.quantumhue.stock.StockEvents;
 import meowmel.quantumhue.task.server.TaskEvents;
 import meowmel.quantumhue.tooltips.AdvancedTooltipHandler;
 import meowmel.quantumhue.tooltips.comparison.EquipmentCompareHandler;
@@ -157,6 +158,8 @@ public class QuantumHue {
         MinecraftForge.EVENT_BUS.register(new ShopEvents());
         // 邮件系统的服务端部分：远程拉取、领取校验
         MinecraftForge.EVENT_BUS.register(new MailEvents());
+        // 模拟交易终端：行情推进、保护单/强平检查、登录补发
+        MinecraftForge.EVENT_BUS.register(new StockEvents());
     }
 
     @SideOnly(Side.CLIENT)

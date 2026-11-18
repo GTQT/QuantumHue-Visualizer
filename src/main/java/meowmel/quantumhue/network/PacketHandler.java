@@ -18,6 +18,8 @@ import meowmel.quantumhue.network.packet.MessageSellItem;
 import meowmel.quantumhue.network.packet.MessageSellToOrder;
 import meowmel.quantumhue.network.packet.MessageShopAction;
 import meowmel.quantumhue.network.packet.MessageShopView;
+import meowmel.quantumhue.network.packet.MessageStockAction;
+import meowmel.quantumhue.network.packet.MessageStockView;
 import meowmel.quantumhue.network.packet.MessageSystemBuy;
 import meowmel.quantumhue.network.packet.OpenPagePacket;
 import meowmel.quantumhue.network.packet.RefreshPagesPacket;
@@ -162,6 +164,18 @@ public class PacketHandler {
         instance.registerMessage(
                 MessageLotteryAction.Handler.class,
                 MessageLotteryAction.class,
+                packetId++,
+                Side.SERVER);
+
+        // 模拟交易终端
+        instance.registerMessage(
+                MessageStockView.Handler.class,
+                MessageStockView.class,
+                packetId++,
+                Side.CLIENT);
+        instance.registerMessage(
+                MessageStockAction.Handler.class,
+                MessageStockAction.class,
                 packetId++,
                 Side.SERVER);
 

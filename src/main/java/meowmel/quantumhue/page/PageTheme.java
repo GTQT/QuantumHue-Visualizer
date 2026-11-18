@@ -106,9 +106,29 @@ public final class PageTheme {
     /** 物品浮层的描边（底色仍是固定的深色板）。 */
     public static int TOOLTIP_BORDER = 0xFF4E7A8A;
 
+    // ================================================================ 行情图
+
+    /** 上涨 / 多单（A 股习惯：红涨）。 */
+    public static final int STOCK_UP = 0xFFFF6B81;
+    /** 下跌 / 空单（A 股习惯：绿跌）。 */
+    public static final int STOCK_DOWN = 0xFF4FD1A5;
+    /** 图表网格与坐标轴。 */
+    public static final int STOCK_GRID = 0x227FA0B8;
+    public static final int STOCK_AXIS = 0xFF6E8796;
+    /** 均线颜色：MA5 金、MA10 蓝、MA20 紫。 */
+    public static final int STOCK_MA5 = 0xFFFFD166;
+    public static final int STOCK_MA10 = 0xFF7CC7FF;
+    public static final int STOCK_MA20 = 0xFFCC88FF;
+    /** 十字光标。 */
+    public static final int STOCK_CROSS = 0x99CFE4EF;
+    /** 成交量柱：涨用半透明红，跌用半透明绿。 */
+    public static final int STOCK_VOLUME_UP = 0x66FF6B81;
+    public static final int STOCK_VOLUME_DOWN = 0x664FD1A5;
+
     /** 页签激活时左侧指示条的颜色（按顺序取）。分类色各自代表一类内容，不随主题改。 */
     public static final int[] TAB_ACCENTS = {
-            0xFF55FFFF, 0xFF55AAFF, 0xFFFF6666, 0xFFFFBB33, 0xFF55FFAA, 0xFFCC88FF
+            0xFF55FFFF, 0xFF55AAFF, 0xFFFF6666, 0xFFFFBB33, 0xFF55FFAA, 0xFFCC88FF,
+            0xFFFFD166
     };
 
     public static int accent(int index) {

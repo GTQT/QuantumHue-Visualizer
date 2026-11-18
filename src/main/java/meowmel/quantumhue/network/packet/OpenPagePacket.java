@@ -20,7 +20,8 @@ public class OpenPagePacket implements IMessage {
 
     public enum Page {
         SHOP,
-        NEWS
+        NEWS,
+        STOCK
     }
 
     private Page page = Page.NEWS;
@@ -37,6 +38,10 @@ public class OpenPagePacket implements IMessage {
 
     public static OpenPagePacket news() {
         return new OpenPagePacket(Page.NEWS);
+    }
+
+    public static OpenPagePacket stock() {
+        return new OpenPagePacket(Page.STOCK);
     }
 
     @Override
@@ -66,6 +71,10 @@ public class OpenPagePacket implements IMessage {
                 if (message.page == Page.SHOP) {
                     if (mc.player != null) {
                         mc.displayGuiScreen(new GuiShop(mc.player));
+                    }
+                } else if (message.page == Page.STOCK) {
+                    if (mc.player != null) {
+                        mc.displayGuiScreen(new GuiShop(mc.player, true));
                     }
                 } else {
                     mc.displayGuiScreen(new GuiAnnouncement());
