@@ -151,6 +151,8 @@ public class QuantumHue {
             registerClientInit(configDir);
         }
         MinecraftForge.EVENT_BUS.register(new ChatServerListener());
+        // 群任务板：世界加载/保存、登录同步、5 秒防抖落盘
+        MinecraftForge.EVENT_BUS.register(new TaskEvents());
         // 商店 / 公告的服务端部分：订单投放、过期清理、登录结算
         MinecraftForge.EVENT_BUS.register(new ShopEvents());
         // 邮件系统的服务端部分：远程拉取、领取校验
@@ -168,13 +170,6 @@ public class QuantumHue {
         MinecraftForge.EVENT_BUS.register(new HudRenderer());
         MinecraftForge.EVENT_BUS.register(new ThaumcraftAuraUpdater());
         MinecraftForge.EVENT_BUS.register(new ChatClientListener());
-        MinecraftForge.EVENT_BUS.register(new ChatServerListener());
-        // 群任务板：世界加载/保存、登录同步、5 秒防抖落盘
-        MinecraftForge.EVENT_BUS.register(new TaskEvents());
-        // 商店 / 公告的服务端部分：订单投放、过期清理、登录结算
-        MinecraftForge.EVENT_BUS.register(new ShopEvents());
-        // 邮件系统的服务端部分：远程拉取、领取校验
-        MinecraftForge.EVENT_BUS.register(new MailEvents());
 
         IGIInit.registerDefaults(configDir);
     }

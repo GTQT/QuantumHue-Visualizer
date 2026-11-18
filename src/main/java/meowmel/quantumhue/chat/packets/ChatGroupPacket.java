@@ -2,7 +2,6 @@ package meowmel.quantumhue.chat.packets;
 
 import io.netty.buffer.ByteBuf;
 import meowmel.quantumhue.chat.ChatMessageStore;
-import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -108,15 +107,8 @@ public class ChatGroupPacket implements IMessage {
     /** 客户端：收到群消息 → 添加到对应频道 */
     public static class ClientHandler implements IMessageHandler<ChatGroupPacket, IMessage> {
         @Override
-        public IMessage onMessage(ChatGroupPacket pkt, MessageContext ctx) {
-            if (ctx.side.isClient()) {
-                handleClient(pkt, ctx);
-            }
-            return null;
-        }
-
         @SideOnly(Side.CLIENT)
-        private static void handleClient(ChatGroupPacket pkt, MessageContext ctx) {
+        public IMessage onMessage(ChatGroupPacket pkt, MessageContext ctx) {
             FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> {
                 if (pkt.action == 1) {
                     // 同步群信息
@@ -133,6 +125,7 @@ public class ChatGroupPacket implements IMessage {
                             pkt.senderName, chId);
                 }
             });
+            return null;
         }
     }
 }

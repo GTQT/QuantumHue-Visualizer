@@ -42,15 +42,8 @@ public class ChatNoticePacket implements IMessage {
 
     public static class ClientHandler implements IMessageHandler<ChatNoticePacket, IMessage> {
         @Override
-        public IMessage onMessage(ChatNoticePacket pkt, MessageContext ctx) {
-            if (ctx.side.isClient()) {
-                handleClient(pkt, ctx);
-            }
-            return null;
-        }
-
         @SideOnly(Side.CLIENT)
-        private static void handleClient(ChatNoticePacket pkt, MessageContext ctx) {
+        public IMessage onMessage(ChatNoticePacket pkt, MessageContext ctx) {
             FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> {
                 Minecraft mc = Minecraft.getMinecraft();
                 if (mc.player == null) {
@@ -60,6 +53,7 @@ public class ChatNoticePacket implements IMessage {
                 ChatMessageStore.addMessage(content, mc.player.getUniqueID(),
                         new TextComponentString("系统"), true, "系统", "world");
             });
+            return null;
         }
     }
 }

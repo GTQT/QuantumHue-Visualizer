@@ -87,15 +87,12 @@ public class ThaumcraftAuraMessage implements IMessage {
     public static class ClientHandler implements IMessageHandler<ThaumcraftAuraMessage, IMessage> {
 
         @Override
-        public IMessage onMessage(ThaumcraftAuraMessage message, MessageContext ctx) {
-            if (message.isRequest || !ctx.side.isClient()) return null;
-            handleClient(message);
-            return null;
-        }
-
         @SideOnly(Side.CLIENT)
-        private static void handleClient(ThaumcraftAuraMessage message) {
-            ThaumcraftDataCache.updateAura(message.vis, message.flux);
+        public IMessage onMessage(ThaumcraftAuraMessage message, MessageContext ctx) {
+            if (!message.isRequest) {
+                ThaumcraftDataCache.updateAura(message.vis, message.flux);
+            }
+            return null;
         }
     }
 }

@@ -108,20 +108,16 @@ public class HighlightPacket implements IMessage {
     }
 
     // ========== 客户端处理器 ==========
+    // 类本身不能标 @SideOnly：PacketHandler 会在服务端也 newInstance() 这个处理器。
+    // 只把真正会碰到客户端类的方法标成 @SideOnly，服务端加载时该方法会被 Forge 移除。
     public static class ClientHandler implements IMessageHandler<HighlightPacket, IMessage> {
         @Override
-        public IMessage onMessage(HighlightPacket message, MessageContext ctx) {
-            if (ctx.side.isClient()) {
-                handleClient(message, ctx);
-            }
-            return null;
-        }
-
         @SideOnly(Side.CLIENT)
-        private static void handleClient(HighlightPacket message, MessageContext ctx) {
+        public IMessage onMessage(HighlightPacket message, MessageContext ctx) {
             FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> {
                 ClientHighlightHandler.addHighlight(message);
             });
+            return null;
         }
     }
 }

@@ -2,7 +2,6 @@ package meowmel.quantumhue.chat.packets;
 
 import io.netty.buffer.ByteBuf;
 import meowmel.quantumhue.chat.ChatMessageStore;
-import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -103,17 +102,9 @@ public class ChatPrivatePacket implements IMessage {
     /** 客户端 Handler：收到私聊消息 → 添加到对应频道 */
     public static class ClientHandler implements IMessageHandler<ChatPrivatePacket, IMessage> {
         @Override
-        public IMessage onMessage(ChatPrivatePacket pkt, MessageContext ctx) {
-            if (ctx.side.isClient()) {
-                handleClient(pkt, ctx);
-            }
-            return null;
-        }
-
         @SideOnly(Side.CLIENT)
-        private static void handleClient(ChatPrivatePacket pkt, MessageContext ctx) {
+        public IMessage onMessage(ChatPrivatePacket pkt, MessageContext ctx) {
             FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> {
-                Minecraft mc = Minecraft.getMinecraft();
                 ITextComponent content = new TextComponentString(pkt.message);
                 ITextComponent sender = new TextComponentString(pkt.senderName);
 
@@ -122,6 +113,7 @@ public class ChatPrivatePacket implements IMessage {
                 ChatMessageStore.addMessage(content, pkt.senderUUID, sender, false,
                         pkt.senderName, "priv:" + pkt.senderName);
             });
+            return null;
         }
     }
 }

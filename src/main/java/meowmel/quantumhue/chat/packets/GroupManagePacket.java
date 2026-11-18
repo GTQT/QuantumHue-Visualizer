@@ -2,7 +2,6 @@ package meowmel.quantumhue.chat.packets;
 
 import io.netty.buffer.ByteBuf;
 import meowmel.quantumhue.chat.ChatMessageStore;
-import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -125,15 +124,8 @@ public class GroupManagePacket implements IMessage {
     /** 客户端：收到群同步 */
     public static class ClientHandler implements IMessageHandler<GroupManagePacket, IMessage> {
         @Override
-        public IMessage onMessage(GroupManagePacket pkt, MessageContext ctx) {
-            if (ctx.side.isClient()) {
-                handleClient(pkt, ctx);
-            }
-            return null;
-        }
-
         @SideOnly(Side.CLIENT)
-        private static void handleClient(GroupManagePacket pkt, MessageContext ctx) {
+        public IMessage onMessage(GroupManagePacket pkt, MessageContext ctx) {
             FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> {
                 if (pkt.action == SYNC) {
                     // 服务端同步群成员列表
@@ -142,6 +134,7 @@ public class GroupManagePacket implements IMessage {
                             pkt.memberNames, new ArrayList<>());
                 }
             });
+            return null;
         }
     }
 }
