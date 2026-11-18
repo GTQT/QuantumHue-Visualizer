@@ -69,7 +69,8 @@ public class TooltipTextRenderer {
         long now = System.currentTimeMillis();
         frameTime = now;
 
-        String key = content.itemName + '\u0000' + content.getCurrentPage();
+        String key = (content.cacheKey != null ? content.cacheKey : content.itemName)
+                + '\u0000' + content.getCurrentPage();
         Timing timing = timings.get(key);
         if (timing == null || now - timing.lastSeen > TOOLTIP_RESTART_GAP_MS) {
             QuantumHueConfig.TooltipTextEffects cfg = config();
@@ -90,15 +91,20 @@ public class TooltipTextRenderer {
         current = timing;
     }
 
-    /** 物品名：始终可见，只叠加边框色光晕。 */
+    /**
+     * 物品名：始终可见，只做一层同向彩色投影。
+     *
+     * <p>这里原本调用 {@link #drawGlow} 在 x±1 / y±1 四个方向各画一遍整行——
+     * 在 GUI scale 2 下这四处偏移相距 2 个屏幕像素，叠加加法混合后看起来就是
+     * 文字重影（尤其描边色是高饱和红/金时）。名字只需要一个清晰的彩色阴影，
+     * 光晕留给正文里显式标记的 span。</p>
+     */
     public void drawItemName(String text, int x, int y, int color, int borderColor) {
         if (font == null || text == null) return;
-        QuantumHueConfig.TooltipTextEffects cfg = config();
         try {
-            if (cfg != null && cfg.enabled && cfg.glow) {
-                drawGlow(text, x, y, borderColor,
-                        (float) cfg.glowStrength * 0.8f, 1.0f);
-            }
+            // 名字不再用"描边色投影"：GT/稀有度的描边色往往高饱和（ZPM 是深红），
+            // 1px 偏移的纯色投影和字体重叠后会被看成重影。这里统一走原版阴影，
+            // 颜色信息只留给边框/角标。正文里显式标记的 span 发光不受影响。
             font.drawStringWithShadow(text, x, y, color);
         } catch (RuntimeException e) {
             fail(e);

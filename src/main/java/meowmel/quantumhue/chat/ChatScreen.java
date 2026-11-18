@@ -170,10 +170,6 @@ public class ChatScreen extends GuiScreen {
         return mc.fontRenderer.getStringWidth("记事板 " + TaskStore.get().openCount(activeGroupId())) + 12;
     }
 
-    private int taskEntryX() {
-        return panelRight() - 58 - 6 - taskEntryWidth();
-    }
-
     private void openTaskBoard() {
         if (!canUseTaskBoard()) {
             return;
@@ -452,25 +448,16 @@ public class ChatScreen extends GuiScreen {
         if (activeChannel != null && activeChannel.isGroup())
             title = "👥 " + title + " (" + activeChannel.getMemberNames().size() + ")";
         int titleRight = panelRight() - PAD;
-        if (canUseTaskBoard() && !searchOpen) {
-            titleRight = Math.min(titleRight, taskEntryX() - 6);
+        if (!searchOpen) {
+            // 标题避开实时时钟，任务入口已经移到下方工具栏。
+            String timeStr = java.time.LocalTime.now().format(TIME_FMT);
+            int timeW = mc.fontRenderer.getStringWidth(timeStr);
+            titleRight = Math.min(titleRight, panelRight() - 58 - timeW - 12 - 6);
         }
         title = mc.fontRenderer.trimStringToWidth(title,
                 Math.max(24, titleRight - sidebarW() - PAD));
         mc.fontRenderer.drawStringWithShadow(title, sidebarW() + PAD,
                 (HEADER_H - 8) / 2, ChatColors.TEXT_HEADER);
-
-        // 群任务板入口（只对群聊显示）
-        if (canUseTaskBoard() && !searchOpen) {
-            String taskLabel = "记事板 " + TaskStore.get().openCount(activeGroupId());
-            int taskW = taskEntryWidth();
-            int taskX = taskEntryX();
-            boolean hoverTask = mx >= taskX && mx < taskX + taskW && my >= 6 && my < 20;
-            Gui.drawRect(taskX, 6, taskX + taskW, 20,
-                    hoverTask ? ChatColors.SIDEBAR_HOVER : ChatColors.SIDEBAR_HOVER & 0x60FFFFFF);
-            mc.fontRenderer.drawStringWithShadow(taskLabel, taskX + 6, 9,
-                    hoverTask ? ChatColors.TEXT_PRIMARY : ChatColors.TEXT_SECONDARY);
-        }
 
         // 时间显示（实时时钟）/ 搜索框
         if (searchOpen) {
@@ -850,6 +837,10 @@ public class ChatScreen extends GuiScreen {
 
         int coordW = mc.fontRenderer.getStringWidth(LABEL_COORD) + TOOLBAR_BTN_PAD;
         int itemW = mc.fontRenderer.getStringWidth(LABEL_ITEM) + TOOLBAR_BTN_PAD;
+        int themeW = mc.fontRenderer.getStringWidth("设置") + TOOLBAR_BTN_PAD;
+        int searchW = mc.fontRenderer.getStringWidth("搜索") + TOOLBAR_BTN_PAD;
+        int themeX = r - PAD - themeW;
+        int searchX = themeX - gap - searchW;
 
         // 分享坐标
         boolean hoverCoord = mx >= x && mx < x + coordW && my >= toolTop && my < toolTop + TOOLBAR_H;
@@ -882,12 +873,21 @@ public class ChatScreen extends GuiScreen {
                 !taskEnabled ? ChatColors.TASK_MUTED
                         : hoverTask ? ChatColors.TEXT_PRIMARY : ChatColors.TEXT_SECONDARY);
 
-        // 右侧：搜索 + 设置
-        int themeW = mc.fontRenderer.getStringWidth("设置") + TOOLBAR_BTN_PAD;
-        int searchW = mc.fontRenderer.getStringWidth("搜索") + TOOLBAR_BTN_PAD;
-        int themeX = r - PAD - themeW;
-        int searchX = themeX - gap - searchW;
+        // 记事板入口与“＋任务”并排；面板过窄时隐藏，避免压到右侧搜索/设置。
+        String boardLabel = "记事板 " + TaskStore.get().openCount(activeGroupId());
+        int boardW = taskEntryWidth();
+        int boardX = taskX + taskW + gap;
+        boolean boardVisible = taskEnabled && boardX + boardW <= searchX - gap;
+        if (boardVisible) {
+            boolean hoverBoard = mx >= boardX && mx < boardX + boardW
+                    && my >= toolTop && my < toolTop + TOOLBAR_H;
+            Gui.drawRect(boardX, toolTop + 3, boardX + boardW, toolTop + TOOLBAR_H - 3,
+                    hoverBoard ? ChatColors.ACCENT_DIM : ChatColors.SIDEBAR_HOVER);
+            mc.fontRenderer.drawStringWithShadow(boardLabel, boardX + TOOLBAR_BTN_PAD / 2, y,
+                    hoverBoard ? ChatColors.TEXT_PRIMARY : ChatColors.TEXT_SECONDARY);
+        }
 
+        // 右侧：搜索 + 设置（位置已提前算好，用于判断任务组按钮是否放得下）
         boolean hoverSearch = mx >= searchX && mx < searchX + searchW && my >= toolTop && my < toolTop + TOOLBAR_H;
         Gui.drawRect(searchX, toolTop + 3, searchX + searchW, toolTop + TOOLBAR_H - 3,
                 searchOpen ? ChatColors.ACCENT_DIM : (hoverSearch ? ChatColors.SIDEBAR_HOVER : 0));
@@ -937,11 +937,17 @@ public class ChatScreen extends GuiScreen {
             net.minecraft.item.ItemStack held = mc.player.getHeldItemMainhand();
             if (!held.isEmpty())
                 sendShareMessage(mc.player.getName() + " 分享了物品 " + held.getDisplayName());
-        } else if (canUseTaskBoard()
-                && mx >= x + coordW + gap + itemW + gap
-                && mx < x + coordW + gap + itemW + gap
-                        + mc.fontRenderer.getStringWidth("＋任务") + TOOLBAR_BTN_PAD) {
-            openTaskBoardCreate();
+        } else if (canUseTaskBoard()) {
+            int taskX = x + coordW + gap + itemW + gap;
+            int taskW = mc.fontRenderer.getStringWidth("＋任务") + TOOLBAR_BTN_PAD;
+            int boardX = taskX + taskW + gap;
+            int boardW = taskEntryWidth();
+            boolean boardVisible = boardX + boardW <= searchX - gap;
+            if (mx >= taskX && mx < taskX + taskW) {
+                openTaskBoardCreate();
+            } else if (boardVisible && mx >= boardX && mx < boardX + boardW) {
+                openTaskBoard();
+            }
         }
     }
 
@@ -1628,15 +1634,6 @@ public class ChatScreen extends GuiScreen {
         if (btn == 0 && searchOpen && my >= height - BAR_H + 2) {
             toggleSearch();
             return;
-        }
-
-        // 群任务板入口
-        if (btn == 0 && canUseTaskBoard() && !searchOpen) {
-            int taskX = taskEntryX();
-            if (mx >= taskX && mx < taskX + taskEntryWidth() && my >= 6 && my < 20) {
-                openTaskBoard();
-                return;
-            }
         }
 
         // 清空按钮

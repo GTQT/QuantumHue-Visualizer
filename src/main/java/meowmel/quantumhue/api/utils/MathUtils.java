@@ -3,17 +3,26 @@ package meowmel.quantumhue.api.utils;
 import meowmel.quantumhue.QuantumHueConfig;
 import net.minecraft.util.math.MathHelper;
 
-import java.util.function.Function;
+/**
+ * 平滑滚动的数值工具：滚动位置推进、越界回弹与边界夹取。
+ */
+public final class MathUtils {
 
-public class MathUtils {
-
-    private static Function<Double, Double> easingMethod = v -> v;
-
-    public static Function<Double, Double> getEasingMethod() {
-        return easingMethod;
+    private MathUtils() {
     }
 
-    public static float handleScrollingPosition(float[] target, float scroll, float maxScroll, float delta, double start, double duration) {
+    /**
+     * 把当前滚动位置向目标位置推进一帧。
+     *
+     * @param target   目标位置，会被就地修正到合法范围（允许回弹越界）
+     * @param scroll   当前实际位置
+     * @param maxScroll 内容可滚动的最大距离
+     * @param delta    帧时间系数
+     * @param start    滚动开始的系统时间（毫秒）
+     * @param duration 滚动总时长（毫秒）
+     */
+    public static float handleScrollingPosition(float[] target, float scroll, float maxScroll,
+                                                float delta, double start, double duration) {
         if (getBounceBackMultiplier() >= 0) {
             target[0] = clamp(target[0], maxScroll);
             if (target[0] < 0) {
@@ -21,32 +30,24 @@ public class MathUtils {
             } else if (target[0] > maxScroll) {
                 target[0] = (float) ((target[0] - maxScroll) * (1 - (1 - getBounceBackMultiplier()) * delta / 3) + maxScroll);
             }
-        } else
+        } else {
             target[0] = clamp(target[0], maxScroll, 0);
-        if (!Precision.almostEquals(scroll, target[0], Precision.FLOAT_EPSILON))
-            return expoEase(scroll, target[0], Math.min((System.currentTimeMillis() - start) / duration * delta * 3, 1));
-        else
+        }
+
+        if (Precision.almostEquals(scroll, target[0], Precision.FLOAT_EPSILON)) {
             return target[0];
+        }
+        double progress = Math.min((System.currentTimeMillis() - start) / duration * delta * 3, 1);
+        return lerpTowards(scroll, target[0], progress);
     }
 
     private static double getBounceBackMultiplier() {
         return QuantumHueConfig.smoothScrolling.bounceBackMultiplier;
     }
 
-    public static float expoEase(float start, float end, double amount) {
-        return start + (end - start) * getEasingMethod().apply(amount).floatValue();
-    }
-
-    public static boolean isUnlimitFps() {
-        return QuantumHueConfig.smoothScrolling.unlimitFps;
-    }
-
-    public static double clamp(double v, double maxScroll) {
-        return clamp(v, maxScroll, 300);
-    }
-
-    public static double clamp(double v, double maxScroll, double clampExtension) {
-        return MathHelper.clamp(v, -clampExtension, maxScroll + clampExtension);
+    /** 线性插值；滚动距离很短，不需要缓动曲线。 */
+    private static float lerpTowards(float start, float end, double amount) {
+        return (float) (start + (end - start) * amount);
     }
 
     public static float clamp(float v, float maxScroll) {
@@ -57,16 +58,12 @@ public class MathUtils {
         return MathHelper.clamp(v, -clampExtension, maxScroll + clampExtension);
     }
 
-    private static class Precision {
-        public static final float FLOAT_EPSILON = 1e-3f;
-        public static final double DOUBLE_EPSILON = 1e-7;
+    private static final class Precision {
 
-        public static boolean almostEquals(float value1, float value2, float acceptableDifference) {
-            return Math.abs(value1 - value2) <= acceptableDifference;
-        }
+        private static final float FLOAT_EPSILON = 1e-3F;
 
-        public static boolean almostEquals(double value1, double value2, double acceptableDifference) {
-            return Math.abs(value1 - value2) <= acceptableDifference;
+        private static boolean almostEquals(float a, float b, float tolerance) {
+            return Math.abs(a - b) <= tolerance;
         }
     }
 }

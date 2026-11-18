@@ -24,7 +24,9 @@ import org.lwjgl.input.Keyboard;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @SideOnly(Side.CLIENT)
 public class EquipmentCompareHandler {
@@ -38,6 +40,15 @@ public class EquipmentCompareHandler {
 
     private static boolean comparisonsActive = false;
     private static boolean isRenderingComparisons = false;
+
+    /** 每件已装备物品一份状态，复用文本解析/换行结果；最多缓存 8 件。 */
+    private final Map<String, TooltipState> comparisonStates =
+            new LinkedHashMap<String, TooltipState>(4, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, TooltipState> eldest) {
+                    return size() > 8;
+                }
+            };
 
     private final TooltipContentExtractor contentExtractor = new TooltipContentExtractor();
     private final TooltipLayoutManager layoutManager = new TooltipLayoutManager();
@@ -61,6 +72,10 @@ public class EquipmentCompareHandler {
     // ── 切换状态 ──
 
     public static boolean isActive() {
+        // 每帧轮询而不是只依赖 KeyboardInputEvent：如果在打开 GUI 之前就按住 Shift，
+        // 打开瞬间不会有按键事件，旧写法会让对比"看起来被删掉了"。
+        comparisonsActive = Keyboard.isKeyDown(TOGGLE_KEY.getKeyCode())
+                || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
         return comparisonsActive ^ QuantumHueConfig.equipmentComparison.defaultOn;
     }
 
@@ -161,12 +176,15 @@ public class EquipmentCompareHandler {
                 // 获取Tooltip文本行
                 List<String> rawLines = screen.getItemToolTip(equippedStack);
 
-                // 提取内容
-                TooltipContent content = contentExtractor.extractTooltipContent(rawLines, equippedStack);
-                List<TooltipTextLine> wrappedLines = TooltipUtils.wrapTooltipText(
-                        content.remainingLines, font, TooltipConstants.TOOLTIP_MAX_WIDTH);
-                content.currentPageLines = wrappedLines;
-                content.needsPagination = false;
+                // 复用每件装备自己的状态：文本行不变时跳过解析与换行
+                String itemId = TooltipUtils.getItemUniqueId(equippedStack);
+                TooltipState state = comparisonStates.get(itemId);
+                if (state == null) {
+                    state = new TooltipState(itemId);
+                    comparisonStates.put(itemId, state);
+                }
+                TooltipContent content = state.resolveContent(rawLines, equippedStack, contentExtractor, font);
+                content.showAllLines();
 
                 // 获取颜色
                 TooltipColors colors = TooltipColorHelper.getTooltipColors(equippedStack);
@@ -193,18 +211,20 @@ public class EquipmentCompareHandler {
                 ItemStack equippedStack = equippedItems.get(i);
 
                 GlStateManager.pushMatrix();
-                GLStateHelper.setupGLState();
+                try {
+                    GLStateHelper.setupGLState();
 
-                // 绘制徽章
-                badgeRenderer.drawBadge(layout, font);
+                    // 绘制徽章
+                    badgeRenderer.drawBadge(layout, font);
 
-                // 绘制Tooltip
-                tooltipRenderer.drawTooltipBackground(layout, colors, content);
-                tooltipRenderer.drawItemIcon(equippedStack, layout.iconX, layout.iconY);
-                tooltipRenderer.drawTooltipText(content, layout, font, colors);
-
-                GLStateHelper.restoreGLState();
-                GlStateManager.popMatrix();
+                    // 绘制Tooltip
+                    tooltipRenderer.drawTooltipBackground(layout, colors, content);
+                    tooltipRenderer.drawItemIcon(equippedStack, layout.iconX, layout.iconY, colors, 1.0f);
+                    tooltipRenderer.drawTooltipText(content, layout, font, colors);
+                } finally {
+                    GLStateHelper.restoreGLState();
+                    GlStateManager.popMatrix();
+                }
             }
 
             return true;

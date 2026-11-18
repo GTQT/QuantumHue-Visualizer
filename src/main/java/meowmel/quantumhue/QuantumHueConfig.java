@@ -18,6 +18,9 @@ public class QuantumHueConfig {
     @Config.Name("Tooltip Background")
     public static TooltipBackground tooltip_background = new TooltipBackground();
 
+    @Config.Name("Tooltip Aesthetic")
+    public static TooltipAesthetic tooltip_aesthetic = new TooltipAesthetic();
+
     @Config.Name("Tooltip Text Effects")
     public static TooltipTextEffects tooltip_text_effects = new TooltipTextEffects();
 
@@ -223,6 +226,92 @@ public class QuantumHueConfig {
         })
         @Config.Name("启用")
         public boolean enabled = true;
+    }
+
+    public static class TooltipAesthetic {
+
+        @Config.Comment({
+                "是否启用面板外观增强（圆角、边框流光、四角渐变、稀有度微光）",
+                "关闭后完全回到旧版平涂面板",
+                "true: 启用",
+                "false: 禁用"
+        })
+        @Config.Name("启用")
+        public boolean enabled = true;
+
+        @Config.Comment({
+                "面板四角改为圆角，描边跟着一起圆",
+                "true: 圆角面板（旧风格）",
+                "false: 直角科技面板（角标 + 扫描线 + 发丝边 + 窄高光）"
+        })
+        @Config.Name("圆角面板")
+        public boolean rounded = false;
+
+        @Config.Comment({
+                "圆角半径（像素），越大越圆",
+                "1 = 只切掉一个角像素（一像素圆角）",
+                "范围: 1 ~ 10"
+        })
+        @Config.RangeInt(min = 1, max = 10)
+        @Config.Name("圆角半径")
+        public int corner_radius = 1;
+
+        @Config.Comment({
+                "描边上环绕流动的高光（跑马灯）",
+                "true: 启用",
+                "false: 禁用"
+        })
+        @Config.Name("边框流光")
+        public boolean border_flow = true;
+
+        @Config.Comment({
+                "给物品图标垫一个 20×20 的极淡白格子（参考 Obscure Tooltips 的默认 slot）",
+                "true: 图标落在格子里",
+                "false: 裸图标"
+        })
+        @Config.Name("图标包边")
+        public boolean icon_frame = true;
+
+        @Config.Comment({
+                "面板内每两行一条的极淡扫描线强度",
+                "0 = 关闭，1 ~ 16 = 扫描线的不透明度"
+        })
+        @Config.RangeInt(min = 0, max = 16)
+        @Config.Name("扫描线强度")
+        public int scanline_strength = 4;
+
+        @Config.Comment({
+                "面板四角渐变：顶部略亮、底部略暗，做出打光感",
+                "true: 启用",
+                "false: 单色平涂"
+        })
+        @Config.Name("四角渐变")
+        public boolean corner_gradient = true;
+
+        @Config.Comment({
+                "稀有度决定描边与强调色（低 alpha 描边），EPIC 额外带环绕微光",
+                "需要同时开启 Tooltips Color 里的「稀有度着色」",
+                "true: 启用",
+                "false: 使用统一描边色"
+        })
+        @Config.Name("稀有度调色")
+        public boolean rarity_palette = true;
+
+        @Config.Comment({
+                "EPIC 面板描边上流动的微光",
+                "true: 启用",
+                "false: 禁用"
+        })
+        @Config.Name("稀有度微光")
+        public boolean shimmer = true;
+
+        @Config.Comment({
+                "微光流动速度",
+                "范围: 0.2 ~ 5.0"
+        })
+        @Config.RangeDouble(min = 0.2, max = 5.0)
+        @Config.Name("微光速度")
+        public double shimmer_speed = 1.6;
     }
 
     public static class TooltipTextEffects {

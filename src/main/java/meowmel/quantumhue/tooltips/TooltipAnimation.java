@@ -1,6 +1,7 @@
 package meowmel.quantumhue.tooltips;
 
 import meowmel.quantumhue.QuantumHueConfig;
+import meowmel.quantumhue.api.utils.Easing;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -8,8 +9,12 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class TooltipAnimation {
 
+    /** 单帧最大推进时间。卡顿/切窗口回来时不让动画一步跳到终点。 */
+    private static final long MAX_FRAME_STEP_MS = 50L;
+
     private TooltipLayout startLayout = null;
-    private long animationStartTime = 0;
+    private long elapsedMs = 0L;
+    private long lastUpdateMs = 0L;
     private boolean isAnimating = false;
     private float currentProgress = 1f;
 
@@ -24,7 +29,8 @@ public class TooltipAnimation {
     public void startAnimation(TooltipLayout fromLayout) {
         if (fromLayout != null && QuantumHueConfig.tooltip_animation.enabled) {
             this.startLayout = fromLayout;
-            this.animationStartTime = System.currentTimeMillis();
+            this.elapsedMs = 0L;
+            this.lastUpdateMs = System.currentTimeMillis();
             this.isAnimating = true;
             this.currentProgress = 0f;
         }
@@ -33,6 +39,7 @@ public class TooltipAnimation {
     public void stopAnimation() {
         isAnimating = false;
         startLayout = null;
+        elapsedMs = 0L;
         currentProgress = 1f;
     }
 
@@ -41,11 +48,13 @@ public class TooltipAnimation {
             return targetLayout;
         }
 
-        int duration = QuantumHueConfig.tooltip_animation.duration;
-        long elapsed = System.currentTimeMillis() - animationStartTime;
-        float rawProgress = Math.min(1.0f, (float) elapsed / duration);
+        int duration = Math.max(1, QuantumHueConfig.tooltip_animation.duration);
+        long now = System.currentTimeMillis();
+        elapsedMs += MathHelper.clamp(now - lastUpdateMs, 0L, MAX_FRAME_STEP_MS);
+        lastUpdateMs = now;
 
-        currentProgress = applyEasing(rawProgress);
+        float rawProgress = Math.min(1.0f, elapsedMs / (float) duration);
+        currentProgress = Easing.outCubic(rawProgress);
 
         if (rawProgress >= 1.0f) {
             stopAnimation();
@@ -65,9 +74,5 @@ public class TooltipAnimation {
 
     private int lerp(int start, int end, float progress) {
         return MathHelper.floor(start + (end - start) * progress);
-    }
-
-    private float applyEasing(float t) {
-        return 1 - (1 - t) * (1 - t) * (1 - t);
     }
 }
