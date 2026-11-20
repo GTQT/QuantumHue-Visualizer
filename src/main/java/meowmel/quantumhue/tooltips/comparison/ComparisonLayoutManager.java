@@ -10,8 +10,11 @@ import java.util.List;
 @SideOnly(Side.CLIENT)
 public class ComparisonLayoutManager {
 
-    private static final int GAP = 4;
-    private static final int BADGE_OFFSET = ComparisonBadgeRenderer.BADGE_HEIGHT + 2;
+    /** 面板外框向外凸出 3px，此处按"外框到外框留 4px"计算。 */
+    private static final int GAP = 10;
+    /** 外框向外凸出 3px，屏幕边缘至少留 4px。 */
+    private static final int EDGE_MARGIN = 4;
+    private static final int BADGE_OFFSET = ComparisonBadgeRenderer.BADGE_HEIGHT + ComparisonBadgeRenderer.BADGE_MARGIN;
 
     /**
      * 自动布局计算：根据主Tooltip相对鼠标的位置，智能选择对比Tooltip放置侧。
@@ -50,8 +53,8 @@ public class ComparisonLayoutManager {
         boolean mouseOnLeft = mouseX < primaryCenterX;
 
         // 可用空间
-        int spaceLeft = primaryLayout.x - 2;  // 主Tooltip左侧可用空间
-        int spaceRight = screenWidth - (primaryLayout.x + primaryLayout.width) - 2;  // 右侧
+        int spaceLeft = primaryLayout.x - EDGE_MARGIN;  // 主Tooltip左侧可用空间
+        int spaceRight = screenWidth - (primaryLayout.x + primaryLayout.width) - EDGE_MARGIN;  // 右侧
 
         // 首选侧：远离鼠标的一侧
         boolean preferLeft = mouseOnLeft;
@@ -113,8 +116,8 @@ public class ComparisonLayoutManager {
             }
 
             // 如果超出左边界，整体右移
-            if (!result.isEmpty() && result.get(0).x < 2) {
-                int shiftX = 2 - result.get(0).x;
+            if (!result.isEmpty() && result.get(0).x < EDGE_MARGIN) {
+                int shiftX = EDGE_MARGIN - result.get(0).x;
                 shiftAll(result, shiftX);
             }
         } else {
@@ -134,8 +137,8 @@ public class ComparisonLayoutManager {
             if (!result.isEmpty()) {
                 TooltipLayout last = result.get(result.size() - 1);
                 int rightEdge = last.x + last.width;
-                if (rightEdge > screenWidth - 2) {
-                    int shiftX = (screenWidth - 2) - rightEdge;
+                if (rightEdge > screenWidth - EDGE_MARGIN) {
+                    int shiftX = (screenWidth - EDGE_MARGIN) - rightEdge;
                     shiftAll(result, shiftX);
                 }
             }

@@ -12,6 +12,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 public class ComparisonBadgeRenderer {
 
     public static final int BADGE_HEIGHT = 12;
+    /** 徽章底边到面板顶边的距离，需大于外框向外凸出的 3px。 */
+    public static final int BADGE_MARGIN = 5;
     private static final String DEFAULT_BADGE_TEXT = "已装备"; // 已装备
 
     /**
@@ -21,7 +23,7 @@ public class ComparisonBadgeRenderer {
         QuantumHueConfig.EquipmentComparison config = QuantumHueConfig.equipmentComparison;
 
         int badgeX = layout.x;
-        int badgeY = layout.y - BADGE_HEIGHT - 2;
+        int badgeY = layout.y - BADGE_HEIGHT - BADGE_MARGIN;
         int badgeWidth = layout.width;
 
         int bgColor = config.badgeBackgroundColor;

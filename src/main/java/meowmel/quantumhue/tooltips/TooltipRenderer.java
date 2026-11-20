@@ -247,11 +247,11 @@ public class TooltipRenderer {
         if (cfg.rounded) {
             radius = Math.max(1, Math.min(cfg.corner_radius, Math.min(layout.width, layout.height) / 2));
         } else {
-            // 直角科技面板只有一圈暗线（外扩 1px），流光沿着它跑
-            left -= 1;
-            top -= 1;
-            width += 2;
-            height += 2;
+            // 直角科技面板的外框向外凸 2px，流光贴着最外圈跑才有可见的明暗变化
+            left -= 2;
+            top -= 2;
+            width += 4;
+            height += 4;
         }
 
         float horizontal = width - 2 * radius;
@@ -261,7 +261,7 @@ public class TooltipRenderer {
         float head = (timeSeconds * 90.0F * (float) cfg.shimmer_speed) % perimeter;
         float tail = Math.max(18.0F, perimeter * 0.16F);
 
-        int accent = TooltipColors.mix(colors.accent, 0xFFFFFFFF, 0.30F);
+        int accent = TooltipColors.mix(colors.accent, 0xFFFFFFFF, 0.70F);
         float cr = red(accent);
         float cg = green(accent);
         float cb = blue(accent);

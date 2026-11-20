@@ -242,7 +242,7 @@ public class QuantumHueConfig {
         @Config.Comment({
                 "面板四角改为圆角，描边跟着一起圆",
                 "true: 圆角面板（旧风格）",
-                "false: 直角科技面板（角标 + 扫描线 + 发丝边 + 窄高光）"
+                "false: 直角科技面板（扫描线 + 双层外框 + 窄高光）"
         })
         @Config.Name("圆角面板")
         public boolean rounded = false;
